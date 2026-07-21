@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "prefix": "dv-",
+  "components": [
+    { "tag": "dv-counter", "class": "DvCounter", "module": "src/components/dv-counter.js", "attributes": ["data-start", "data-step"], "events": ["dv:change"] },
+    { "tag": "dv-tabs", "class": "DvTabs", "module": "src/components/dv-tabs.js", "attributes": ["data-active", "data-label"], "events": ["dv:tab"] },
+    { "tag": "dv-disclosure", "class": "DvDisclosure", "module": "src/components/dv-disclosure.js", "attributes": ["data-open", "data-summary"], "events": ["dv:toggle"] },
+    { "tag": "dv-modal", "class": "DvModal", "module": "src/components/dv-modal.js", "attributes": ["data-open", "data-label"], "events": ["dv:open", "dv:close"] },
+    { "tag": "dv-toast", "class": "DvToast", "module": "src/components/dv-toast.js", "attributes": ["data-message", "data-open", "data-duration"], "events": ["dv:show", "dv:hide"] },
+    { "tag": "dv-pagination", "class": "DvPagination", "module": "src/components/dv-pagination.js", "attributes": ["data-page", "data-total", "data-size", "data-label"], "events": ["dv:page"] }
+  ]
+}

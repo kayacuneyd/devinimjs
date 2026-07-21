@@ -105,12 +105,62 @@ function morph(host, htmlString) {
   morphChildren(host, tpl.content);
 }
 function morphChildren(oldParent, newParent) {
+  if (canMorphKeyedChildren(oldParent, newParent)) {
+    morphKeyedChildren(oldParent, newParent);
+    return;
+  }
   const oldNodes = Array.from(oldParent.childNodes);
   const newNodes = Array.from(newParent.childNodes);
   const common = Math.min(oldNodes.length, newNodes.length);
   for (let i = 0; i < common; i++) morphNode(oldNodes[i], newNodes[i]);
   for (let i = common; i < newNodes.length; i++) oldParent.appendChild(newNodes[i]);
   for (let i = common; i < oldNodes.length; i++) oldNodes[i].remove();
+}
+function canMorphKeyedChildren(oldParent, newParent) {
+  const oldElements = childElements(oldParent);
+  const newElements = childElements(newParent);
+  if (oldElements.length === 0 || newElements.length === 0) return false;
+  if (!oldElements.every((el) => el.hasAttribute("data-key"))) return false;
+  if (!newElements.every((el) => el.hasAttribute("data-key"))) return false;
+  return hasUniqueKeys(oldElements, "existing") && hasUniqueKeys(newElements, "next");
+}
+function morphKeyedChildren(oldParent, newParent) {
+  const oldByKey = new Map(childElements(oldParent).map((el) => [el.getAttribute("data-key"), el]));
+  let reference = oldParent.firstChild;
+  for (const newNode of Array.from(newParent.childNodes)) {
+    let liveNode = newNode;
+    if (newNode.nodeType === Node.ELEMENT_NODE && newNode.hasAttribute("data-key")) {
+      const key = newNode.getAttribute("data-key");
+      const existing = oldByKey.get(key);
+      if (existing) {
+        morphNode(existing, newNode);
+        liveNode = existing;
+        oldByKey.delete(key);
+      }
+    }
+    if (liveNode !== reference) oldParent.insertBefore(liveNode, reference);
+    reference = liveNode.nextSibling;
+  }
+  while (reference) {
+    const next = reference.nextSibling;
+    reference.remove();
+    reference = next;
+  }
+}
+function childElements(parent) {
+  return Array.from(parent.childNodes).filter((node) => node.nodeType === Node.ELEMENT_NODE);
+}
+function hasUniqueKeys(elements, side) {
+  const keys = /* @__PURE__ */ new Set();
+  for (const el of elements) {
+    const key = el.getAttribute("data-key");
+    if (key === null || keys.has(key)) {
+      console.warn(`[devinim] keyed morph skipped: duplicate or missing data-key in ${side} siblings.`);
+      return false;
+    }
+    keys.add(key);
+  }
+  return true;
 }
 function morphNode(oldNode, newNode) {
   if (oldNode.nodeType !== newNode.nodeType || oldNode.nodeName !== newNode.nodeName) {
@@ -122,6 +172,12 @@ function morphNode(oldNode, newNode) {
     return;
   }
   if (oldNode.nodeName === OUTLET_TAG) return;
+  syncFormControl(
+    /** @type {Element} */
+    oldNode,
+    /** @type {Element} */
+    newNode
+  );
   syncAttributes(
     /** @type {Element} */
     oldNode,
@@ -136,6 +192,25 @@ function syncAttributes(oldEl, newEl) {
   }
   for (const attr of Array.from(newEl.attributes)) {
     if (oldEl.getAttribute(attr.name) !== attr.value) oldEl.setAttribute(attr.name, attr.value);
+  }
+}
+function syncFormControl(oldEl, newEl) {
+  if (oldEl.nodeName === "INPUT") {
+    const type = oldEl.getAttribute("type") ?? "text";
+    if (type !== "checkbox" && type !== "radio" && oldEl.getAttribute("value") !== newEl.getAttribute("value")) {
+      oldEl.value = newEl.getAttribute("value") ?? "";
+    }
+    if ((type === "checkbox" || type === "radio") && oldEl.hasAttribute("checked") !== newEl.hasAttribute("checked")) {
+      oldEl.checked = newEl.hasAttribute("checked");
+    }
+    return;
+  }
+  if (oldEl.nodeName === "TEXTAREA" && oldEl.textContent !== newEl.textContent) {
+    oldEl.value = newEl.textContent;
+    return;
+  }
+  if (oldEl.nodeName === "OPTION" && oldEl.hasAttribute("selected") !== newEl.hasAttribute("selected")) {
+    oldEl.selected = newEl.hasAttribute("selected");
   }
 }
 
@@ -155,8 +230,10 @@ var BaseComponent = class extends HTMLElement {
   #changedKeys = /* @__PURE__ */ new Set();
   /** @type {Set<string>} Event types already delegated on this element. */
   #delegatedTypes = /* @__PURE__ */ new Set();
-  /** @type {Array<() => void>} Store unsubscribe functions to run on disconnect (ADR-0011). */
-  #storeUnsubscribers = [];
+  /** @type {Map<object, { unsubscribe: (() => void) | null, filter: ((path: string) => boolean) | null }>} */
+  #storeSubscriptions = /* @__PURE__ */ new Map();
+  /** @type {Set<() => void>} Cleanup work owned by the current DOM connection. */
+  #cleanupFns = /* @__PURE__ */ new Set();
   /**
    * Per the Custom Elements spec: do NOT touch attributes or the DOM here.
    * All initialization happens at connect time.
@@ -194,6 +271,9 @@ var BaseComponent = class extends HTMLElement {
   }
   /** Called once, after the first render. Override for setup (timers, external listeners). */
   connected() {
+  }
+  /** Called on every re-attachment after the first initialization. */
+  reconnected() {
   }
   /** Called when the element leaves the document. Override for cleanup. */
   disconnected() {
@@ -234,7 +314,11 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   connectedCallback() {
-    if (this.#initialized) return;
+    if (this.#initialized) {
+      this.#resubscribeStores();
+      this.reconnected();
+      return;
+    }
     this.#initialized = true;
     this.#childrenFragment = captureChildren(this);
     this.prepare(this.#childrenFragment);
@@ -248,8 +332,8 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   disconnectedCallback() {
-    for (const unsubscribe of this.#storeUnsubscribers) unsubscribe();
-    this.#storeUnsubscribers = [];
+    this.#unsubscribeStores();
+    this.#runCleanup();
     this.disconnected();
   }
   /**
@@ -404,20 +488,82 @@ var BaseComponent = class extends HTMLElement {
     this.#notify("<external>");
   }
   /**
-   * Subscribes this component to a shared store (ADR-0011): any store change schedules a
-   * re-render; the subscription is removed automatically on disconnect.
+   * Subscribes this component to a shared store (ADR-0011). An optional path filter prevents
+   * unrelated store changes from scheduling a render; subscriptions resume on re-attachment.
    *
    * @param {{ subscribe: (fn: (path: string) => void) => () => void }} store - A store from
    *   `createStore()`.
-   * @returns {() => void} The unsubscribe function (rarely needed — disconnect handles it).
+   * @param {string | string[] | ((path: string) => boolean)} [paths] - Interested state paths,
+   *   or a predicate receiving each changed path.
+   * @returns {() => void} Stops this subscription permanently.
    *
    * @example
-   * connected() { this.useStore(cartStore); }
+   * connected() { this.useStore(cartStore, ['cart.items']); }
    */
-  useStore(store) {
-    const unsubscribe = store.subscribe(() => this.requestUpdate());
-    this.#storeUnsubscribers.push(unsubscribe);
-    return unsubscribe;
+  useStore(store, paths) {
+    const existing = this.#storeSubscriptions.get(store);
+    if (existing) return () => this.#removeStore(store);
+    const subscription = { unsubscribe: null, filter: createPathFilter(paths) };
+    this.#storeSubscriptions.set(store, subscription);
+    this.#subscribeStore(store, subscription);
+    return () => this.#removeStore(store);
+  }
+  /**
+   * Registers cleanup work for this connection. It runs automatically when the component leaves
+   * the document and is useful for timers, observers and third-party subscriptions.
+   *
+   * @param {() => void} cleanup - Function to run at disconnect time.
+   * @returns {() => void} Removes the cleanup without running it.
+   */
+  onCleanup(cleanup) {
+    this.#cleanupFns.add(cleanup);
+    return () => this.#cleanupFns.delete(cleanup);
+  }
+  /**
+   * Adds an event listener that is removed automatically on disconnect.
+   *
+   * @param {EventTarget} target - Event target to observe.
+   * @param {string} type - Event type.
+   * @param {EventListenerOrEventListenerObject} listener - Listener to register.
+   * @param {boolean | AddEventListenerOptions} [options] - Native listener options.
+   * @returns {() => void} Removes the listener early.
+   */
+  listen(target, type, listener, options) {
+    target.addEventListener(type, listener, options);
+    return this.onCleanup(() => target.removeEventListener(type, listener, options));
+  }
+  /** @param {object} store - Store to remove from this component. */
+  #removeStore(store) {
+    const subscription = this.#storeSubscriptions.get(store);
+    if (!subscription) return;
+    subscription.unsubscribe?.();
+    this.#storeSubscriptions.delete(store);
+  }
+  /**
+   * @param {{ subscribe: (fn: (path: string) => void) => () => void }} store - Store to subscribe.
+   * @param {{ unsubscribe: (() => void) | null, filter: ((path: string) => boolean) | null }} subscription - Subscription metadata.
+   */
+  #subscribeStore(store, subscription) {
+    if (subscription.unsubscribe) return;
+    subscription.unsubscribe = store.subscribe((path) => {
+      if (!subscription.filter || subscription.filter(path)) this.requestUpdate();
+    });
+  }
+  /** Restores store subscriptions after a disconnect/reconnect cycle. */
+  #resubscribeStores() {
+    for (const [store, subscription] of this.#storeSubscriptions) this.#subscribeStore(store, subscription);
+  }
+  /** Removes active store listeners while retaining their reconnection metadata. */
+  #unsubscribeStores() {
+    for (const subscription of this.#storeSubscriptions.values()) {
+      subscription.unsubscribe?.();
+      subscription.unsubscribe = null;
+    }
+  }
+  /** Runs and clears connection-owned cleanup functions. */
+  #runCleanup() {
+    for (const cleanup of this.#cleanupFns) cleanup();
+    this.#cleanupFns.clear();
   }
   /**
    * Emits a bubbling, composed `CustomEvent` namespaced as `dv:name` (ADR-0004 #7).
@@ -502,6 +648,12 @@ function captureChildren(el) {
   const fragment = document.createDocumentFragment();
   while (el.firstChild) fragment.appendChild(el.firstChild);
   return fragment;
+}
+function createPathFilter(paths) {
+  if (paths === void 0) return null;
+  if (typeof paths === "function") return paths;
+  const watched = (Array.isArray(paths) ? paths : [paths]).filter(Boolean);
+  return (changed) => watched.some((path) => changed === path || changed.startsWith(`${path}.`) || path.startsWith(`${changed}.`));
 }
 
 // src/core/store.js

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §3.1 (no untested code), §3.3 (lint in CI), §9.3 (budgets), §8.4
 
 ## Context
@@ -23,7 +23,7 @@ dev-time tooling only.
 3. **Accessibility:** axe-core scans of example pages in the E2E suite (constitution §3 CI
    requirement; WCAG AA per §5.3).
 4. **Lint/format:** ESLint flat config + `eslint-plugin-jsdoc` (JSDoc required on public API —
-   this guards the AI-agent goal). Prettier-compatible style (2-space, LF, per `.editorconfig`).
+   this guards the public API contract). Prettier-compatible style (2-space, LF, per `.editorconfig`).
 5. **Size gate:** `npm run size` gzips the core modules and fails CI if the total exceeds
    **4 KB min+gzip** (§9.3).
 6. **CI:** `.github/workflows/ci.yml` runs lint → unit tests → size gate on every PR; all checks

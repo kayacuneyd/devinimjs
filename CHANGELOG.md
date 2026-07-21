@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Keyed morphing (ADR-0014): direct sibling lists whose elements all declare unique `data-key`
+  values now retain DOM identity across reorders, insertions and removals. Mixed or invalid keyed
+  ranges safely fall back to positional morphing.
+- Application helpers: `createAsyncState`, `fetchJson`/`HttpError`, `createForm`, path-filtered
+  `useStore`, reconnect-safe store subscriptions, cleanup helpers and `createHashRouter`.
+- Components: `<dv-disclosure>`, `<dv-modal>`, `<dv-toast>` and `<dv-pagination>` with unit and
+  real-browser E2E coverage.
+
 ## [0.1.0] - 2026-07-21
 
 The first public release: a build-free, Proxy-reactive component runtime plus two accessible
@@ -38,4 +50,3 @@ components, shipped as plain ES modules for PHP/shared-hosting projects.
 - Event dispatch no longer relies on dynamic attribute selectors — colon-containing
   `data-on:*` names made them invalid in real browsers (happy-dom had tolerated them).
   Directive resolution now walks up from `event.target` (ADR-0004 amendment).
-

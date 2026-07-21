@@ -2,7 +2,7 @@
 
 - **Status:** Proposed | Accepted | Deprecated | Superseded by [ADR-XXXX](XXXX-....md)
 - **Date:** YYYY-MM-DD
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §x.y, §x.z
 
 ## Context

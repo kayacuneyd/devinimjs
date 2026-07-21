@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §8.1 (never trust user input), §3.4 (security review), §8.4, §9.3
 - **Depends on:** ADR-0001, ADR-0002
 

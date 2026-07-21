@@ -2,14 +2,14 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §1.1, §2.1, §2.4, §5 (waived — see below), §8.1, §9.2
 
 ## Context
 
 `BaseComponent` must reflect Proxy-based state changes into the DOM. Constraints: Light DOM only
 (no Shadow DOM), no build step, initial state from PHP-printed `data-*`, global CSS (CKCSS) must
-apply, core < 4 KB, WCAG AA, predictable enough for AI agents to author components.
+apply, core < 4 KB, WCAG AA, and a predictable component authoring model.
 
 ## Decision drivers
 
@@ -57,7 +57,7 @@ emerges (§2.1: build what is needed, design so it can be extended).
 ## Consequences
 
 **Positive:** Svelte-like DX without a compiler; lists/conditionals are free; PHP contract is
-just `data-*`; predictable shape for AI agents.
+just `data-*`; predictable shape for component authors.
 **Negative / to manage:** no-JS/SEO trade-off documented as a principle ("DevinimJS renders
 application UI, not brochure content"); XSS surface managed by ADR-0003; morph quality gates
 focus/event preservation (ADR-0004 delegation makes listeners render-proof).

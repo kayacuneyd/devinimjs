@@ -12,13 +12,14 @@ import { buildSync, transformSync } from 'esbuild';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
-const COMPONENTS = ['dv-counter', 'dv-tabs'];
+const COMPONENTS = ['dv-counter', 'dv-tabs', 'dv-disclosure', 'dv-modal', 'dv-toast', 'dv-pagination'];
 const shared = { bundle: true, format: 'esm', logLevel: 'silent' };
 
 mkdirSync('dist/modules', { recursive: true });
 
 buildSync({ ...shared, entryPoints: ['src/core/core.js'], outfile: 'dist/core.js', minify: false });
 buildSync({ ...shared, entryPoints: ['src/core/core.js'], outfile: 'dist/core.min.js', minify: true });
+buildSync({ ...shared, entryPoints: ['src/core/app.js'], outfile: 'dist/app.min.js', minify: true });
 buildSync({ ...shared, entryPoints: ['src/devinim.js'], outfile: 'dist/devinim.min.js', minify: true });
 
 for (const name of COMPONENTS) {
@@ -36,7 +37,7 @@ const report = (label, code) => {
   const bytes = Buffer.byteLength(code);
   console.log(`${label}: ${bytes} B (${gzipSync(code, { level: 9 }).length} B gzip)`);
 };
-for (const file of ['dist/core.min.js', 'dist/devinim.min.js', ...COMPONENTS.map((c) => `dist/modules/${c}.js`)]) {
+for (const file of ['dist/core.min.js', 'dist/app.min.js', 'dist/devinim.min.js', ...COMPONENTS.map((c) => `dist/modules/${c}.js`)]) {
   report(file, readFileSync(file, 'utf8'));
 }
 console.log('dist/ built.');

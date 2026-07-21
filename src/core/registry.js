@@ -1,7 +1,7 @@
 /**
  * @module core/registry
  * Guarded custom-element registration (ADR-0006). The tag string is always explicit so every
- * registration is greppable — a hard requirement for AI-agent-authored components.
+ * registration is greppable — a hard requirement for predictable component authoring.
  */
 
 /**

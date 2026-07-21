@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §1.2 (composable components), §2.1 (YAGNI), §2.4
 - **Depends on:** ADR-0001, ADR-0002
 

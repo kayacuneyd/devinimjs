@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §2.1 (YAGNI), §9.3 (budgets)
 - **Depends on:** ADR-0001; fulfills the first post-MVP candidate of ADR-0010
 
@@ -15,7 +15,7 @@ channel is DOM events (`dv:*`), which forces manual plumbing for shared data.
 ## Decision drivers
 
 - Minimal addition: reuse the existing reactive + batching machinery.
-- Predictable for AI agents: one creation function, one wiring method.
+- Predictable API: one creation function, one wiring method.
 - Keep the 4 KB core budget.
 
 ## Decision

@@ -2,14 +2,14 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
-- **Constitution links:** §1.3 (API design is design), §2.1, §6.2 (AI-agent predictability), §8.1
+- **Deciders:** Cüneyt Kaya
+- **Constitution links:** §1.3 (API design is design), §2.1, §6.2 (predictability), §8.1
 - **Depends on:** ADR-0001
 
 ## Context
 
 Morph render (ADR-0001) needs a way to produce HTML strings that is ergonomic, safe by default,
-and readable by both PHP-oriented developers and AI agents.
+and readable by PHP-oriented developers.
 
 ## Decision drivers
 
@@ -51,7 +51,7 @@ and readable by both PHP-oriented developers and AI agents.
 ## Consequences
 
 **Positive:** ~0.8 KB implementation; Svelte-adjacent ergonomics; fully greppable, deterministic
-for AI agents.
+for component authors.
 **Negative / to manage:** boolean-attribute scanning is the one "smart" spot — isolated in
 `html.js` and heavily unit-tested.
 **Naming note:** the state factory is `initialState()` and the reactive accessor is `this.state`;

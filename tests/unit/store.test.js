@@ -78,6 +78,88 @@ test('disconnect unsubscribes: detached components no longer re-render', async (
   assert.equal(el.querySelector('span').textContent, '1'); // frozen after disconnect
 });
 
+test('store subscriptions resume when a component is re-attached', async () => {
+  const store = createStore({ count: 0 });
+
+  class DvReconnectStore extends BaseComponent {
+    connected() {
+      this.useStore(store);
+    }
+    template() {
+      return html`<span>${store.state.count}</span>`;
+    }
+  }
+  define('dv-reconnect-store', DvReconnectStore);
+
+  const el = document.createElement('dv-reconnect-store');
+  document.body.appendChild(el);
+  el.remove();
+  document.body.appendChild(el);
+  store.state.count = 9;
+  await settle();
+
+  assert.equal(el.querySelector('span').textContent, '9');
+});
+
+test('useStore filters unrelated state paths while matching parent replacements', async () => {
+  const store = createStore({ cart: { items: 0 }, user: { name: 'Ada' } });
+  let renders = 0;
+
+  class DvFilteredStore extends BaseComponent {
+    connected() {
+      this.useStore(store, 'cart.items');
+    }
+    updated() {
+      renders++;
+    }
+    template() {
+      return html`<span>${store.state.cart.items}</span>`;
+    }
+  }
+  define('dv-filtered-store', DvFilteredStore);
+
+  const el = document.createElement('dv-filtered-store');
+  document.body.appendChild(el);
+  store.state.user.name = 'Grace';
+  await settle();
+  assert.equal(renders, 0);
+
+  store.state.cart = { items: 3 };
+  await settle();
+  assert.equal(renders, 1);
+  assert.equal(el.querySelector('span').textContent, '3');
+});
+
+test('connection cleanup removes listeners and reconnected() runs after re-attachment', () => {
+  let calls = 0;
+  let reconnects = 0;
+
+  class DvCleanup extends BaseComponent {
+    connected() {
+      this.listen(document, 'dv:test-cleanup', () => calls++);
+    }
+    reconnected() {
+      reconnects++;
+      this.listen(document, 'dv:test-cleanup', () => calls++);
+    }
+    template() {
+      return html`<span>ready</span>`;
+    }
+  }
+  define('dv-cleanup', DvCleanup);
+
+  const el = document.createElement('dv-cleanup');
+  document.body.appendChild(el);
+  document.dispatchEvent(new CustomEvent('dv:test-cleanup'));
+  el.remove();
+  document.dispatchEvent(new CustomEvent('dv:test-cleanup'));
+  document.body.appendChild(el);
+  document.dispatchEvent(new CustomEvent('dv:test-cleanup'));
+
+  assert.equal(calls, 2);
+  assert.equal(reconnects, 1);
+});
+
 test('requestUpdate re-renders without a state change and reports <external>', async () => {
   let external = 0;
   const seen = [];

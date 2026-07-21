@@ -13,7 +13,7 @@
     "shared-hosting",
     "ckcss"
   ],
-  "author": "Cüneyt Kaya",
+  "author": "Cüneyt Kaya (https://kayacuneyt.com)",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -21,13 +21,15 @@
   },
   "exports": {
     ".": "./src/core/core.js",
+    "./app": "./src/core/app.js",
     "./components/*": "./src/components/*"
   },
   "files": [
     "src",
     "dist",
     "docs",
-    "adr"
+    "adr",
+    "templates"
   ],
   "scripts": {
     "test": "node --test \"tests/unit/*.test.js\"",
@@ -35,7 +37,9 @@
     "lint": "eslint .",
     "build": "node scripts/build-dist.mjs",
     "size": "node scripts/size-check.mjs",
-    "serve": "node scripts/serve.mjs"
+    "serve": "node scripts/serve.mjs",
+    "create:component": "node scripts/create-component.mjs",
+    "verify": "npm run lint && npm test && npm run test:e2e && npm run size"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",

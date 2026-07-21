@@ -10,14 +10,19 @@ src/
 ├── core/
 │   ├── reactive.js         createReactive(state, onChange) — deep Proxy reactivity
 │   ├── html.js             html`` tag · HtmlString · escapeHtml · unsafe (XSS boundary)
-│   ├── morph.js            morph(host, htmlString) — positional in-place DOM patching
+│   ├── morph.js            morph(host, htmlString) — keyed/positional in-place DOM patching
 │   ├── base-component.js   BaseComponent — the class every component extends
 │   ├── registry.js         define(tag, ctor) — guarded custom-element registration
 │   ├── store.js            createStore(initial) — shared cross-component state (ADR-0011)
+│   ├── async-state.js      createAsyncState(data) — stale-safe async lifecycle
+│   ├── fetch.js            fetchJson(url) · HttpError
+│   ├── form.js             createForm(initialValues) — values/errors/submission state
+│   ├── router.js           createHashRouter() — serverless hash route matching
 │   ├── utils.js            safeUrl
-│   └── core.js             public API barrel (import from here)
+│   ├── core.js             small widget-runtime public API barrel
+│   └── app.js              optional application-runtime public API barrel
 ├── components/
-│   └── dv-counter.js       <dv-counter> — reference component (1 file = 1 component)
+│   └── components/         <dv-counter>, <dv-tabs>, disclosure, modal, toast, pagination
 └── devinim.js              all-in-one entry (core + all components, self-registering)
 ```
 
@@ -46,8 +51,9 @@ state mutation (e.g. this.state.count += 1)
 
 ## The five rules everything derives from
 
-1. **Morph render** (ADR-0001): templates produce strings; `morph` patches positionally —
-   same nodeType+nodeName pairs are updated, not replaced.
+1. **Morph render** (ADR-0001/0014): templates produce strings; `morph` patches in place.
+   Sibling lists whose elements all carry a unique `data-key` preserve node identity through
+   reorders; all other structures use positional nodeType+nodeName matching.
 2. **Escape by default** (ADR-0003): interpolations are escaped unless they are `HtmlString`
    (produced by `html`` ` or the reviewed `unsafe()`).
 3. **Delegated events** (ADR-0004): `data-on:click="method"` — one root listener per type;
@@ -59,6 +65,6 @@ state mutation (e.g. this.state.count += 1)
 
 ## Performance notes (constitution §9)
 
-- Core budget: < 4 KB min+gzip, enforced in CI (`npm run size`). Currently ~2.4 KB.
+- Core budget: < 4 KB min+gzip, enforced in CI (`npm run size`). Currently ~2.8 KB.
 - One render per microtask no matter how many mutations; unchanged attributes/nodes untouched.
-- No virtual DOM, no dependency graph, no parser — the morph is ~60 lines.
+- No virtual DOM, no dependency graph, no parser — the morph remains deliberately small.
