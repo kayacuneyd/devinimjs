@@ -1,0 +1,17 @@
+# Dependencies (dev-time only; consumers never install anything)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Coverage & temp
+coverage/
+.tmp/
+
+# NOTE: dist/ is intentionally NOT ignored — release artifacts are committed (ADR-0007).

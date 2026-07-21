@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Constitution §3.3: lint, tests and the size gate are blocking. E2E (Playwright + axe-core)
+# joins this pipeline with the browser-testing milestone (ADR-0008).
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dev-time tooling
+        run: npm ci
+
+      - name: Lint (ESLint + JSDoc rules)
+        run: npm run lint
+
+      - name: Unit tests (node --test + happy-dom)
+        run: npm test
+
+      - name: Size gate (core < 4 KB min+gzip)
+        run: npm run size

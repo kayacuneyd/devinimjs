@@ -1,0 +1,45 @@
+<!doctype html>
+<!--
+  DevinimJS example: <dv-counter> on a static page.
+  Run with the dev server:  npm run serve   → http://localhost:8080/
+  …or copy the <script type="module"> line pattern into any shared-hosting page.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DevinimJS — counter example</title>
+  <!-- CKCSS does the styling; DevinimJS only brings the motion. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+  <style>
+    body { max-width: 40rem; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; }
+    dv-counter { display: inline-flex; align-items: center; gap: .5rem; }
+    dv-counter button { min-width: 2.25rem; min-height: 2.25rem; }
+    dv-counter output { min-width: 3ch; text-align: center; font-variant-numeric: tabular-nums; font-size: 1.25rem; }
+    #log { font-family: ui-monospace, monospace; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <h1>&lt;dv-counter&gt;</h1>
+  <p>Two independent counters, configured entirely through <code>data-*</code> attributes:</p>
+
+  <h2>Plain</h2>
+  <dv-counter></dv-counter>
+
+  <h2>PHP-style configuration (start=10, step=5)</h2>
+  <dv-counter data-start="10" data-step="5"></dv-counter>
+
+  <h2>Listening to <code>dv:change</code></h2>
+  <dv-counter id="observed" data-start="0"></dv-counter>
+  <pre id="log" aria-live="polite">events: —</pre>
+
+  <!-- One module script tag per component family is the whole installation. -->
+  <script type="module" src="../src/components/dv-counter.js"></script>
+  <script type="module">
+    const log = document.querySelector('#log');
+    document.querySelector('#observed').addEventListener('dv:change', (event) => {
+      log.textContent = `events: dv:change → count = ${event.detail.count}`;
+    });
+  </script>
+</body>
+</html>

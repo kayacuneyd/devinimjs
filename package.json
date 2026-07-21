@@ -1,0 +1,45 @@
+{
+  "name": "devinimjs",
+  "version": "0.1.0",
+  "description": "Build-free, Proxy-reactive Vanilla JS component library for PHP and shared-hosting projects. The JS companion of CKCSS.",
+  "type": "module",
+  "keywords": [
+    "web-components",
+    "custom-elements",
+    "proxy",
+    "reactivity",
+    "no-build",
+    "php",
+    "shared-hosting",
+    "ckcss"
+  ],
+  "author": "Cüneyt Kaya",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kayacuneyd/devinimjs.git"
+  },
+  "exports": {
+    ".": "./src/core/core.js",
+    "./components/*": "./src/components/*"
+  },
+  "files": [
+    "src",
+    "dist",
+    "docs",
+    "adr"
+  ],
+  "scripts": {
+    "test": "node --test \"tests/unit/*.test.js\"",
+    "lint": "eslint .",
+    "size": "node scripts/size-check.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^9.30.0",
+    "eslint-plugin-jsdoc": "^51.0.0",
+    "happy-dom": "^17.4.0"
+  }
+}
