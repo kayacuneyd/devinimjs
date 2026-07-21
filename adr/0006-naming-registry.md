@@ -2,13 +2,12 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
-- **Constitution links:** §6.2 (AI-agent predictability), §2.2 (3-pass rule), §2.3
+- **Deciders:** Cüneyt Kaya
+- **Constitution links:** §6.2 (predictability), §2.2 (3-pass rule), §2.3
 
 ## Context
 
-PROJECTIDEA requires autonomous AI agents to read the codebase and produce new components.
-That demands strictly predictable names.
+The component model requires strictly predictable names and file locations.
 
 ## Decision
 
@@ -40,7 +39,6 @@ That demands strictly predictable names.
 
 ## Consequences
 
-**Positive:** component generation by AI agents is near-deterministic; onboarding is one
-convention table long.
+**Positive:** component creation is near-deterministic; onboarding is one convention table long.
 **Negative / to manage:** the `dv-` reservation must be respected by consumers — documented in
 README and the PHP integration guide.

@@ -2,7 +2,7 @@
 
 - **Status:** Proposed (decision deferred — constitution §2.1)
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Depends on:** ADR-0009
 
 ## Context

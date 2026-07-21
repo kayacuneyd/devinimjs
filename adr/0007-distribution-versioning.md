@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §10 (SemVer, changelog), §8.4 (pinning), §9.3
 - **Mirrors:** the CKCSS distribution model
 

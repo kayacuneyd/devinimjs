@@ -12,6 +12,22 @@
 
 That is the complete consumer installation path. No Node.js, no bundler, no transpiler, no framework runtime — plain ES modules that run directly in the browser. DevinimJS must remain usable on ordinary shared hosting, exactly like CKCSS.
 
+### Build-free compatibility contract
+
+Build is optional for publishing and optimization; it is never a consumer requirement. Every
+runtime feature must remain usable as plain browser ES modules under these rules:
+
+1. The runtime has no npm or other runtime dependency.
+2. Source modules must run directly in a modern browser without bundling or transpilation.
+3. `dist/` artifacts are optional optimized distributions, not the only supported entry point.
+4. Build tooling may provide minification, source maps, packaging and type declarations only.
+5. No feature may require compile-time template analysis, dependency graphs or code generation.
+6. New features must first work in the build-free source runtime, then be added to `dist/`.
+7. Shared-hosting deployment must remain possible by copying the published JavaScript files.
+
+This permits runtime improvements such as keyed morphing, store selectors, router support and
+cleanup helpers without turning DevinimJS into a build-dependent framework.
+
 Pin a tagged release from jsDelivr (never use an unpinned URL in production):
 
 ```html
@@ -29,7 +45,7 @@ Freelance and agency projects built with **native PHP, CodeIgniter, Laravel, Wor
 - **Light DOM only** — no Shadow DOM, so your global CSS (CKCSS) applies directly.
 - **PHP-friendly** — initial state comes from `data-*` attributes your backend prints; events arrive as bubbling `dv:*` `CustomEvent`s.
 - **Tiny** — core budget: < 4 KB min+gzip, zero runtime dependencies.
-- **AI-agent ready** — strict conventions, one base class, JSDoc everywhere (see `CLAUDE.md`).
+- **Predictable** — strict conventions, one base class and JSDoc on public APIs.
 
 ## Quick start
 
@@ -69,6 +85,7 @@ define('dv-counter', DvCounter);
 
 - [Architecture](docs/architecture.md) — module map, lifecycle, data flow
 - [PHP integration guide](docs/guides/php-integration.md) — the `data-*` contract, JSON, events, CSP
+- [Application runtime guide](docs/guides/application-runtime.md) — async data, forms and hash routing
 - [Component library](design/component-library.md) — component inventory & states
 - [ADRs](adr/INDEX.md) — every significant decision, recorded
 - [Examples](examples/) — `counter.html` (static) and `counter.php` (PHP-fed)
@@ -90,4 +107,4 @@ npm run size      # assert core < 4 KB min+gzip
 
 ## License
 
-MIT © Cüneyt Kaya — see [LICENSE](LICENSE). Governed by the [KayaEOS Engineering Constitution](constitution.md).
+MIT © [Cüneyt Kaya](https://kayacuneyt.com) — see [LICENSE](LICENSE). Governed by the [KayaEOS Engineering Constitution](constitution.md).

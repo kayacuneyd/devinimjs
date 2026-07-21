@@ -1,8 +1,8 @@
 # ADR-0014: Keyed list morph (`data-key`)
 
-- **Status:** Proposed (decision deferred — constitution §2.1, §9.1 measure-first)
+- **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Depends on:** ADR-0001, ADR-0002; reserves the `data-key` attribute (ADR-0005 #6)
 
 ## Context
@@ -12,18 +12,21 @@ top, or sorting a list therefore rewrites every item's content instead of moving
 per-item DOM state (an open `<details>`, scroll position inside an item) is lost across
 reorders.
 
-## Sketch of the design space (not a decision)
+## Decision
 
-- Opt-in per list: `<li data-key="${u.id}">`. When all siblings in a diff range carry
-  `data-key`, the morph matches by key: move node → patch in place; unmatched new → insert;
-  unmatched old → remove.
-- Open questions: mixed keyed/unkeyed siblings (fall back to positional for the range)?
-  Duplicate keys (last wins + dev warning)? Interaction with focus (moving a focused node must
-  not blur it — same rule as positional morph)?
+- Opt-in per list: `<li data-key="${u.id}">`. When all direct element siblings on both sides
+  carry a unique `data-key`, the morph matches by key: move node → patch in place; unmatched
+  new → insert; unmatched old → remove.
+- Formatting whitespace and comments are refreshed from the template and do not prevent keyed
+  matching.
+- Mixed keyed/unkeyed sibling ranges fall back to positional morph.
+- Duplicate or missing keys emit a development warning and fall back to positional morph.
+- Moving an existing node preserves its DOM-local state, including focus and nested custom
+  element identity.
 - Performance note: keyed matching is O(n) with a map — the win is correctness of node
   identity, not raw speed. Measure a real reorder-heavy UI before building (§9.1).
 
-## Why deferred
+## Consequences
 
-Current components render small, append-only lists where positional morphing is correct and
-cheapest. The first reorder/sort-heavy component earns this ADR.
+Keyed morph adds a small O(n) map only to opt-in sibling ranges. Unkeyed templates retain the
+existing positional implementation and its size/performance characteristics.

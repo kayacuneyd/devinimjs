@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DevinimJS component examples</title>
+    <style>
+      .dv-modal-backdrop[hidden], .dv-toast[hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Component examples</h1>
+      <dv-disclosure data-summary="More details"><p>Disclosure content</p></dv-disclosure>
+      <button id="open-modal" type="button">Open dialog</button>
+      <dv-modal data-label="Example dialog"><p>Dialog content</p></dv-modal>
+      <dv-toast data-duration="0"></dv-toast>
+      <button id="show-toast" type="button">Show toast</button>
+      <dv-pagination data-total="25" data-size="10"></dv-pagination>
+    </main>
+    <script type="module">
+      import '../src/components/dv-disclosure.js';
+      import '../src/components/dv-modal.js';
+      import '../src/components/dv-toast.js';
+      import '../src/components/dv-pagination.js';
+
+      document.querySelector('#open-modal').addEventListener('click', (event) => {
+        document.querySelector('dv-modal').open(event, event.currentTarget);
+      });
+      document.querySelector('#show-toast').addEventListener('click', () => {
+        document.querySelector('dv-toast').show('Saved');
+      });
+    </script>
+  </body>
+</html>

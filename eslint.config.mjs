@@ -13,7 +13,11 @@ const browserGlobals = {
   CustomEvent: 'readonly',
   KeyboardEvent: 'readonly',
   URL: 'readonly',
+  Headers: 'readonly',
+  Response: 'readonly',
+  fetch: 'readonly',
   setTimeout: 'readonly',
+  clearTimeout: 'readonly',
 };
 
 export default [

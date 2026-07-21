@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §2.1 (YAGNI), §9.3 (budgets), §1.2
 
 ## Context

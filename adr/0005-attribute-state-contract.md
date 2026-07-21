@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-21
-- **Deciders:** Cüneyt Kaya + AI pair
+- **Deciders:** Cüneyt Kaya
 - **Constitution links:** §1.3, §8.1
 - **Depends on:** ADR-0001
 

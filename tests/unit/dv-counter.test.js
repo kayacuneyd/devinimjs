@@ -82,3 +82,52 @@ test('state containing markup is escaped on render (ADR-0003)', async () => {
   assert.equal(el.querySelector('img'), null);
   assert.ok(el.querySelector('p').textContent.includes('<img'));
 });
+
+test('unrelated renders preserve a focused input value and selection', async () => {
+  class DvFormState extends BaseComponent {
+    initialState() {
+      return { label: 'Initial', tick: 0 };
+    }
+    template() {
+      return html`<label>${this.state.label}<input value="${this.state.label}"></label><output>${this.state.tick}</output>`;
+    }
+  }
+  define('dv-form-state', DvFormState);
+
+  const el = document.createElement('dv-form-state');
+  document.body.appendChild(el);
+  const input = el.querySelector('input');
+  input.value = 'Draft value';
+  input.focus();
+  input.setSelectionRange(2, 5);
+
+  el.state.tick++;
+  await settle();
+
+  assert.equal(el.querySelector('input'), input);
+  assert.equal(input.value, 'Draft value');
+  assert.equal(document.activeElement, input);
+  assert.equal(input.selectionStart, 2);
+  assert.equal(input.selectionEnd, 5);
+});
+
+test('a changed template value synchronizes the live input value', async () => {
+  class DvControlledInput extends BaseComponent {
+    initialState() {
+      return { value: 'A' };
+    }
+    template() {
+      return html`<input value="${this.state.value}">`;
+    }
+  }
+  define('dv-controlled-input', DvControlledInput);
+
+  const el = document.createElement('dv-controlled-input');
+  document.body.appendChild(el);
+  const input = el.querySelector('input');
+  input.value = 'Draft';
+  el.state.value = 'B';
+  await settle();
+
+  assert.equal(input.value, 'B');
+});

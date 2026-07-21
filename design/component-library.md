@@ -67,6 +67,37 @@ per the ARIA Authoring Practices Guide. Unique ids across multiple instances.
 
 ---
 
+## `<dv-disclosure>` — shipped (unreleased)
+
+Accessible show/hide content. `data-summary` labels its native button; `data-open` controls the
+initial/live visibility. It emits `dv:toggle` with `{ open }` and preserves its light-DOM children.
+
+---
+
+## `<dv-modal>` — shipped (unreleased)
+
+Light-DOM dialog with `data-label` and `data-open`. It emits `dv:open`/`dv:close`, focuses the
+dialog when opening, restores its recorded opener when closing, and closes on Escape. Consumers
+style `.dv-modal-backdrop`, `.dv-modal` and `.dv-modal-content` with their own global CSS.
+
+---
+
+## `<dv-toast>` — shipped (unreleased)
+
+Live status message. Configure `data-duration` in milliseconds (`0` disables auto-dismiss) and
+call `element.show('Saved')` or `element.hide()`. It emits `dv:show`/`dv:hide` and uses
+`role="status"` with polite announcements.
+
+---
+
+## `<dv-pagination>` — shipped (unreleased)
+
+One-based pagination for server-rendered or fetched lists. Attributes: `data-page`, `data-total`,
+`data-size`, optional `data-label`. It emits `dv:page` with `{ page }`; Previous/Next are native
+disabled controls at their boundaries.
+
+---
+
 ## Consumer components
 
 Your own components follow the identical contract. Reserve `dv-` for framework components;

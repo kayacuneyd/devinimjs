@@ -13,7 +13,7 @@
     "shared-hosting",
     "ckcss"
   ],
-  "author": "Cüneyt Kaya",
+  "author": "Cüneyt Kaya (https://kayacuneyt.com)",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
   },
   "exports": {
     ".": "./src/core/core.js",
+    "./app": "./src/core/app.js",
     "./components/*": "./src/components/*"
   },
   "files": [

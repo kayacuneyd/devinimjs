@@ -10,3 +10,7 @@
 export * from './core/core.js';
 export { DvCounter } from './components/dv-counter.js';
 export { DvTabs } from './components/dv-tabs.js';
+export { DvDisclosure } from './components/dv-disclosure.js';
+export { DvModal } from './components/dv-modal.js';
+export { DvToast } from './components/dv-toast.js';
+export { DvPagination } from './components/dv-pagination.js';
