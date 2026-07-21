@@ -11,6 +11,7 @@ const browserGlobals = {
   Element: 'readonly',
   Node: 'readonly',
   CustomEvent: 'readonly',
+  KeyboardEvent: 'readonly',
   URL: 'readonly',
   setTimeout: 'readonly',
 };
@@ -58,7 +59,7 @@ export default [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
-      globals: { console: 'readonly', process: 'readonly', URL: 'readonly' },
+      globals: { console: 'readonly', process: 'readonly', URL: 'readonly', Buffer: 'readonly' },
     },
   },
   {

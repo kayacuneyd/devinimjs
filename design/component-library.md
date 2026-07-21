@@ -36,19 +36,34 @@ fully keyboard-operable (native `<button>`s).
 
 ---
 
-## `<dv-tabs>` — planned (next milestone, ADR-0010)
+## `<dv-tabs>` — shipped (v0.1)
 
-**Purpose:** the accessibility proof — WAI-ARIA tabs pattern.
+**Purpose:** accessible tabbed interface; the WCAG AA proof (WAI-ARIA APG tabs pattern).
 
 | Attribute | Type | Default | Notes |
 |-----------|------|---------|-------|
-| `data-active` | number | `0` | initially active tab index |
+| `data-active` | number | `0` | active tab index; live-synced, clamped to range |
+| `data-label` | string | `"Tabs"` | accessible name of the tablist (`aria-label`) |
 
-**Planned events:** `dv:tab` — `detail: { index }`.
+**Children API:** each light-DOM child becomes one tabpanel; its `data-tab` attribute is the
+tab label (fallback `Tab N`). The component manages `hidden`/ARIA on panel children
+(documented exception to "outlet content is consumer-owned").
 
-**Planned states:** default (active panel), edge (first/last with arrow-key wrap-around).
-**Accessibility target:** `role=tablist/tab/tabpanel`, `aria-selected`, arrow/Home/End keys,
-`tabindex` management per the ARIA Authoring Practices Guide.
+**Events:** `dv:tab` — `detail: { index }`, after every activation change.
+
+**Methods:** `activateIndex(index)` (programmatic); template directives `activate`, `onKeydown`.
+
+**States:**
+
+- *Default:* active tab `aria-selected="true"`, its panel visible; others `hidden`.
+- *Edge:* empty tabset renders an empty tablist; out-of-range `data-active` clamps.
+- *Focus:* automatic activation — arrow keys move selection **and** focus together.
+
+**Accessibility:** `role=tablist/tab/tabpanel`, `aria-controls`↔`id`, `aria-labelledby`,
+roving `tabindex` (active `0`, others `-1`), ArrowLeft/ArrowRight with wrap-around, Home/End —
+per the ARIA Authoring Practices Guide. Unique ids across multiple instances.
+
+**Example:** `examples/tabs.html`.
 
 ---
 

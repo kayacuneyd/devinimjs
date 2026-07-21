@@ -9,3 +9,4 @@
  */
 export * from './core/core.js';
 export { DvCounter } from './components/dv-counter.js';
+export { DvTabs } from './components/dv-tabs.js';

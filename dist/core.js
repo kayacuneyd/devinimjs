@@ -1,26 +1,148 @@
-/**
- * @module core/base-component
- * BaseComponent — the single base class every DevinimJS component extends (ADR-0001).
- *
- * Pipeline: connect → capture light-DOM children (ADR-0009) → build reactive state from
- * `initialState()` → render `template()` → morph into place → delegate events (ADR-0004).
- * State mutations are batched: one render per microtask, then `updated(changedKeys)`.
- */
+// src/core/reactive.js
+function isWrappable(value) {
+  if (value === null || typeof value !== "object") return false;
+  if (Array.isArray(value)) return true;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+function createReactive(target, onChange) {
+  const cache = /* @__PURE__ */ new WeakMap();
+  function wrap(value, path) {
+    if (!isWrappable(value)) return value;
+    if (cache.has(value)) return cache.get(value);
+    const proxy = new Proxy(value, {
+      get(obj, key, receiver) {
+        const child = Reflect.get(obj, key, receiver);
+        return wrap(child, path === "" ? String(key) : `${path}.${String(key)}`);
+      },
+      set(obj, key, next, receiver) {
+        const had = Object.prototype.hasOwnProperty.call(obj, key);
+        const prev = obj[key];
+        const ok = Reflect.set(obj, key, next, receiver);
+        if (!had || prev !== next) {
+          onChange(path === "" ? String(key) : `${path}.${String(key)}`);
+        }
+        return ok;
+      },
+      deleteProperty(obj, key) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          Reflect.deleteProperty(obj, key);
+          onChange(path === "" ? String(key) : `${path}.${String(key)}`);
+        }
+        return true;
+      }
+    });
+    cache.set(value, proxy);
+    return proxy;
+  }
+  return wrap(target, "");
+}
 
-import { createReactive } from './reactive.js';
-import { html, HtmlString } from './html.js';
-import { morph } from './morph.js';
+// src/core/html.js
+var ESCAPES = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;"
+};
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (ch) => ESCAPES[ch]);
+}
+var HtmlString = class {
+  /** @type {string} */
+  #value;
+  /**
+   * @param {*} value - Trusted HTML source.
+   */
+  constructor(value) {
+    this.#value = String(value);
+  }
+  /**
+   * @returns {string} The raw, trusted HTML.
+   */
+  toString() {
+    return this.#value;
+  }
+};
+function renderValue(value) {
+  if (value === null || value === void 0 || value === false) return "";
+  if (value instanceof HtmlString) return value.toString();
+  if (Array.isArray(value)) return value.map(renderValue).join("");
+  return escapeHtml(value);
+}
+function html(strings, ...values) {
+  const chunks = [...strings];
+  let out = chunks[0];
+  for (let i = 0; i < values.length; i++) {
+    const next = chunks[i + 1];
+    const value = values[i];
+    const soleAttr = /([a-zA-Z_:][\w:.-]*)="$/.exec(out);
+    if (soleAttr && next.startsWith('"') && (value === true || value === false || value === null || value === void 0)) {
+      out = out.slice(0, out.length - soleAttr[0].length);
+      const remainder = next.slice(1);
+      if (value === true) {
+        out += soleAttr[1] + remainder;
+      } else {
+        if (out.endsWith(" ")) out = out.slice(0, -1);
+        out += remainder;
+      }
+      continue;
+    }
+    out += renderValue(value) + next;
+  }
+  return new HtmlString(out);
+}
+function unsafe(rawHtml) {
+  return new HtmlString(rawHtml);
+}
 
-/** Matches event directives in rendered templates, e.g. data-on:click / data-on:dv:save. */
-const EVENT_ATTR_PATTERN = /data-on:([\w:.-]+)=/g;
+// src/core/morph.js
+var OUTLET_TAG = "DV-OUTLET";
+function morph(host, htmlString) {
+  const tpl = document.createElement("template");
+  tpl.innerHTML = htmlString;
+  morphChildren(host, tpl.content);
+}
+function morphChildren(oldParent, newParent) {
+  const oldNodes = Array.from(oldParent.childNodes);
+  const newNodes = Array.from(newParent.childNodes);
+  const common = Math.min(oldNodes.length, newNodes.length);
+  for (let i = 0; i < common; i++) morphNode(oldNodes[i], newNodes[i]);
+  for (let i = common; i < newNodes.length; i++) oldParent.appendChild(newNodes[i]);
+  for (let i = common; i < oldNodes.length; i++) oldNodes[i].remove();
+}
+function morphNode(oldNode, newNode) {
+  if (oldNode.nodeType !== newNode.nodeType || oldNode.nodeName !== newNode.nodeName) {
+    oldNode.replaceWith(newNode);
+    return;
+  }
+  if (oldNode.nodeType === Node.TEXT_NODE || oldNode.nodeType === Node.COMMENT_NODE) {
+    if (oldNode.nodeValue !== newNode.nodeValue) oldNode.nodeValue = newNode.nodeValue;
+    return;
+  }
+  if (oldNode.nodeName === OUTLET_TAG) return;
+  syncAttributes(
+    /** @type {Element} */
+    oldNode,
+    /** @type {Element} */
+    newNode
+  );
+  morphChildren(oldNode, newNode);
+}
+function syncAttributes(oldEl, newEl) {
+  for (const attr of Array.from(oldEl.attributes)) {
+    if (!newEl.hasAttribute(attr.name)) oldEl.removeAttribute(attr.name);
+  }
+  for (const attr of Array.from(newEl.attributes)) {
+    if (oldEl.getAttribute(attr.name) !== attr.value) oldEl.setAttribute(attr.name, attr.value);
+  }
+}
 
-/** Outlet tag is a transparent framework wrapper — exempt from the ownership boundary. */
-const OUTLET_TAG = 'DV-OUTLET';
-
-/**
- * Base class for all DevinimJS components. Light DOM only — never call attachShadow.
- */
-export class BaseComponent extends HTMLElement {
+// src/core/base-component.js
+var EVENT_ATTR_PATTERN = /data-on:([\w:.-]+)=/g;
+var OUTLET_TAG2 = "DV-OUTLET";
+var BaseComponent = class extends HTMLElement {
   /** @type {boolean} True after the first connect initialized the component. */
   #initialized = false;
   /** @type {object | null} The reactive state proxy. */
@@ -30,10 +152,9 @@ export class BaseComponent extends HTMLElement {
   /** @type {boolean} Whether a render is already queued for this microtask. */
   #updateQueued = false;
   /** @type {Set<string>} Root state keys changed since the last render. */
-  #changedKeys = new Set();
+  #changedKeys = /* @__PURE__ */ new Set();
   /** @type {Set<string>} Event types already delegated on this element. */
-  #delegatedTypes = new Set();
-
+  #delegatedTypes = /* @__PURE__ */ new Set();
   /**
    * Per the Custom Elements spec: do NOT touch attributes or the DOM here.
    * All initialization happens at connect time.
@@ -41,7 +162,6 @@ export class BaseComponent extends HTMLElement {
   constructor() {
     super();
   }
-
   /**
    * Runs once between child capture and `initialState()`. Components whose configuration
    * lives in their light-DOM children (e.g. `<dv-tabs>` reading `data-tab` labels) inspect
@@ -50,8 +170,9 @@ export class BaseComponent extends HTMLElement {
    * @param {DocumentFragment | null} fragment - Captured initial children (null when none).
    * @returns {void}
    */
-  prepare(fragment) {} // eslint-disable-line no-unused-vars
-
+  prepare(fragment) {
+  }
+  // eslint-disable-line no-unused-vars
   /**
    * Returns the initial state object. Runs once at connect time; `this.dataset` and the
    * `str/num/bool/json` helpers are safe to use here.
@@ -61,7 +182,6 @@ export class BaseComponent extends HTMLElement {
   initialState() {
     return {};
   }
-
   /**
    * Returns the component's template. Must return an {@link HtmlString} produced by `html`.
    *
@@ -70,21 +190,21 @@ export class BaseComponent extends HTMLElement {
   template() {
     return html``;
   }
-
   /** Called once, after the first render. Override for setup (timers, external listeners). */
-  connected() {}
-
+  connected() {
+  }
   /** Called when the element leaves the document. Override for cleanup. */
-  disconnected() {}
-
+  disconnected() {
+  }
   /**
    * Called after each state-driven re-render (not after the first render — use `connected`).
    *
    * @param {string[]} changedKeys - Deduplicated root state keys that changed in this batch.
    * @returns {void}
    */
-  updated(changedKeys) {} // eslint-disable-line no-unused-vars
-
+  updated(changedKeys) {
+  }
+  // eslint-disable-line no-unused-vars
   /**
    * Called when an observed attribute changes after initialization. Declare
    * `static observedAttributes = ['data-…']` and sync state here explicitly (ADR-0005).
@@ -94,8 +214,9 @@ export class BaseComponent extends HTMLElement {
    * @param {string | null} oldValue - Previous value.
    * @returns {void}
    */
-  onAttribute(name, newValue, oldValue) {} // eslint-disable-line no-unused-vars
-
+  onAttribute(name, newValue, oldValue) {
+  }
+  // eslint-disable-line no-unused-vars
   /**
    * The reactive state proxy. Mutate it directly — rendering follows automatically.
    *
@@ -104,7 +225,6 @@ export class BaseComponent extends HTMLElement {
   get state() {
     return this.#state;
   }
-
   /**
    * Standard callback — do not override; use `connected()` instead. Initializes state,
    * performs the first render, captures outlet children.
@@ -112,16 +232,14 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   connectedCallback() {
-    if (this.#initialized) return; // re-attaches must not re-initialize
+    if (this.#initialized) return;
     this.#initialized = true;
-
     this.#childrenFragment = captureChildren(this);
     this.prepare(this.#childrenFragment);
     this.#state = createReactive(this.initialState() ?? {}, (path) => this.#notify(path));
     this.#render();
     this.connected();
   }
-
   /**
    * Standard callback — do not override; use `disconnected()` instead.
    *
@@ -130,7 +248,6 @@ export class BaseComponent extends HTMLElement {
   disconnectedCallback() {
     this.disconnected();
   }
-
   /**
    * Standard callback — do not override; use `onAttribute()` instead. Changes arriving
    * before connect are ignored: `initialState()` reads current values anyway (ADR-0005 #4).
@@ -144,7 +261,6 @@ export class BaseComponent extends HTMLElement {
     if (!this.#initialized || oldValue === newValue) return;
     this.onAttribute(name, newValue, oldValue);
   }
-
   /**
    * Schedules a batched re-render: one render per microtask regardless of how many
    * mutations happened synchronously (ADR-0004 #8).
@@ -153,7 +269,7 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   #notify(path) {
-    this.#changedKeys.add(path.split('.')[0]);
+    this.#changedKeys.add(path.split(".")[0]);
     if (this.#updateQueued) return;
     this.#updateQueued = true;
     queueMicrotask(() => {
@@ -165,7 +281,6 @@ export class BaseComponent extends HTMLElement {
       this.updated(keys);
     });
   }
-
   /**
    * Renders the template and morphs it into this element, then refreshes outlet content
    * and event delegation.
@@ -176,7 +291,7 @@ export class BaseComponent extends HTMLElement {
     const output = this.template();
     if (!(output instanceof HtmlString)) {
       throw new TypeError(
-        `[devinim] ${this.nodeName.toLowerCase()}: template() must return an HtmlString produced by the html tag (ADR-0002).`,
+        `[devinim] ${this.nodeName.toLowerCase()}: template() must return an HtmlString produced by the html tag (ADR-0002).`
       );
     }
     const htmlString = output.toString();
@@ -184,7 +299,6 @@ export class BaseComponent extends HTMLElement {
     this.#placeOutletChildren();
     this.#refreshDelegation(htmlString);
   }
-
   /**
    * Moves the captured initial children into the first `<dv-outlet>` (once). Warns when a
    * template drops children by omitting `${this.outlet}` (ADR-0009 #7).
@@ -193,26 +307,23 @@ export class BaseComponent extends HTMLElement {
    */
   #placeOutletChildren() {
     if (!this.#childrenFragment) return;
-    const outlet = this.querySelector('dv-outlet');
+    const outlet = this.querySelector("dv-outlet");
     if (!outlet) {
       console.warn(
-        `[devinim] ${this.nodeName.toLowerCase()}: initial children were dropped because template() does not include \${this.outlet} (ADR-0009).`,
+        `[devinim] ${this.nodeName.toLowerCase()}: initial children were dropped because template() does not include \${this.outlet} (ADR-0009).`
       );
       this.#childrenFragment = null;
       return;
     }
-    outlet.style.display = 'contents'; // structural transparency, not design (ADR-0009 #3)
+    outlet.style.display = "contents";
     outlet.append(this.#childrenFragment);
     this.#childrenFragment = null;
-    // Outlet content carries no template string, so its data-on types are discovered from
-    // the DOM instead (ADR-0004 #3): one scan, at placement time.
-    for (const node of outlet.querySelectorAll('*')) {
+    for (const node of outlet.querySelectorAll("*")) {
       for (const attr of node.attributes) {
-        if (attr.name.startsWith('data-on:')) this.#addDelegation(attr.name.slice(8));
+        if (attr.name.startsWith("data-on:")) this.#addDelegation(attr.name.slice(8));
       }
     }
   }
-
   /**
    * Scans rendered output for `data-on:type` directives and delegates their event types
    * (ADR-0004 #2/#3).
@@ -225,7 +336,6 @@ export class BaseComponent extends HTMLElement {
       this.#addDelegation(match[1]);
     }
   }
-
   /**
    * Attaches one delegated listener for an event type on this element (idempotent).
    *
@@ -237,7 +347,6 @@ export class BaseComponent extends HTMLElement {
     this.#delegatedTypes.add(type);
     this.addEventListener(type, (event) => this.#dispatch(event, type));
   }
-
   /**
    * Resolves a delegated event to the component method named by the directive.
    *
@@ -246,22 +355,20 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   #dispatch(event, type) {
-    const selector = `[data-on:${type.replace(/:/g, '\\:')}]`;
+    const selector = `[data-on:${type.replace(/:/g, "\\:")}]`;
     const start = event.target instanceof Element ? event.target : event.target?.parentElement;
     const el = start?.closest(selector);
     if (!el || !this.#owns(el)) return;
-
     const method = el.getAttribute(`data-on:${type}`);
     if (!method) return;
-    if (typeof this[method] !== 'function') {
+    if (typeof this[method] !== "function") {
       console.warn(
-        `[devinim] ${this.nodeName.toLowerCase()}: no method "${method}" for data-on:${type} (ADR-0004).`,
+        `[devinim] ${this.nodeName.toLowerCase()}: no method "${method}" for data-on:${type} (ADR-0004).`
       );
       return;
     }
     this[method](event, el);
   }
-
   /**
    * Ownership rule (ADR-0004 #5): the directive element belongs to this component when, walking
    * up from it, `this` is reached before any other custom element. `<dv-outlet>` is transparent
@@ -274,14 +381,13 @@ export class BaseComponent extends HTMLElement {
     let node = directiveEl.parentNode;
     while (node) {
       if (node === this) return true;
-      if (node.nodeType === 1 && node.tagName.includes('-') && node.tagName !== OUTLET_TAG) {
+      if (node.nodeType === 1 && node.tagName.includes("-") && node.tagName !== OUTLET_TAG2) {
         return false;
       }
       node = node.parentNode;
     }
     return false;
   }
-
   /**
    * Emits a bubbling, composed `CustomEvent` namespaced as `dv:name` (ADR-0004 #7).
    *
@@ -295,7 +401,6 @@ export class BaseComponent extends HTMLElement {
   emit(name, detail = {}) {
     this.dispatchEvent(new CustomEvent(`dv:${name}`, { detail, bubbles: true, composed: true }));
   }
-
   /**
    * Outlet marker for initial light-DOM children. Place `${this.outlet}` in `template()`
    * where the captured children should live (ADR-0009).
@@ -305,7 +410,6 @@ export class BaseComponent extends HTMLElement {
   get outlet() {
     return html`<dv-outlet></dv-outlet>`;
   }
-
   /**
    * Reads a `data-*` value as string. `data-page-title` → key `'pageTitle'`.
    *
@@ -313,11 +417,10 @@ export class BaseComponent extends HTMLElement {
    * @param {string} [fallback] - Value when the attribute is absent.
    * @returns {string} The attribute value or fallback.
    */
-  str(key, fallback = '') {
+  str(key, fallback = "") {
     const value = this.dataset[key];
-    return value === undefined ? fallback : value;
+    return value === void 0 ? fallback : value;
   }
-
   /**
    * Reads a `data-*` value as a finite number.
    *
@@ -327,11 +430,10 @@ export class BaseComponent extends HTMLElement {
    */
   num(key, fallback = 0) {
     const value = this.dataset[key];
-    if (value === undefined) return fallback;
+    if (value === void 0) return fallback;
     const n = Number(value);
     return Number.isFinite(n) ? n : fallback;
   }
-
   /**
    * Reads a `data-*` value as boolean. `'false'` and `'0'` are false; any other present
    * value (including empty) is true.
@@ -342,10 +444,9 @@ export class BaseComponent extends HTMLElement {
    */
   bool(key, fallback = false) {
     const value = this.dataset[key];
-    if (value === undefined) return fallback;
-    return value !== 'false' && value !== '0';
+    if (value === void 0) return fallback;
+    return value !== "false" && value !== "0";
   }
-
   /**
    * Reads a `data-*` value as parsed JSON. Warns and falls back on invalid JSON. Never
    * returns HtmlString — attributes carry data, never markup (ADR-0003 #4).
@@ -356,7 +457,7 @@ export class BaseComponent extends HTMLElement {
    */
   json(key, fallback = null) {
     const value = this.dataset[key];
-    if (value === undefined) return fallback;
+    if (value === void 0) return fallback;
     try {
       return JSON.parse(value);
     } catch {
@@ -364,17 +465,53 @@ export class BaseComponent extends HTMLElement {
       return fallback;
     }
   }
-}
-
-/**
- * Moves the element's current children into a fresh DocumentFragment (ADR-0009 #1).
- *
- * @param {Element} el - The component element before its first render.
- * @returns {DocumentFragment | null} The captured children, or null when there were none.
- */
+};
 function captureChildren(el) {
   if (!el.firstChild) return null;
   const fragment = document.createDocumentFragment();
   while (el.firstChild) fragment.appendChild(el.firstChild);
   return fragment;
 }
+
+// src/core/registry.js
+function define(tagName, ctor) {
+  if (typeof tagName !== "string" || !tagName.includes("-")) {
+    throw new Error(
+      `[devinim] Invalid custom element name "${tagName}" \u2014 it must contain a hyphen (ADR-0006).`
+    );
+  }
+  const existing = customElements.get(tagName);
+  if (existing) {
+    console.warn(`[devinim] "${tagName}" is already defined; skipping re-registration.`);
+    return existing;
+  }
+  customElements.define(tagName, ctor);
+  return ctor;
+}
+
+// src/core/utils.js
+var DEFAULT_ALLOWED = ["http:", "https:", "mailto:", "tel:"];
+function safeUrl(value, { allow = DEFAULT_ALLOWED } = {}) {
+  const raw = String(value ?? "").trim();
+  if (raw === "") return "#";
+  if (raw.startsWith("/") || raw.startsWith("#") || raw.startsWith("./") || raw.startsWith("../")) {
+    return raw;
+  }
+  try {
+    const url = new URL(raw, "https://devinim.invalid");
+    return allow.includes(url.protocol) ? raw : "#";
+  } catch {
+    return "#";
+  }
+}
+export {
+  BaseComponent,
+  HtmlString,
+  createReactive,
+  define,
+  escapeHtml,
+  html,
+  morph,
+  safeUrl,
+  unsafe
+};

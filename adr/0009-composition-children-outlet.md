@@ -38,6 +38,14 @@ Light DOM has no native `<slot>`, but composition is essential:
   significantly more intricate than one morph exemption rule.
 - Leaving children in place and rendering "around" them — node-moving complexity without a win.
 
+## Amendment (2026-07-21) — `prepare(fragment)` hook
+
+`BaseComponent` gained a `prepare(fragment)` overridable that runs **between** child capture
+(#1) and `initialState()`, so components can derive configuration from their captured light-DOM
+children. First consumer: `<dv-tabs>`, which reads tab labels from child `data-tab` attributes.
+Non-breaking MINOR addition: the default implementation is a no-op; existing components are
+unaffected.
+
 ## Consequences
 
 **Positive:** slot-like ergonomics with ~15 lines of machinery; nested components just work.

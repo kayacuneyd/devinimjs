@@ -1,0 +1,50 @@
+<!doctype html>
+<!--
+  DevinimJS example: <dv-tabs> — WAI-ARIA tabs fed by light-DOM children.
+  Panels are plain HTML (straight from PHP in a real app); labels come from data-tab.
+  Run:  npm run serve  →  http://localhost:8080/examples/tabs.html
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DevinimJS — tabs example</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+  <style>
+    body { max-width: 44rem; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; }
+    dv-tabs [role="tablist"] { display: flex; gap: .25rem; border-bottom: 2px solid #ddd; }
+    dv-tabs [role="tab"] { padding: .5rem 1rem; border: 0; background: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+    dv-tabs [role="tab"][aria-selected="true"] { border-bottom-color: #1d4ed8; font-weight: 600; }
+    dv-tabs [role="tab"]:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
+    dv-tabs [role="tabpanel"] { padding: 1rem 0; }
+  </style>
+</head>
+<body>
+  <h1>&lt;dv-tabs&gt;</h1>
+  <p>Try the keyboard: <kbd>←</kbd> <kbd>→</kbd> move between tabs (wrapping), <kbd>Home</kbd>/<kbd>End</kbd> jump.</p>
+
+  <dv-tabs data-active="0" data-label="Account settings">
+    <div data-tab="General">
+      <h2>General</h2>
+      <p>This panel is plain light-DOM HTML — in production it comes straight from PHP.</p>
+    </div>
+    <div data-tab="Profile">
+      <h2>Profile</h2>
+      <p>Nested DevinimJS components work inside panels too:</p>
+      <dv-counter data-start="3" data-step="1"></dv-counter>
+    </div>
+    <div data-tab="Security">
+      <h2>Security</h2>
+      <p>The second tab emits <code>dv:tab</code> events — open the console and switch tabs.</p>
+    </div>
+  </dv-tabs>
+
+  <script type="module" src="../src/components/dv-counter.js"></script>
+  <script type="module" src="../src/components/dv-tabs.js"></script>
+  <script type="module">
+    document.querySelector('dv-tabs').addEventListener('dv:tab', (e) => {
+      console.log('dv:tab → active index', e.detail.index);
+    });
+  </script>
+</body>
+</html>
