@@ -86,6 +86,7 @@ define('dv-counter', DvCounter);
 - [Architecture](docs/architecture.md) — module map, lifecycle, data flow
 - [PHP integration guide](docs/guides/php-integration.md) — the `data-*` contract, JSON, events, CSP
 - [Application runtime guide](docs/guides/application-runtime.md) — async data, forms and hash routing
+- [Component contract](docs/component-contract.md) — deterministic component authoring and review rules
 - [Component library](design/component-library.md) — component inventory & states
 - [ADRs](adr/INDEX.md) — every significant decision, recorded
 - [Examples](examples/) — `counter.html` (static) and `counter.php` (PHP-fed)

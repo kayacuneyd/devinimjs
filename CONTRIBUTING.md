@@ -17,17 +17,17 @@ Thanks for helping build DevinimJS. This project follows the
 
 ## How to add a component
 
-1. `src/components/dv-your-component.js` → `class DvYourComponent extends BaseComponent` →
-   `define('dv-your-component', DvYourComponent)` at file end. One file = one component.
-2. Full JSDoc on the class and every public/overridden member.
-3. Unit tests in `tests/unit/dv-your-component.test.js`.
-4. A copyable example in `examples/`.
-5. Entry in `design/component-library.md` and `CHANGELOG.md` (Unreleased).
+1. Read [the component contract](docs/component-contract.md).
+2. Run `npm run create:component -- dv-your-component` to create the standard files.
+3. Complete the generated implementation, tests and API documentation.
+4. Register the component in `docs/component-manifest.json`, `design/component-library.md` and
+   `CHANGELOG.md` (Unreleased).
+5. Add a copyable example in `examples/` when the component has visible behavior.
 
 ## Commit & PR
 
 - Small, focused commits; imperative mood ("add dv-tabs keyboard navigation").
-- PR checklist: tests green · lint green · size gate green · docs updated · ADR if architectural.
+- PR checklist: `npm run verify` green · docs updated · ADR if architectural.
 
 ## Reporting security issues
 
