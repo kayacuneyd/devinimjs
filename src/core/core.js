@@ -7,6 +7,7 @@
  */
 export { BaseComponent } from './base-component.js';
 export { createReactive } from './reactive.js';
+export { createStore } from './store.js';
 export { html, unsafe, HtmlString, escapeHtml } from './html.js';
 export { morph } from './morph.js';
 export { define } from './registry.js';

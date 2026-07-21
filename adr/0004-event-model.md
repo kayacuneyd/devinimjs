@@ -22,8 +22,10 @@ would leak. Inline expression handlers (Alpine-style) require `eval` — forbidd
    template string) is scanned from the DOM once, at placement time (ADR-0009). Missing types
    are added to the root idempotently.
 4. **Handler signature:** `method(event, el)` — `this` is the component instance; `el` is the
-   element carrying the directive, resolved via `event.target.closest(selector)` (so clicks on
-   children, e.g. icons inside a button, work).
+   element carrying the directive, resolved by **walking up from `event.target` to the host
+   boundary** with an attribute match (so clicks on children, e.g. icons inside a button, work).
+   A manual walk is used instead of a dynamic attribute selector: `data-on:type` names contain
+   colons, and selector-escaping behavior differs between engines (caught by E2E, 2026-07-21).
 5. **Ownership rule (nested components):** a component handles an event only if the directive
    element belongs to its own render scope — walking up from the directive element, `this` must
    be reached *before* any other custom element (`tagName` containing `-`), with `<dv-outlet>`

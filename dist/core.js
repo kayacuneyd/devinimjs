@@ -155,6 +155,8 @@ var BaseComponent = class extends HTMLElement {
   #changedKeys = /* @__PURE__ */ new Set();
   /** @type {Set<string>} Event types already delegated on this element. */
   #delegatedTypes = /* @__PURE__ */ new Set();
+  /** @type {Array<() => void>} Store unsubscribe functions to run on disconnect (ADR-0011). */
+  #storeUnsubscribers = [];
   /**
    * Per the Custom Elements spec: do NOT touch attributes or the DOM here.
    * All initialization happens at connect time.
@@ -246,6 +248,8 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   disconnectedCallback() {
+    for (const unsubscribe of this.#storeUnsubscribers) unsubscribe();
+    this.#storeUnsubscribers = [];
     this.disconnected();
   }
   /**
@@ -355,11 +359,13 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   #dispatch(event, type) {
-    const selector = `[data-on:${type.replace(/:/g, "\\:")}]`;
-    const start = event.target instanceof Element ? event.target : event.target?.parentElement;
-    const el = start?.closest(selector);
-    if (!el || !this.#owns(el)) return;
-    const method = el.getAttribute(`data-on:${type}`);
+    const attr = `data-on:${type}`;
+    let el = event.target instanceof Element ? event.target : event.target?.parentElement;
+    while (el && el !== this && !el.hasAttribute(attr)) {
+      el = el.parentElement;
+    }
+    if (!el || el === this || !this.#owns(el)) return;
+    const method = el.getAttribute(attr);
     if (!method) return;
     if (typeof this[method] !== "function") {
       console.warn(
@@ -387,6 +393,31 @@ var BaseComponent = class extends HTMLElement {
       node = node.parentNode;
     }
     return false;
+  }
+  /**
+   * Schedules a re-render without a state change (ADR-0011 #4). The batch reaches `updated()`
+   * with `['<external>']`. Escape hatch for external data sources — stores, timers, sockets.
+   *
+   * @returns {void}
+   */
+  requestUpdate() {
+    this.#notify("<external>");
+  }
+  /**
+   * Subscribes this component to a shared store (ADR-0011): any store change schedules a
+   * re-render; the subscription is removed automatically on disconnect.
+   *
+   * @param {{ subscribe: (fn: (path: string) => void) => () => void }} store - A store from
+   *   `createStore()`.
+   * @returns {() => void} The unsubscribe function (rarely needed — disconnect handles it).
+   *
+   * @example
+   * connected() { this.useStore(cartStore); }
+   */
+  useStore(store) {
+    const unsubscribe = store.subscribe(() => this.requestUpdate());
+    this.#storeUnsubscribers.push(unsubscribe);
+    return unsubscribe;
   }
   /**
    * Emits a bubbling, composed `CustomEvent` namespaced as `dv:name` (ADR-0004 #7).
@@ -473,6 +504,27 @@ function captureChildren(el) {
   return fragment;
 }
 
+// src/core/store.js
+function createStore(initialState = {}) {
+  const listeners = /* @__PURE__ */ new Set();
+  const state = createReactive(initialState, (path) => {
+    for (const fn of [...listeners]) fn(path);
+  });
+  return {
+    state,
+    /**
+     * Registers a change listener.
+     *
+     * @param {(path: string) => void} fn - Called with the changed dot path after any mutation.
+     * @returns {() => void} Unsubscribe function.
+     */
+    subscribe(fn) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    }
+  };
+}
+
 // src/core/registry.js
 function define(tagName, ctor) {
   if (typeof tagName !== "string" || !tagName.includes("-")) {
@@ -508,6 +560,7 @@ export {
   BaseComponent,
   HtmlString,
   createReactive,
+  createStore,
   define,
   escapeHtml,
   html,

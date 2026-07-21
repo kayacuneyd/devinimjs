@@ -127,6 +127,14 @@ test('automatic activation moves focus to the selected tab', async () => {
   assert.equal(document.activeElement, tabs[1]);
 });
 
+test('focusin on a tab activates it (APG automatic activation sync)', async () => {
+  const { tabs } = makeTabs();
+  tabs[1].focus();
+  await settle();
+  assert.equal(tabs[1].getAttribute('aria-selected'), 'true');
+  assert.equal(tabs[0].getAttribute('aria-selected'), 'false');
+});
+
 test('live data-active change syncs selection (ADR-0005)', async () => {
   const { el, tabs } = makeTabs();
   el.setAttribute('data-active', '2');

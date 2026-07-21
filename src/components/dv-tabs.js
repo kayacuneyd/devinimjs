@@ -133,6 +133,19 @@ export class DvTabs extends BaseComponent {
   }
 
   /**
+   * Focus synchronization (APG automatic activation): a tab receiving focus becomes active.
+   * Covers screen-reader virtual cursors and programmatic focus; loop-safe because
+   * `activateIndex` no-ops on the current index.
+   *
+   * @param {Event} _event - DOM event (unused).
+   * @param {Element} el - The focused tab button.
+   * @returns {void}
+   */
+  onFocusin(_event, el) {
+    this.activateIndex(Number(el.getAttribute('data-index')));
+  }
+
+  /**
    * Programmatic activation (clamped); emits `dv:tab` on change.
    *
    * @param {number} index - Target tab index.
@@ -162,7 +175,8 @@ export class DvTabs extends BaseComponent {
             tabindex="${i === this.state.active ? 0 : -1}"
             data-index="${i}"
             data-on:click="activate"
-            data-on:keydown="onKeydown">${label}</button>
+            data-on:keydown="onKeydown"
+            data-on:focusin="onFocusin">${label}</button>
         `)}
       </div>
       <div class="dv-tabs-panels">${this.outlet}</div>

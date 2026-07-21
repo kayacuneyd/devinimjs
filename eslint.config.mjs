@@ -55,7 +55,7 @@ export default [
     },
   },
   {
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', '*.config.mjs'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

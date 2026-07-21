@@ -30,3 +30,9 @@ jobs:
 
       - name: Size gate (core < 4 KB min+gzip)
         run: npm run size
+
+      - name: Install Chromium for E2E
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E + axe-core (real Chromium)
+        run: npm run test:e2e

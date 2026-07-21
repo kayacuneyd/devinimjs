@@ -15,6 +15,10 @@ sequential number, register here.
 | [0008](0008-testing-strategy.md) | Testing strategy (build-free consumer, tooled dev) | Accepted | 2026-07-21 |
 | [0009](0009-composition-children-outlet.md) | Composition via `<dv-outlet>` | Accepted | 2026-07-21 |
 | [0010](0010-mvp-scope.md) | MVP scope | Accepted | 2026-07-21 |
+| [0011](0011-shared-store.md) | Shared store (cross-component state) | Accepted | 2026-07-21 |
+| [0012](0012-hash-router.md) | Hash-based micro-router | Proposed | 2026-07-21 |
+| [0013](0013-named-outlets.md) | Named outlets (multi-slot composition) | Proposed | 2026-07-21 |
+| [0014](0014-keyed-morph.md) | Keyed list morph (`data-key`) | Proposed | 2026-07-21 |
 
 ## Dependency graph
 
@@ -28,5 +32,7 @@ sequential number, register here.
 0006 naming/registry   │ independent
 0007 distribution      │
 0008 testing           │
-0010 MVP scope        ─┘
+0010 MVP scope         │
+0011 shared store     ─┘
+0012–0014 proposed (router · named outlets · keyed morph) — parked, see each file
 ```

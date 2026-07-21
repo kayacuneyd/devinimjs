@@ -13,6 +13,7 @@ src/
 │   ├── morph.js            morph(host, htmlString) — positional in-place DOM patching
 │   ├── base-component.js   BaseComponent — the class every component extends
 │   ├── registry.js         define(tag, ctor) — guarded custom-element registration
+│   ├── store.js            createStore(initial) — shared cross-component state (ADR-0011)
 │   ├── utils.js            safeUrl
 │   └── core.js             public API barrel (import from here)
 ├── components/

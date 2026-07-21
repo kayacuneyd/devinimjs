@@ -26,6 +26,10 @@ const MIME = {
 createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
+    if (url.pathname === '/favicon.ico') {
+      res.writeHead(204).end(); // keep dev consoles clean
+      return;
+    }
     let path = normalize(decodeURIComponent(url.pathname)).replace(/^([/\\])+/, '');
     if (path === '' || path.endsWith('/')) path += 'examples/counter.html';
     const file = join(root, path);

@@ -31,13 +31,16 @@
   ],
   "scripts": {
     "test": "node --test \"tests/unit/*.test.js\"",
+    "test:e2e": "playwright test",
     "lint": "eslint .",
     "build": "node scripts/build-dist.mjs",
     "size": "node scripts/size-check.mjs",
     "serve": "node scripts/serve.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.30.0",
+    "@playwright/test": "^1.61.1",
     "esbuild": "^0.28.1",
     "eslint": "^9.30.0",
     "eslint-plugin-jsdoc": "^51.0.0",

@@ -33,6 +33,8 @@ export class BaseComponent extends HTMLElement {
   #changedKeys = new Set();
   /** @type {Set<string>} Event types already delegated on this element. */
   #delegatedTypes = new Set();
+  /** @type {Array<() => void>} Store unsubscribe functions to run on disconnect (ADR-0011). */
+  #storeUnsubscribers = [];
 
   /**
    * Per the Custom Elements spec: do NOT touch attributes or the DOM here.
@@ -128,6 +130,8 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   disconnectedCallback() {
+    for (const unsubscribe of this.#storeUnsubscribers) unsubscribe();
+    this.#storeUnsubscribers = [];
     this.disconnected();
   }
 
@@ -246,12 +250,17 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   #dispatch(event, type) {
-    const selector = `[data-on:${type.replace(/:/g, '\\:')}]`;
-    const start = event.target instanceof Element ? event.target : event.target?.parentElement;
-    const el = start?.closest(selector);
-    if (!el || !this.#owns(el)) return;
+    const attr = `data-on:${type}`;
+    // Walk up from the target to the directive element, bounded by this host. A manual walk
+    // (instead of a dynamic attribute selector) sidesteps selector-escaping differences
+    // between engines — `data-on:click` contains a colon.
+    let el = event.target instanceof Element ? event.target : event.target?.parentElement;
+    while (el && el !== this && !el.hasAttribute(attr)) {
+      el = el.parentElement;
+    }
+    if (!el || el === this || !this.#owns(el)) return;
 
-    const method = el.getAttribute(`data-on:${type}`);
+    const method = el.getAttribute(attr);
     if (!method) return;
     if (typeof this[method] !== 'function') {
       console.warn(
@@ -280,6 +289,33 @@ export class BaseComponent extends HTMLElement {
       node = node.parentNode;
     }
     return false;
+  }
+
+  /**
+   * Schedules a re-render without a state change (ADR-0011 #4). The batch reaches `updated()`
+   * with `['<external>']`. Escape hatch for external data sources — stores, timers, sockets.
+   *
+   * @returns {void}
+   */
+  requestUpdate() {
+    this.#notify('<external>');
+  }
+
+  /**
+   * Subscribes this component to a shared store (ADR-0011): any store change schedules a
+   * re-render; the subscription is removed automatically on disconnect.
+   *
+   * @param {{ subscribe: (fn: (path: string) => void) => () => void }} store - A store from
+   *   `createStore()`.
+   * @returns {() => void} The unsubscribe function (rarely needed — disconnect handles it).
+   *
+   * @example
+   * connected() { this.useStore(cartStore); }
+   */
+  useStore(store) {
+    const unsubscribe = store.subscribe(() => this.requestUpdate());
+    this.#storeUnsubscribers.push(unsubscribe);
+    return unsubscribe;
   }
 
   /**
