@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lesson 1: Install DevinimJS and run your first reactive component in under 5 minutes. No build tools, no npm, no bundler.">
+<link rel="canonical" href="/en/tutorials/01-hello-world/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>Lesson 01 — Hello World | DevinimJS Tutorials</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">Skip to content</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Primary navigation">
+    <a href="../../docs/">Docs</a><a href="../../components/">Components</a><a href="../" aria-current="page">Tutorials</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">Phase 1 · Lesson 1</span>
+  <h1>Hello World — Your First Reactive Component</h1>
+  <p class="ck-text-lead">Get a DevinimJS counter running on a plain HTML file. No Node.js, no bundler, no framework runtime to install.</p>
+</section>
+
+<div class="tutorial-layout">
+
+<aside class="tutorial-nav" aria-label="Lesson outline">
+<details open>
+<summary>Phase 1: Foundations</summary>
+<ol>
+<li><a href="./" aria-current="page">01. Hello World</a></li>
+<li><a href="../02-component-lifecycle/">02. Component Lifecycle</a></li>
+<li><a href="../03-html-templates/">03. HTML Templates</a></li>
+<li><a href="../04-reactivity/">04. Reactivity</a></li>
+<li><a href="../05-events/">05. Events &amp; Actions</a></li>
+<li><a href="../06-attributes/">06. Attributes &amp; Data</a></li>
+<li><a href="../07-outlet-composition/">07. Outlet &amp; Composition</a></li>
+</ol>
+</details>
+<details>
+<summary>Phase 2: Authoring</summary>
+<ol>
+<li class="coming-soon">08–12 Coming soon</li>
+</ol>
+</details>
+<details>
+<summary>Phase 3–5</summary>
+<ol>
+<li class="coming-soon">13–26 Coming soon</li>
+</ol>
+</details>
+</aside>
+
+<article class="tutorial-lesson ck-stack ck-stack--relaxed">
+
+<div class="lesson-objectives">
+<strong>What you'll learn</strong>
+<ul>
+  <li>Load DevinimJS from a CDN with one <code>&lt;script type="module"&gt;</code> line</li>
+  <li>Drop a ready-made component into plain HTML</li>
+  <li>Configure components with <code>data-*</code> attributes</li>
+  <li>Listen for component events in your page script</li>
+</ul>
+</div>
+
+<section class="ck-stack">
+<h2>The single-file approach</h2>
+<p>Create an empty <code>index.html</code> file. DevinimJS needs only two things: a custom element on the page and a module script that loads it.</p>
+<p>CKCSS provides the visual layer. DevinimJS handles behavior. Your HTML owns structure. Together they need zero build tools.</p>
+
+<pre><code>&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;My First DevinimJS Page&lt;/title&gt;
+  &lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+  &lt;dv-counter data-start="0" data-step="1"&gt;&lt;/dv-counter&gt;
+
+  &lt;script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/modules/dv-counter.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<p>Open this file in a browser. You'll see two buttons (+ and −) and a number. Every click mutates the component's internal reactive state and the DOM updates automatically.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Try it live</h2>
+<div class="demo-preview">
+  <span class="demo-label">Live demo</span>
+  <dv-counter data-start="5" data-step="2"></dv-counter>
+  <p class="ck-text-muted" style="margin-top:.8rem">Click the buttons. The display updates because the component owns reactive state.</p>
+</div>
+</section>
+
+<section class="ck-stack">
+<h2>What just happened?</h2>
+<ol class="ck-stack ck-stack--compact">
+  <li>The browser encounters <code>&lt;dv-counter&gt;</code> and sees it's not a standard HTML element.</li>
+  <li>The module script registers <code>&lt;dv-counter&gt;</code> as a custom element using <code>define()</code>.</li>
+  <li>On connection the component reads <code>data-start="5"</code> and <code>data-step="2"</code> via <code>this.num('start', 0)</code> and <code>this.num('step', 1)</code>.</li>
+  <li>The <code>template()</code> method renders a button and an <code>&lt;output&gt;</code> bound to the reactive <code>this.state.count</code>.</li>
+  <li>Each click calls <code>increment()</code> which mutates the state; the component re-renders on the next microtask.</li>
+</ol>
+</section>
+
+<section class="ck-stack">
+<h2>Responding to changes</h2>
+<p>Components emit <code>dv:*</code> custom events. Your page can listen to them with standard <code>addEventListener</code>:</p>
+<pre><code>&lt;script type="module"&gt;
+  const counter = document.querySelector('dv-counter');
+  counter.addEventListener('dv:change', (event) => {
+    console.log('New value:', event.detail.count);
+    // Save to LocalStorage, send to a PHP endpoint, update a cart total...
+  });
+&lt;/script&gt;</code></pre>
+<p>Persistence stays in the page. Components only own interaction state.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Pinning versions (important)</h2>
+<div class="ck-alert ck-alert--warning">
+<p class="ck-alert__title">Always pin a tagged release</p>
+<p>Never load <code>main</code> or an unversioned CDN URL. Use <code>@v0.5.1</code> (or the latest tag) so your site doesn't break when the library updates.</p>
+</div>
+<p>For production, download the minified bundles to your own server:</p>
+<pre><code># Core runtime (~2.8 KB gzipped)
+curl -O https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/core.min.js
+
+# Individual components
+curl -O https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/modules/dv-counter.js</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Recap</h2>
+<div class="ck-grid ck-grid--2">
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">One import line</p><p>No package.json, no <code>npm install</code>, no bundler required.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">HTML-first configuration</p><p>Components read <code>data-*</code> attributes. PHP or static HTML can provide initial values.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Events for persistence</p><p>Pages listen to <code>dv:*</code> events. Components don't know how data is saved.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Pinned releases</p><p>Use a tagged CDN URL. Never point at <code>main</code>.</p></div>
+</div>
+</section>
+
+<nav class="lesson-nav" aria-label="Lesson navigation">
+  <span></span>
+  <a href="../02-component-lifecycle/">Next: Component Lifecycle →</a>
+</nav>
+
+</article>
+</div>
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../../">Home</a> · <a href="../../docs/">Docs</a> · <a href="../">All tutorials</a></span>
+</footer>
+
+<script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/modules/dv-counter.js"></script>
+</body>
+</html>

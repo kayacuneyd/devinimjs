@@ -28,6 +28,9 @@ jobs:
       - name: Unit tests (node --test + happy-dom)
         run: npm test
 
+      - name: Build committed browser artifacts
+        run: npm run build
+
       - name: Size gate (core < 4 KB min+gzip)
         run: npm run size
 

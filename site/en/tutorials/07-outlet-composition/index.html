@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lesson 7: Compose components with this.outlet — preserve Light DOM children provided by PHP or static HTML inside your reactive component.">
+<link rel="canonical" href="/en/tutorials/07-outlet-composition/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>Lesson 07 — Outlet &amp; Composition | DevinimJS Tutorials</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">Skip to content</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Primary navigation">
+    <a href="../../docs/">Docs</a><a href="../../components/">Components</a><a href="../" aria-current="page">Tutorials</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">Phase 1 · Lesson 7</span>
+  <h1>Outlet &amp; Composition — Preserving Light DOM Children</h1>
+  <p class="ck-text-lead">Let PHP or static HTML provide content inside your components. Use <code>this.outlet</code> and <code>prepare()</code> to blend server content with reactive behavior.</p>
+</section>
+
+<div class="tutorial-layout">
+
+<aside class="tutorial-nav" aria-label="Lesson outline">
+<details open>
+<summary>Phase 1: Foundations</summary>
+<ol>
+<li><a href="../01-hello-world/">01. Hello World</a></li>
+<li><a href="../02-component-lifecycle/">02. Component Lifecycle</a></li>
+<li><a href="../03-html-templates/">03. HTML Templates</a></li>
+<li><a href="../04-reactivity/">04. Reactivity</a></li>
+<li><a href="../05-events/">05. Events &amp; Actions</a></li>
+<li><a href="../06-attributes/">06. Attributes &amp; Data</a></li>
+<li><a href="./" aria-current="page">07. Outlet &amp; Composition</a></li>
+</ol>
+</details>
+<details>
+<summary>Phase 2–5</summary>
+<ol>
+<li class="coming-soon">08–26 Coming soon</li>
+</ol>
+</details>
+</aside>
+
+<article class="tutorial-lesson ck-stack ck-stack--relaxed">
+
+<div class="lesson-objectives">
+<strong>What you'll learn</strong>
+<ul>
+  <li>How DevinimJS uses Light DOM (not Shadow DOM) for natural CSS styling</li>
+  <li>Use <code>this.outlet</code> to render consumer-provided children at a specific position</li>
+  <li>Inspect children before render with <code>prepare(fragment)</code></li>
+  <li>Compose PHP-rendered content with reactive component behavior</li>
+</ul>
+</div>
+
+<section class="ck-stack">
+<h2>Light DOM by design</h2>
+<p>DevinimJS components do not use Shadow DOM. This means:</p>
+<ul>
+  <li>Global CSS (CKCSS, site styles) reaches component markup directly</li>
+  <li>No CSS encapsulation barriers — components inherit the page's look</li>
+  <li>Children placed inside the component tag in HTML are real DOM children</li>
+</ul>
+<pre><code>&lt;!-- These children exist in the Light DOM --&gt;
+&lt;dv-card&gt;
+  &lt;h2&gt;Product Name&lt;/h2&gt;
+  &lt;p&gt;Description from the server&lt;/p&gt;
+&lt;/dv-card&gt;</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>What is <code>this.outlet</code>?</h2>
+<p><code>this.outlet</code> is an <code>HtmlString</code> marker. Place <code>${this.outlet}</code> in your template where you want the consumer-provided Light DOM children to appear:</p>
+<pre><code>class DvCard extends BaseComponent {
+  template() {
+    return html`
+      &lt;div class="card-wrapper"&gt;
+        &lt;header&gt;${this.str('title', 'Card')}&lt;/header&gt;
+        &lt;div class="card-content"&gt;
+          ${this.outlet}  &lt;!-- Children go here --&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    `;
+  }
+}
+define('dv-card', DvCard);</code></pre>
+<p>When rendered, <code>${this.outlet}</code> becomes <code>&lt;dv-outlet&gt;</code> with <code>display: contents</code>. The children are moved inside it, but the <code>&lt;dv-outlet&gt;</code> wrapper is transparent in layout.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Example: Card with server content</h2>
+<pre><code>&lt;!-- HTML provided by PHP --&gt;
+&lt;dv-card data-title="Pricing"&gt;
+  &lt;table&gt;
+    &lt;tr&gt;&lt;td&gt;Basic&lt;/td&gt;&lt;td&gt;$9/mo&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Pro&lt;/td&gt;&lt;td&gt;$29/mo&lt;/td&gt;&lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/dv-card&gt;
+
+&lt;!-- The component renders: --&gt;
+&lt;!-- &lt;div class="card-wrapper"&gt;
+       &lt;header&gt;Pricing&lt;/header&gt;
+       &lt;div class="card-content"&gt;
+         &lt;dv-outlet style="display:contents"&gt;
+           &lt;table&gt;...&lt;/table&gt;
+         &lt;/dv-outlet&gt;
+       &lt;/div&gt;
+     &lt;/div&gt; --&gt;</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2><code>prepare(fragment)</code> — inspect children before render</h2>
+<p>Sometimes you need to know what children were provided before rendering. Use <code>prepare()</code>:</p>
+<pre><code>class DvTabs extends BaseComponent {
+  prepare(fragment) {
+    // fragment is a DocumentFragment of Light DOM children
+    const panels = fragment.querySelectorAll('[data-tab]');
+    this._tabCount = panels.length;
+  }
+
+  template() {
+    return html`
+      &lt;div class="tabs"&gt;
+        &lt;span&gt;${this._tabCount} tabs&lt;/span&gt;
+        ${this.outlet}
+      &lt;/div&gt;
+    `;
+  }
+}</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Live demo: Composition in action</h2>
+<div class="demo-preview">
+  <span class="demo-label">Live demo — panel with server-like content</span>
+  <dv-panel data-title="Order Summary">
+    <ul>
+      <li>Item 1: Widget — $9.99</li>
+      <li>Item 2: Gadget — $24.99</li>
+      <li>Item 3: Doodad — $4.99</li>
+    </ul>
+    <p><strong>Total: $39.97</strong></p>
+  </dv-panel>
+</div>
+</section>
+
+<section class="ck-stack">
+<h2>Outlet and morph</h2>
+<p>The <code>&lt;dv-outlet&gt;</code> element is excluded from the DOM morph engine. When your component re-renders due to a state change, the children inside the outlet are <strong>not</strong> touched:</p>
+<pre><code>template() {
+  return html`
+    &lt;div&gt;
+      &lt;span&gt;Status: ${this.state.loading ? 'Loading...' : 'Ready'}&lt;/span&gt;
+      ${this.outlet}  &lt;!-- Children never re-render --&gt;
+    &lt;/div&gt;
+  `;
+}</code></pre>
+<p>This is critical: server-rendered children (PHP loops, CMS content) survive component re-renders.</p>
+</section>
+
+<section class="ck-stack">
+<h2>PHP integration pattern</h2>
+<p>The outlet pattern shines when combined with server-rendered content:</p>
+<pre><code>&lt;!-- PHP/Laravel Blade --&gt;
+&lt;dv-tabs data-label="Product details"&gt;
+  @foreach ($sections as $section)
+    &lt;section data-tab="{{ $section->title }}"&gt;
+      {!! $section->content !!}
+    &lt;/section&gt;
+  @endforeach
+&lt;/dv-tabs&gt;</code></pre>
+<p>The PHP template renders the children. DevinimJS adds tab navigation behavior around them. Each owns its domain.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Recap</h2>
+<div class="ck-grid ck-grid--2">
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Light DOM first</p><p>No Shadow DOM. CSS reaches component markup naturally.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">this.outlet</p><p>Place <code>${this.outlet}</code> where Light DOM children belong.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">prepare(fragment)</p><p>Inspect children before the first render.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Outlet survives morph</p><p>Server content inside the outlet is not touched during re-renders.</p></div>
+</div>
+</section>
+
+<nav class="lesson-nav" aria-label="Lesson navigation">
+  <a href="../06-attributes/">← Attributes &amp; Data</a>
+  <span>Phase 1 complete! Phase 2 coming soon.</span>
+</nav>
+
+</article>
+</div>
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../../">Home</a> · <a href="../../docs/">Docs</a> · <a href="../">All tutorials</a></span>
+</footer>
+
+<script type="module">
+import { BaseComponent, html, define } from 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/core.min.js';
+class DvPanel extends BaseComponent {
+  template() {
+    return html`
+      <div style="border:1px solid var(--line);border-radius:.9rem;padding:1.25rem;background:var(--surface)">
+        <strong style="display:block;margin-bottom:.8rem;font-size:1.1rem">${this.str('title', 'Panel')}</strong>
+        <div style="padding:.5rem 0;border-top:1px solid var(--line)">${this.outlet}</div>
+      </div>
+    `;
+  }
+}
+define('dv-panel', DvPanel);
+</script>
+</body>
+</html>

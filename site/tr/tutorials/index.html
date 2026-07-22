@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Tam DevinimJS eğitim serisi: ilk reaktif component'ten gerçek bir uygulamaya. 5 fazda 26 adım adım ders.">
+<link rel="canonical" href="/tr/tutorials/">
+<link rel="alternate" hreflang="en" href="/en/tutorials/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>DevinimJS Eğitimleri — Sıfırdan uygulamaya 26 ders</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">İçeriğe geç</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Ana navigasyon">
+    <a href="../docs/">Docs</a><a href="../components/">Components</a><a href="./" aria-current="page">Eğitimler</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a><a href="../../en/tutorials/" lang="en">EN</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">26 ders · 5 faz · 0 build aracı</span>
+  <h1>Reaktif arayüzleri adım adım oluşturun.</h1>
+  <p class="ck-text-lead">Her ders bir kavram ekler. Sıfırdan başlayıp gerçek bir e-ticaret arayüzüyle bitirin — Node.js, bundler veya framework runtime gerekmez.</p>
+  <div class="ck-cluster">
+    <a class="ck-button" href="../../en/tutorials/01-hello-world/">Ders 1'e başla (EN)</a>
+    <a class="ck-button ck-button--secondary" href="../docs/">Dökümantasyon</a>
+  </div>
+</section>
+
+<section class="ck-stack" aria-labelledby="phase1-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div>
+      <span class="ck-badge ck-badge--success">Faz 1 · 7 ders</span>
+      <h2 id="phase1-title">Temeller</h2>
+    </div>
+    <span class="ck-badge">Yayında (EN)</span>
+  </div>
+  <p class="ck-text-lead">Her DevinimJS geliştiricisinin bilmesi gereken temel kavramlar. 5 dakikada ilk component'inizi yazın.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <a class="ck-card" href="../../en/tutorials/01-hello-world/">
+      <div class="ck-card__body ck-stack"><span class="ck-badge">01</span><h3>Merhaba Dünya</h3><p>CDN'den yükleme, HTML'e component yerleştirme, event dinleme.</p></div>
+    </a>
+    <a class="ck-card" href="../../en/tutorials/02-component-lifecycle/">
+      <div class="ck-card__body ck-stack"><span class="ck-badge">02</span><h3>Component Yaşam Döngüsü</h3><p>Her component'in kullandığı altı yaşam döngüsü hook'u.</p></div>
+    </a>
+    <a class="ck-card" href="../../en/tutorials/03-html-templates/">
+      <div class="ck-card__body ck-stack"><span class="ck-badge">03</span><h3>HTML Template'ler</h3><p><code>html</code> etiketi: interpolasyon, otomatik escaping, koşullar, listeler.</p></div>
+    </a>
+    <a class="ck-card" href="../../en/tutorials/04-reactivity/">
+      <div class="ck-card__body ck-stack"><span class="ck-badge">04</span><h3>Reaktivite</h3><p>Proxy tabanlı <code>this.state</code>, doğrudan mutasyon, toplu render.</p></div>
+    </a>
+    <a class="ck-card" href="../../en/tutorials/05-events/">
+      <div class="ck-card__body ck-stack"><span class="ck-badge">05</span><h3>Event'ler ve Aksiyonlar</h3><p><code>data-on:*</code> direktifi, klavye event'leri, <code>this.emit()</code>.</p></div>
+    </a>
+    <a class="ck-card" href="../../en/tutorials/06-attributes/">
+      <div class="ck-card__body ck-stack"><span class="ck-badge">06</span><h3>Attribute'lar ve Veri</h3><p><code>str()</code>, <code>num()</code>, <code>bool()</code>, <code>json()</code> ile HTML'den yapılandırma.</p></div>
+    </a>
+    <a class="ck-card" href="../../en/tutorials/07-outlet-composition/">
+      <div class="ck-card__body ck-stack"><span class="ck-badge">07</span><h3>Outlet ve Kompozisyon</h3><p><code>this.outlet</code> ile PHP/statik içeriği component içinde koruma.</p></div>
+    </a>
+  </div>
+</section>
+
+<section class="ck-stack" aria-labelledby="phase2-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div><span class="ck-badge">Faz 2 · 5 ders</span><h2 id="phase2-title">Component Yazımı</h2></div>
+    <span class="ck-badge ck-badge--warning">Yakında</span>
+  </div>
+  <p class="ck-text-lead">Sıfırdan gerçek component'ler yazın. Component'ler arası iletişim ve performans pattern'leri.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">08</span><h3>Counter Yazımı</h3><p>Sıfırdan <code>dv-counter</code>: step, min, max, state, template ve event'ler.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">09</span><h3>Tabs Yazımı</h3><p>WAI-ARIA tabs pattern, klavye navigasyonu, panel state yönetimi.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">10</span><h3>Modal Yazımı</h3><p>Escape ile kapatma, focus trap, Light DOM diyalog event'leri.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">11</span><h3>Component İletişimi</h3><p>Parent-child event bubbling, <code>dv:*</code> event zincirleri.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">12</span><h3>DOM Morphing</h3><p><code>morph()</code> DOM güncelleme, <code>data-key</code> ile liste optimizasyonu.</p></div></div>
+  </div>
+</section>
+
+<section class="ck-stack" aria-labelledby="phase3-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div><span class="ck-badge">Faz 3 · 4 ders</span><h2 id="phase3-title">State Yönetimi</h2></div>
+    <span class="ck-badge ck-badge--warning">Yakında</span>
+  </div>
+  <p class="ck-text-lead">Paylaşımlı store, async veri, form ve routing — uygulama runtime primitifleri.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">13</span><h3>Shared Store</h3><p><code>createStore()</code>, cross-component state paylaşımı.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">14</span><h3>Async State</h3><p><code>createAsyncState()</code>: idle→loading→success→error yaşam döngüsü.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">15</span><h3>Form Yönetimi</h3><p><code>createForm()</code>: values, errors, dirty, validasyon, submit.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">16</span><h3>Hash Router</h3><p>Sunucusuz routing: <code>:param</code> segmentleri ve <code>subscribe()</code>.</p></div></div>
+  </div>
+</section>
+
+<section class="ck-stack" aria-labelledby="phase4-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div><span class="ck-badge">Faz 4 · 5 ders</span><h2 id="phase4-title">Gerçek Dünya Uygulaması</h2></div>
+    <span class="ck-badge ck-badge--warning">Yakında</span>
+  </div>
+  <p class="ck-text-lead">Mini e-ticaret arayüzü: ürün listesi, sepet, bildirimler, form ve PHP entegrasyonu.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">17</span><h3>Ürün Listesi</h3><p>Data table + search + pagination async veri ile.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">18</span><h3>Alışveriş Sepeti</h3><p>Sepet store, add-to-cart event zinciri, çoklu component state.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">19</span><h3>Toast ve Confirm</h3><p>Bildirim kuyruğu ve iki aşamalı onay kontrolleri.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">20</span><h3>Form Validasyonu</h3><p>Field component'leri, özel validator'lar, sunucu hataları.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">21</span><h3>PHP Entegrasyonu</h3><p>Laravel, CodeIgniter, WordPress: backend'den <code>data-*</code> gönderme.</p></div></div>
+  </div>
+</section>
+
+<section class="ck-stack" aria-labelledby="phase5-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div><span class="ck-badge">Faz 5 · 5 ders</span><h2 id="phase5-title">İleri Seviye ve Ekosistem</h2></div>
+    <span class="ck-badge ck-badge--warning">Yakında</span>
+  </div>
+  <p class="ck-text-lead">Özel store'lar, production optimizasyonu, erişilebilirlik, tema ve test.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">22</span><h3>Özel Store'lar</h3><p><code>createReactive()</code> ile domain store tasarımı.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">23</span><h3>Production Optimizasyonu</h3><p><code>dist/</code> bundle, <code>data-key</code> morphing, <code>safeUrl()</code>.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">24</span><h3>Erişilebilirlik (WCAG AA)</h3><p>Klavye desteği, ARIA rolleri, axe-core testleri.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">25</span><h3>CKCSS Teması</h3><p>Design token'lar, tema değişkenleri, tutarlı görsel sistem.</p></div></div>
+    <div class="ck-card ck-card--muted"><div class="ck-card__body ck-stack"><span class="ck-badge">26</span><h3>Component Testleri</h3><p>happy-dom ile unit test, Playwright ile E2E, component sözleşmesi.</p></div></div>
+  </div>
+</section>
+
+<section class="ck-stack ck-stack--relaxed" style="text-align:center;padding:4rem 0">
+  <h2>Başlamaya hazır mısınız?</h2>
+  <p class="ck-text-lead">Faz 1 yayında. Sizi sıfırdan composable reaktif component'ler yazmaya götüren 7 ders — hepsi tarayıcıda.</p>
+  <a class="ck-button" href="../../en/tutorials/01-hello-world/">Ders 1'e başla (EN) →</a>
+</section>
+
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../">Ana sayfa</a> · <a href="../docs/">Docs</a> · <a href="../../en/tutorials/" lang="en">English</a></span>
+</footer>
+</body>
+</html>

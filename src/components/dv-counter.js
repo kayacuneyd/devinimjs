@@ -1,88 +1,46 @@
 /**
  * @module components/dv-counter
- * `<dv-counter>` — the canonical DevinimJS example component (PROJECTIDEA deliverable).
- * A stepper fed by PHP-printed `data-*` attributes, emitting `dv:change`.
- *
- * @example PHP usage:
- * <dv-counter data-start="<?= (int)$start ?>" data-step="5"></dv-counter>
- * <script type="module" src="/assets/devinim/components/dv-counter.js"></script>
- *
- * @example Listening for changes:
- * document.querySelector('dv-counter').addEventListener('dv:change', (e) => {
- *   console.log(e.detail.count);
- * });
+ * `<dv-counter>` — canonical AI-first component: PHP/data-* configuration, concise actions
+ * and a bubbling `dv:change` event without a compiler.
  */
 
-import { BaseComponent, html, define } from '../core/core.js';
+import { component, html } from '../core/authoring.js';
 
 /**
  * An accessible counter with increment/decrement buttons.
  *
- * Attributes:
- * - `data-start` (number, default 0) — initial count.
- * - `data-step` (number, default 1) — increment/decrement step.
- *
- * Live changes to `data-start`/`data-step` are reflected into state via
- * {@link DvCounter#onAttribute} (ADR-0005).
- *
- * @fires CustomEvent#dv:change - After every count change; `detail: { count: number }`.
+ * @type {CustomElementConstructor}
  */
-export class DvCounter extends BaseComponent {
-  /** @returns {string[]} Attributes synced into state after initialization. */
-  static observedAttributes = ['data-start', 'data-step'];
+export const DvCounter = component('dv-counter', {
+  props: { start: 0, step: 1 },
 
-  /**
-   * @returns {{ count: number, step: number }} Initial state from `data-*` attributes.
-   */
-  initialState() {
-    return {
-      count: this.num('start', 0),
-      step: this.num('step', 1),
-    };
-  }
+  state() {
+    return { count: this.props.start };
+  },
 
-  /**
-   * Reflects live attribute changes into state (ADR-0005 #4).
-   *
-   * @param {string} name - Attribute name.
-   * @param {string | null} newValue - New value.
-   * @returns {void}
-   */
-  onAttribute(name, newValue) {
-    if (name === 'data-start') this.state.count = Number(newValue) || 0;
-    if (name === 'data-step') this.state.step = Number(newValue) || 1;
-  }
+  sync: {
+    start(value) {
+      this.state.count = value;
+    },
+  },
 
-  /**
-   * Increments the count by step and emits `dv:change`.
-   *
-   * @returns {void}
-   */
-  increment() {
-    this.state.count += this.state.step;
-    this.emit('change', { count: this.state.count });
-  }
+  actions: {
+    increment() {
+      this.state.count += this.props.step;
+      this.emit('change', { count: this.state.count });
+    },
 
-  /**
-   * Decrements the count by step and emits `dv:change`.
-   *
-   * @returns {void}
-   */
-  decrement() {
-    this.state.count -= this.state.step;
-    this.emit('change', { count: this.state.count });
-  }
+    decrement() {
+      this.state.count -= this.props.step;
+      this.emit('change', { count: this.state.count });
+    },
+  },
 
-  /**
-   * @returns {import('../core/html.js').HtmlString} The counter template.
-   */
-  template() {
+  view() {
     return html`
-      <button type="button" data-on:click="decrement" aria-label="Decrease">−</button>
+      <button type="button" on:click="decrement" aria-label="Decrease">−</button>
       <output aria-live="polite">${this.state.count}</output>
-      <button type="button" data-on:click="increment" aria-label="Increase">+</button>
+      <button type="button" on:click="increment" aria-label="Increase">+</button>
     `;
-  }
-}
-
-define('dv-counter', DvCounter);
+  },
+});

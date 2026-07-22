@@ -1,6 +1,6 @@
 # DevinimJS
 
-**Build-free, Proxy-reactive Vanilla JS component library for PHP and shared-hosting projects.** The JavaScript companion of [CKCSS](https://github.com/kayacuneyd/ckcss).
+**AI-first, build-free UI runtime with Svelte-like component authoring for PHP and shared hosting.** The JavaScript companion of [CKCSS](https://github.com/kayacuneyd/ckcss).
 
 > _Devinim_ — Turkish for "motion / kinetics". DevinimJS sets server-rendered HTML in motion.
 
@@ -54,7 +54,22 @@ Freelance and agency projects built with **native PHP, CodeIgniter, Laravel, Wor
 <script type="module" src="/assets/devinim/components/dv-counter.js"></script>
 ```
 
-Authoring a component:
+AI-first component authoring (experimental v0.6):
+
+```js
+import { component, html } from '../core/authoring.js';
+
+component('acme-counter', {
+  props: { start: 0, step: 1 },
+  state() { return { count: this.props.start }; },
+  sync: { start(value) { this.state.count = value; } },
+  actions: { increment() { this.state.count += this.props.step; } },
+  view() { return html`<button on:click="increment">${this.state.count}</button>`; },
+});
+```
+
+The file can be served directly as `acme-counter.dv.js`; it is ordinary browser JavaScript, not
+a compiled format. The existing class API remains available for advanced components:
 
 ```js
 import { BaseComponent, html, define } from '../core/core.js';
@@ -87,6 +102,7 @@ define('dv-counter', DvCounter);
 - [Architecture](docs/architecture.md) — module map, lifecycle, data flow
 - [PHP integration guide](docs/guides/php-integration.md) — the `data-*` contract, JSON, events, CSP
 - [Application runtime guide](docs/guides/application-runtime.md) — async data, forms and hash routing
+- [AI-first authoring API](docs/guides/authoring-api.md) — `component()` and browser-direct `.dv.js` files
 - [Component contract](docs/component-contract.md) — deterministic component authoring and review rules
 - [Component library](design/component-library.md) — component inventory & states
 - [ADRs](adr/INDEX.md) — every significant decision, recorded

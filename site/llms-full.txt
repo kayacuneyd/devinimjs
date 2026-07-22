@@ -1,0 +1,43 @@
+# DevinimJS full AI reference
+
+## Identity
+
+DevinimJS v0.6.0-beta.0 is a native ES module runtime. It provides a concise experimental `component()` authoring API, a BaseComponent class, an escaping html template tag, guarded define registration, Proxy-backed reactive state, DOM morphing, stores, fetch/form/async helpers and hash routing. It has no runtime npm dependency and does not require a build step for consumers.
+
+## Framework boundaries
+
+HTML and PHP may render initial structure and data-* attributes. DevinimJS owns component behavior and publishes bubbling dv:* events. CKCSS owns colors, typography, spacing and component presentation. DevinimJS components render Light DOM and must not introduce Shadow DOM as a default. Consumer components must use their own prefix; reserve dv- for framework components.
+
+## AI-first component authoring contract
+
+For ordinary new components, use `npm run create:component -- prefix-name --format=dv`, import `{ component, html }` from `devinimjs/authoring` and create a standard `.dv.js` ESM file. The compact contract is `props`, `state`, optional `sync`, `actions`, and `view`. Props are typed, live, read-only `data-*` snapshots. New templates use `on:event="action"`; the legacy `data-on:event` spelling remains valid. `component()` builds on BaseComponent, so escaping, Light DOM, morphing, outlets, lifecycle cleanup and bubbling `dv:*` events remain unchanged. `.dv.js` is a normal JavaScript module and runs directly on shared hosting.
+
+## Class component authoring contract
+
+Use `src/components/dv-kebab.js`, `class DvPascal extends BaseComponent`, and `define('dv-kebab', DvPascal)`. Declare observed attributes when live updates are needed. Read typed attributes through component helpers. Return `html\`...\`` from `template()`. Keep data ownership in the page/application and emit semantic `dv:*` events with small detail objects. Add unit and browser tests, update `docs/component-manifest.json`, and document attributes/events/states/accessibility before release.
+
+## Core APIs
+
+- `BaseComponent`: lifecycle, reactive state, attribute helpers, template rendering, event dispatch and outlet composition.
+- `component`: experimental factory that registers a Custom Element from the AI-first object contract.
+- `html`: escaped interpolation template tag. Use `unsafe()` only for separately sanitized HTML.
+- `define`: guarded custom element registration.
+- `createStore`: shared reactive state with subscriptions and optional path filtering.
+- `morph`: focused DOM reconciliation; stable `data-key` values preserve moving node identity.
+- `this.outlet`: preserves consumer-owned Light DOM children where the component contract allows it.
+
+## Application APIs
+
+`createAsyncState` models loading/success/empty/error transitions. `fetchJson` handles JSON requests. `createForm` models field values and submission state while the surrounding page owns persistence. `createHashRouter` provides static-hosting-friendly hash routes and parameter matching.
+
+## Component index
+
+The exact attributes, events, classes, methods and states are authoritative in `/docs/component-manifest.json` and the source files under `/src/components/`. The shipped set is: dv-counter, dv-tabs, dv-disclosure, dv-modal, dv-toast, dv-pagination, dv-dropdown, dv-search, dv-product-card, dv-field, dv-confirm, dv-autocomplete, dv-data-table, dv-cart, dv-toast-stack and dv-state.
+
+## Accessibility and security
+
+Prefer native controls. Components must provide usable labels, keyboard behavior, focus behavior and ARIA semantics appropriate to the pattern. Escape interpolated values by default. Treat server and API data as untrusted. Never widen the raw HTML boundary without independent sanitization.
+
+## Verification
+
+Run `npm run validate:component -- prefix-name` for every new framework component, then `npm run verify` before release. It runs lint, unit tests, browser tests and the size gate. The core budget is less than 4 KB min+gzip.

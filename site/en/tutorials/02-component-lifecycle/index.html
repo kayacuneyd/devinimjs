@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lesson 2: Master the six lifecycle hooks every DevinimJS component uses — from initialState to disconnected.">
+<link rel="canonical" href="/en/tutorials/02-component-lifecycle/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>Lesson 02 — Component Lifecycle | DevinimJS Tutorials</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">Skip to content</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Primary navigation">
+    <a href="../../docs/">Docs</a><a href="../../components/">Components</a><a href="../" aria-current="page">Tutorials</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">Phase 1 · Lesson 2</span>
+  <h1>Component Lifecycle — The Six Hooks</h1>
+  <p class="ck-text-lead">Every DevinimJS component follows a predictable lifecycle. Learn the six hooks that give you control at each stage.</p>
+</section>
+
+<div class="tutorial-layout">
+
+<aside class="tutorial-nav" aria-label="Lesson outline">
+<details open>
+<summary>Phase 1: Foundations</summary>
+<ol>
+<li><a href="../01-hello-world/">01. Hello World</a></li>
+<li><a href="./" aria-current="page">02. Component Lifecycle</a></li>
+<li><a href="../03-html-templates/">03. HTML Templates</a></li>
+<li><a href="../04-reactivity/">04. Reactivity</a></li>
+<li><a href="../05-events/">05. Events &amp; Actions</a></li>
+<li><a href="../06-attributes/">06. Attributes &amp; Data</a></li>
+<li><a href="../07-outlet-composition/">07. Outlet &amp; Composition</a></li>
+</ol>
+</details>
+<details>
+<summary>Phase 2–5</summary>
+<ol>
+<li class="coming-soon">08–26 Coming soon</li>
+</ol>
+</details>
+</aside>
+
+<article class="tutorial-lesson ck-stack ck-stack--relaxed">
+
+<div class="lesson-objectives">
+<strong>What you'll learn</strong>
+<ul>
+  <li>The six lifecycle hooks and their execution order</li>
+  <li>When to use <code>initialState()</code> vs <code>connected()</code></li>
+  <li>How <code>updated(changedKeys)</code> helps you react to state mutations</li>
+  <li>Cleanup patterns with <code>disconnected()</code> and <code>onCleanup()</code></li>
+  <li>The difference between <code>connected()</code> and <code>reconnected()</code></li>
+</ul>
+</div>
+
+<section class="ck-stack">
+<h2>The lifecycle diagram</h2>
+<p>When the browser encounters a custom element, it goes through a fixed sequence:</p>
+<pre><code>constructor()       → called once by the browser (never override unless you know why)
+prepare(fragment)   → inspect Light DOM children before first render
+initialState()      → return the initial reactive state object
+template()          → render the component HTML (called on mount and every state change)
+connected()         → first attachment complete — setup listeners, timers, stores
+reconnected()       → called on every re-attachment <em>after</em> initialization
+disconnected()      → leaving the DOM — cleanup time</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Hook 1: <code>initialState()</code></h2>
+<p>Returns a plain object that becomes <code>this.state</code>. Safe to read <code>data-*</code> attributes here.</p>
+<pre><code>class LifecycleTimer extends BaseComponent {
+  initialState() {
+    return {
+      elapsed: 0,
+      running: this.bool('running', true)
+    };
+  }
+}</code></pre>
+<div class="ck-alert ck-alert--success"><p class="ck-alert__title">Rule</p><p>Return a flat object from <code>initialState()</code>. Use <code>this.str()</code>, <code>this.num()</code>, <code>this.bool()</code>, or <code>this.json()</code> to seed values from HTML attributes. Deep nesting works but keep it shallow for clarity.</p></div>
+</section>
+
+<section class="ck-stack">
+<h2>Hook 2: <code>template()</code></h2>
+<p>Must return an <code>HtmlString</code> from the <code>html</code> tagged template. This is called on mount and every time state changes.</p>
+<pre><code>template() {
+  return html`
+    &lt;div&gt;
+      &lt;output&gt;${this.state.elapsed}s elapsed&lt;/output&gt;
+      &lt;button data-on:click="toggle"&gt;
+        ${this.state.running ? 'Pause' : 'Resume'}
+      &lt;/button&gt;
+    &lt;/div&gt;`;
+}</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Hook 3: <code>connected()</code></h2>
+<p>Called once after the first render. Perfect for setting up timers, event listeners, and store subscriptions.</p>
+<pre><code>connected() {
+  this._interval = setInterval(() => {
+    if (this.state.running) {
+      this.state.elapsed += 1;
+    }
+  }, 1000);
+}</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Hook 4: <code>reconnected()</code></h2>
+<p>Called every time the element is moved back into the DOM <em>after</em> the first connection. Use it to restart paused work.</p>
+<pre><code>reconnected() {
+  // Element was removed and re-attached. Resume any paused work.
+  console.log('Re-attached, elapsed:', this.state.elapsed);
+}</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Hook 5: <code>disconnected()</code></h2>
+<p>Called when the element leaves the DOM. Clean up timers, remove listeners, unsubscribe from stores.</p>
+<pre><code>disconnected() {
+  clearInterval(this._interval);
+}</code></pre>
+<p>For convenience, use <code>this.listen()</code> and <code>this.onCleanup()</code> instead of manual cleanup:</p>
+<pre><code>connected() {
+  this.listen(window, 'resize', this.handleResize);
+  this.onCleanup(() => console.log('Component removed'));
+}</code></pre>
+<div class="ck-alert ck-alert--success"><p class="ck-alert__title">Tip</p><p><code>this.listen(target, event, handler)</code> adds a listener that is automatically removed when the component disconnects. <code>this.onCleanup(fn)</code> registers a cleanup function that runs on disconnect.</p></div>
+</section>
+
+<section class="ck-stack">
+<h2>Hook 6: <code>updated(changedKeys)</code></h2>
+<p>Called after any state-driven re-render <em>except</em> the first one. Receives an array of dot-path keys that changed.</p>
+<pre><code>updated(changedKeys) {
+  if (changedKeys.includes('running')) {
+    console.log('Timer was', this.state.running ? 'resumed' : 'paused');
+  }
+  if (changedKeys.includes('elapsed')) {
+    this.emit('tick', { elapsed: this.state.elapsed });
+  }
+}</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Full example: Auto-counter</h2>
+<div class="demo-preview">
+  <span class="demo-label">Live demo — auto-incrementing timer</span>
+  <dv-auto-counter data-running="true" data-speed="2"></dv-auto-counter>
+  <p class="ck-text-muted" style="margin-top:.8rem">This counter increments automatically. It emits <code>dv:tick</code> every second.</p>
+</div>
+<pre><code>import { BaseComponent, html, define } from '/path/to/core.js';
+
+class DvAutoCounter extends BaseComponent {
+  initialState() {
+    return { count: 0, running: this.bool('running', true) };
+  }
+
+  template() {
+    return html`
+      &lt;output&gt;${this.state.count}&lt;/output&gt;
+      &lt;button data-on:click="toggle"&gt;
+        ${this.state.running ? '⏸' : '▶'}
+      &lt;/button&gt;`;
+  }
+
+  connected() {
+    this._timer = setInterval(() => {
+      if (this.state.running) this.state.count += this.num('speed', 1);
+    }, 1000);
+  }
+
+  toggle() { this.state.running = !this.state.running; }
+  disconnected() { clearInterval(this._timer); }
+
+  updated(changedKeys) {
+    if (changedKeys.includes('count')) this.emit('tick', { count: this.state.count });
+  }
+}
+
+define('dv-auto-counter', DvAutoCounter);</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Quick reference</h2>
+<div class="ck-table-wrap">
+<table class="ck-table">
+<thead><tr><th>Hook</th><th>When</th><th>Use for</th></tr></thead>
+<tbody>
+<tr><td><code>prepare(fragment)</code></td><td>Before first render</td><td>Inspecting Light DOM children</td></tr>
+<tr><td><code>initialState()</code></td><td>Before first render</td><td>Returning initial reactive state</td></tr>
+<tr><td><code>template()</code></td><td>Mount + every state change</td><td>Rendering HTML</td></tr>
+<tr><td><code>connected()</code></td><td>After first render</td><td>Timers, listeners, stores</td></tr>
+<tr><td><code>reconnected()</code></td><td>Every re-attachment</td><td>Resuming paused work</td></tr>
+<tr><td><code>disconnected()</code></td><td>When removed from DOM</td><td>Cleanup, unsubscribe</td></tr>
+<tr><td><code>updated(keys)</code></td><td>After state-driven re-render</td><td>Side effects, analytics, emits</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<nav class="lesson-nav" aria-label="Lesson navigation">
+  <a href="../01-hello-world/">← Hello World</a>
+  <a href="../03-html-templates/">Next: HTML Templates →</a>
+</nav>
+
+</article>
+</div>
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../../">Home</a> · <a href="../../docs/">Docs</a> · <a href="../">All tutorials</a></span>
+</footer>
+
+<script type="module">
+import { BaseComponent, html, define } from 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/core.min.js';
+
+class DvAutoCounter extends BaseComponent {
+  initialState() {
+    return { count: 0, running: this.bool('running', true) };
+  }
+  template() {
+    return html`<dv-counter data-start="${this.state.count}" data-step="${this.num('speed', 1)}" style="display:none"></dv-counter>
+      <output class="ck-badge" style="font-size:1.4rem">${this.state.count}</output>
+      <button class="ck-button" style="margin-left:.5rem" data-on:click="toggle">${this.state.running ? 'Pause' : 'Resume'}</button>`;
+  }
+  connected() {
+    this._timer = setInterval(() => {
+      if (this.state.running) this.state.count += this.num('speed', 1);
+    }, 1000);
+  }
+  toggle() { this.state.running = !this.state.running; }
+  disconnected() { clearInterval(this._timer); }
+  updated(changedKeys) {
+    if (changedKeys.includes('count')) this.emit('tick', { count: this.state.count });
+  }
+}
+define('dv-auto-counter', DvAutoCounter);
+</script>
+</body>
+</html>

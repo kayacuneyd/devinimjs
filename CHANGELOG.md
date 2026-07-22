@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0-beta.0] - 2026-07-22
+
+### Added
+
+- Experimental AI-first `component()` authoring entry (`devinimjs/authoring`) for ordinary,
+  build-free `.dv.js` components.
+- Typed, live and read-only `data-*` props; compact `state`, `sync`, `actions` and `view`
+  contract; concise `on:event="action"` directives with legacy `data-on:event` compatibility.
+- `dist/authoring.min.js`, browser-direct example, generator `--format=dv` and
+  `npm run validate:component -- tag-name` delivery-contract check.
+- English and Turkish AI-first documentation pages, AI reference updates and a live docs demo.
+
+### Changed
+
+- `<dv-counter>` and `<dv-search>` now use the factory API while preserving tags, attributes,
+  events and existing consumer behavior.
+- `requestUpdate()` avoids adding an extraneous external change marker when state already owns
+  the current render batch.
+
 ## [0.3.0] - 2026-07-22
 
 ### Added

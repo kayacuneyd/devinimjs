@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Complete DevinimJS tutorial series: from your first reactive component to a full application. 26 step-by-step lessons across 5 phases.">
+<link rel="canonical" href="/en/tutorials/">
+<link rel="alternate" hreflang="tr" href="/tr/tutorials/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>DevinimJS Tutorials — 26 lessons from zero to application</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">Skip to content</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Primary navigation">
+    <a href="../docs/">Docs</a><a href="../components/">Components</a><a href="./" aria-current="page">Tutorials</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a><a href="../../tr/tutorials/" lang="tr">TR</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">26 lessons · 5 phases · 0 build tools</span>
+  <h1>Build reactive interfaces, one lesson at a time.</h1>
+  <p class="ck-text-lead">Each lesson adds one concept to a browser file. Start from zero and end with a real e-commerce interface — no Node.js, no bundler, no framework runtime required.</p>
+  <div class="ck-cluster">
+    <a class="ck-button" href="./01-hello-world/">Start Lesson 1</a>
+    <a class="ck-button ck-button--secondary" href="../../docs/">Read the docs</a>
+  </div>
+</section>
+
+<!-- PHASE 1 -->
+<section class="ck-stack" aria-labelledby="phase1-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div>
+      <span class="ck-badge ck-badge--success">Phase 1 · 7 lessons</span>
+      <h2 id="phase1-title">Foundations</h2>
+    </div>
+    <span class="ck-badge">Available</span>
+  </div>
+  <p class="ck-text-lead">Core concepts every DevinimJS developer must know. Start here and write your first component in under 5 minutes.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <a class="ck-card" href="./01-hello-world/">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">01</span>
+        <h3>Hello World</h3>
+        <p>Load from CDN, drop a component into HTML, and listen to its events. Running in 5 minutes.</p>
+      </div>
+    </a>
+    <a class="ck-card" href="./02-component-lifecycle/">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">02</span>
+        <h3>Component Lifecycle</h3>
+        <p>The six hooks every component uses — from <code>initialState()</code> to <code>disconnected()</code>.</p>
+      </div>
+    </a>
+    <a class="ck-card" href="./03-html-templates/">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">03</span>
+        <h3>HTML Templates</h3>
+        <p>The <code>html</code> tagged template: interpolation, auto-escaping, conditionals, lists, and <code>unsafe()</code>.</p>
+      </div>
+    </a>
+    <a class="ck-card" href="./04-reactivity/">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">04</span>
+        <h3>Reactivity</h3>
+        <p>Proxy-backed <code>this.state</code>, direct mutation, batched rendering, and <code>requestUpdate()</code>.</p>
+      </div>
+    </a>
+    <a class="ck-card" href="./05-events/">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">05</span>
+        <h3>Events &amp; Actions</h3>
+        <p><code>data-on:*</code> directives, keyboard events, <code>this.emit()</code>, and <code>this.listen()</code>.</p>
+      </div>
+    </a>
+    <a class="ck-card" href="./06-attributes/">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">06</span>
+        <h3>Attributes &amp; Data</h3>
+        <p>Pass configuration from HTML with <code>str()</code>, <code>num()</code>, <code>bool()</code>, and <code>json()</code>.</p>
+      </div>
+    </a>
+    <a class="ck-card" href="./07-outlet-composition/">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">07</span>
+        <h3>Outlet &amp; Composition</h3>
+        <p>Preserve PHP/static content inside reactive components with <code>this.outlet</code>.</p>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- PHASE 2 -->
+<section class="ck-stack" aria-labelledby="phase2-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div>
+      <span class="ck-badge">Phase 2 · 5 lessons</span>
+      <h2 id="phase2-title">Authoring</h2>
+    </div>
+    <span class="ck-badge ck-badge--warning">Coming soon</span>
+  </div>
+  <p class="ck-text-lead">Build real components from scratch. Understand inter-component communication and performance patterns.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">08</span>
+        <h3>Building a Counter</h3>
+        <p>Write <code>dv-counter</code> from scratch: step, min, max, state, template, and events.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">09</span>
+        <h3>Building Tabs</h3>
+        <p>WAI-ARIA tabs pattern, keyboard navigation, and selected panel state management.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">10</span>
+        <h3>Building a Modal</h3>
+        <p>Escape-to-close, focus trap, <code>dv:open</code>/<code>dv:close</code> events in a Light DOM dialog.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">11</span>
+        <h3>Component Communication</h3>
+        <p>Parent-child event bubbling, cross-component <code>dv:*</code> events, external listeners.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">12</span>
+        <h3>DOM Morphing</h3>
+        <p>How <code>morph()</code> patches the DOM, keyed lists with <code>data-key</code>, and focus preservation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASE 3 -->
+<section class="ck-stack" aria-labelledby="phase3-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div>
+      <span class="ck-badge">Phase 3 · 4 lessons</span>
+      <h2 id="phase3-title">State Management</h2>
+    </div>
+    <span class="ck-badge ck-badge--warning">Coming soon</span>
+  </div>
+  <p class="ck-text-lead">Shared stores, async data, forms, and routing — the application runtime primitives.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">13</span>
+        <h3>Shared Store</h3>
+        <p><code>createStore()</code>, <code>subscribe()</code>, <code>this.useStore()</code>, and cross-component state.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">14</span>
+        <h3>Async State</h3>
+        <p>Stale-safe <code>createAsyncState()</code>: idle→loading→success→error lifecycle.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">15</span>
+        <h3>Form Management</h3>
+        <p><code>createForm()</code> with values, errors, dirty tracking, validation, and submission.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">16</span>
+        <h3>Hash Router</h3>
+        <p>Serverless routing with <code>createHashRouter()</code>, <code>:param</code> segments, and <code>subscribe()</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASE 4 -->
+<section class="ck-stack" aria-labelledby="phase4-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div>
+      <span class="ck-badge">Phase 4 · 5 lessons</span>
+      <h2 id="phase4-title">Real-World Application</h2>
+    </div>
+    <span class="ck-badge ck-badge--warning">Coming soon</span>
+  </div>
+  <p class="ck-text-lead">Build a mini e-commerce interface: product listings, cart, notifications, forms, and PHP integration.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">17</span>
+        <h3>Product Listing</h3>
+        <p>Data table + search + pagination with async data and live sorting.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">18</span>
+        <h3>Shopping Cart</h3>
+        <p>Shared cart store, add-to-cart event chain, and multi-component state flow.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">19</span>
+        <h3>Toast &amp; Confirm</h3>
+        <p>Notification queues and two-step confirmation controls for destructive actions.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">20</span>
+        <h3>Form Validation</h3>
+        <p>Field components, custom validators, server-side error display, and autocomplete.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">21</span>
+        <h3>PHP Integration</h3>
+        <p>Laravel, CodeIgniter, WordPress: passing <code>data-*</code> from backend to components.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASE 5 -->
+<section class="ck-stack" aria-labelledby="phase5-title">
+  <div class="ck-cluster ck-cluster--spread">
+    <div>
+      <span class="ck-badge">Phase 5 · 5 lessons</span>
+      <h2 id="phase5-title">Advanced &amp; Ecosystem</h2>
+    </div>
+    <span class="ck-badge ck-badge--warning">Coming soon</span>
+  </div>
+  <p class="ck-text-lead">Custom stores, production optimization, accessibility, theming, and testing.</p>
+  <div class="ck-grid ck-grid--auto-fit">
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">22</span>
+        <h3>Custom Stores</h3>
+        <p>Design domain stores with <code>createReactive()</code>, subscription patterns, and immutable updates.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">23</span>
+        <h3>Production Optimization</h3>
+        <p>Using <code>dist/</code> bundles, keyed morph with <code>data-key</code>, and <code>safeUrl()</code>.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">24</span>
+        <h3>Accessibility (WCAG AA)</h3>
+        <p>Keyboard support, ARIA roles, loading/empty/error states, and axe-core testing.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">25</span>
+        <h3>CKCSS Theming</h3>
+        <p>Design tokens, theme variables, and building a consistent visual system.</p>
+      </div>
+    </div>
+    <div class="ck-card ck-card--muted">
+      <div class="ck-card__body ck-stack">
+        <span class="ck-badge">26</span>
+        <h3>Testing Components</h3>
+        <p>Unit tests with happy-dom, E2E with Playwright, and component contract verification.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ck-stack ck-stack--relaxed" style="text-align:center;padding:4rem 0">
+  <h2>Ready to start?</h2>
+  <p class="ck-text-lead">Phase 1 is live. Seven lessons that take you from zero to building composable reactive components — all in the browser.</p>
+  <a class="ck-button" href="./01-hello-world/">Start Lesson 1 →</a>
+</section>
+
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../">Home</a> · <a href="../docs/">Docs</a> · <a href="../../tr/tutorials/" lang="tr">Türkçe</a></span>
+</footer>
+</body>
+</html>

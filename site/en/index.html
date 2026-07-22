@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="DevinimJS is a build-free, reactive vanilla JavaScript runtime for PHP, static sites and shared hosting.">
+    <link rel="canonical" href="/en/">
+    <link rel="alternate" hreflang="tr" href="/tr/">
+    <link rel="alternate" hreflang="en" href="/en/">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+    <link rel="stylesheet" href="/assets/devinim-ckcss.css">
+    <title>DevinimJS — Reactive UI without a build step</title>
+  </head>
+  <body class="dv-site">
+    <a class="ck-skip-link" href="#main">Skip to content</a>
+    <header class="ck-container ck-container--wide ck-cluster ck-cluster--spread" data-site-header>
+      <a href="./" aria-label="DevinimJS home"><strong>DevinimJS</strong></a>
+      <nav class="ck-cluster" aria-label="Primary navigation">
+        <a href="./docs/">Docs</a><a href="./components/">Components</a><a href="./tutorials/">Tutorials</a>
+        <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a><a href="../tr/" lang="tr">TR</a>
+        <a class="ck-button" href="#install">Use DevinimJS</a>
+      </nav>
+    </header>
+    <main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+      <section class="ck-grid ck-grid--2" aria-labelledby="hero-title">
+        <div class="ck-stack">
+          <span class="ck-badge ck-badge--success">v0.5.1 · build-free runtime</span>
+          <h1 id="hero-title">Reactive UI for the web you already have.</h1>
+          <p class="ck-text-lead">DevinimJS turns server-rendered HTML into accessible, reactive interfaces with native browser JavaScript. No Node.js, bundler or framework runtime for your users.</p>
+          <div class="ck-cluster"><a class="ck-button" href="#install">Start with one import</a><a class="ck-button ck-button--secondary" href="./docs/">Read the docs</a></div>
+          <p class="ck-text-muted">Made for PHP, static hosting, WordPress, Laravel and AI-assisted development.</p>
+        </div>
+        <aside class="ck-card ck-stack" aria-label="Live DevinimJS demo">
+          <div class="ck-card__header"><span class="ck-badge">Live runtime</span><h2>Real components, plain HTML</h2></div>
+          <div class="ck-card__body ck-stack">
+            <dv-counter data-start="3" data-step="1"></dv-counter>
+            <div class="ck-alert ck-alert--success"><p class="ck-alert__title">No build step</p><p>This counter is loaded as a pinned browser module.</p></div>
+            <button class="ck-button ck-button--secondary" type="button" data-demo-toast>Show a toast</button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="ck-stack" aria-labelledby="proof-title">
+        <div class="ck-stack ck-stack--compact"><span class="ck-badge">Why DevinimJS</span><h2 id="proof-title">Keep deployment simple. Keep the interface alive.</h2><p class="ck-text-lead">The framework contract is intentionally small: HTML owns structure, DevinimJS owns interaction, and CKCSS owns presentation.</p></div>
+        <div class="ck-grid ck-grid--auto-fit">
+          <article class="ck-card"><div class="ck-card__body ck-stack"><span class="ck-badge ck-badge--success">01</span><h3>Build-free by contract</h3><p>Ship native ES modules from your server or a pinned CDN. Consumers install nothing.</p></div></article>
+          <article class="ck-card"><div class="ck-card__body ck-stack"><span class="ck-badge ck-badge--success">02</span><h3>Reactive, not magical</h3><p>Proxy-backed state, deterministic templates and focused DOM updates make behavior inspectable.</p></div></article>
+          <article class="ck-card"><div class="ck-card__body ck-stack"><span class="ck-badge ck-badge--success">03</span><h3>Light DOM first</h3><p>CKCSS and your global styles reach component markup naturally. No styling prison.</p></div></article>
+          <article class="ck-card"><div class="ck-card__body ck-stack"><span class="ck-badge ck-badge--success">04</span><h3>Server-friendly state</h3><p>Let PHP or HTML provide data-* attributes, then listen for simple bubbling dv:* events.</p></div></article>
+          <article class="ck-card"><div class="ck-card__body ck-stack"><span class="ck-badge ck-badge--success">05</span><h3>Accessible primitives</h3><p>Native controls, ARIA patterns, keyboard behavior and focus management are part of the contract.</p></div></article>
+          <article class="ck-card"><div class="ck-card__body ck-stack"><span class="ck-badge ck-badge--success">06</span><h3>AI-readable rules</h3><p>Stable contracts, manifests and copyable examples help both humans and coding agents build correctly.</p></div></article>
+        </div>
+      </section>
+
+      <section id="install" class="ck-sidebar" aria-labelledby="install-title">
+        <div class="ck-stack"><span class="ck-badge">Install</span><h2 id="install-title">Start from a static HTML file.</h2><p>Pin both frameworks to a release and use only what each page needs.</p><div class="ck-alert ck-alert--warning"><p class="ck-alert__title">Production rule</p><p>Use tagged versions. Never load <code>main</code> or an unversioned CDN URL.</p></div></div>
+        <pre class="ck-card"><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css"&gt;
+
+&lt;dv-counter data-start="5" data-step="2"&gt;&lt;/dv-counter&gt;
+
+&lt;script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/modules/dv-counter.js"&gt;&lt;/script&gt;</code></pre>
+      </section>
+
+      <section class="ck-grid ck-grid--2" aria-labelledby="next-title">
+        <article class="ck-card"><div class="ck-card__body ck-stack"><span class="ck-badge">For developers</span><h2 id="next-title">A runtime you can explain.</h2><p>Read the architecture, API contracts, security rules and application runtime reference.</p><a class="ck-button ck-button--secondary" href="./docs/">Explore technical docs</a></div></article>
+        <article class="ck-card"><div class="ck-card__body ck-stack"><span class="ck-badge">For builders</span><h2>See every component in motion.</h2><p>Browse the catalog, filter by capability and copy a working example.</p><a class="ck-button ck-button--secondary" href="./components/">Open component catalog</a></div></article>
+      </section>
+    </main>
+    <footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread"><span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span><span><a href="./docs/">Docs</a> · <a href="./components/">Components</a> · <a href="../tr/" lang="tr">Türkçe</a></span></footer>
+    <dv-toast data-duration="3500"></dv-toast>
+    <script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/modules/dv-counter.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/modules/dv-toast.js"></script>
+    <script type="module" src="../assets/site.js"></script>
+  </body>
+</html>

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lesson 5: Handle user interaction with data-on:* event delegation, emit custom dv:* events, and manage external listeners with this.listen().">
+<link rel="canonical" href="/en/tutorials/05-events/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>Lesson 05 — Events &amp; Actions | DevinimJS Tutorials</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">Skip to content</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Primary navigation">
+    <a href="../../docs/">Docs</a><a href="../../components/">Components</a><a href="../" aria-current="page">Tutorials</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">Phase 1 · Lesson 5</span>
+  <h1>Events &amp; Actions — User Interaction</h1>
+  <p class="ck-text-lead">Handle clicks, key presses, and custom events with <code>data-on:*</code> directives and the <code>dv:*</code> event system.</p>
+</section>
+
+<div class="tutorial-layout">
+
+<aside class="tutorial-nav" aria-label="Lesson outline">
+<details open>
+<summary>Phase 1: Foundations</summary>
+<ol>
+<li><a href="../01-hello-world/">01. Hello World</a></li>
+<li><a href="../02-component-lifecycle/">02. Component Lifecycle</a></li>
+<li><a href="../03-html-templates/">03. HTML Templates</a></li>
+<li><a href="../04-reactivity/">04. Reactivity</a></li>
+<li><a href="./" aria-current="page">05. Events &amp; Actions</a></li>
+<li><a href="../06-attributes/">06. Attributes &amp; Data</a></li>
+<li><a href="../07-outlet-composition/">07. Outlet &amp; Composition</a></li>
+</ol>
+</details>
+<details>
+<summary>Phase 2–5</summary>
+<ol>
+<li class="coming-soon">08–26 Coming soon</li>
+</ol>
+</details>
+</aside>
+
+<article class="tutorial-lesson ck-stack ck-stack--relaxed">
+
+<div class="lesson-objectives">
+<strong>What you'll learn</strong>
+<ul>
+  <li>Bind methods to DOM events with <code>data-on:event="method"</code></li>
+  <li>Handle keyboard events: Enter, Escape, arrow keys</li>
+  <li>Emit custom <code>dv:*</code> events with <code>this.emit()</code></li>
+  <li>Listen to external events with <code>this.listen()</code></li>
+  <li>Pass event data via <code>detail</code></li>
+</ul>
+</div>
+
+<section class="ck-stack">
+<h2><code>data-on:*</code> — the event directive</h2>
+<p>Bind component methods to DOM events directly in templates. The base class handles delegation:</p>
+<pre><code>template() {
+  return html`
+    &lt;button data-on:click="increment"&gt;+&lt;/button&gt;
+    &lt;button data-on:click="decrement"&gt;−&lt;/button&gt;
+    &lt;input data-on:input="handleInput" value="${this.state.text}"&gt;
+  `;
+}
+
+increment() { this.state.count += 1; }
+decrement() { this.state.count -= 1; }
+handleInput(event) { this.state.text = event.target.value; }</code></pre>
+<p>The handler receives the native DOM event. <code>this</code> inside the handler is the component instance.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Keyboard events</h2>
+<p>Handle key presses for accessibility and UX patterns:</p>
+<pre><code>template() {
+  return html`
+    &lt;input data-on:keydown="handleKeydown" placeholder="Type and press Enter"&gt;
+    &lt;p&gt;Last key: ${this.state.lastKey}&lt;/p&gt;
+  `;
+}
+
+handleKeydown(event) {
+  this.state.lastKey = event.key;
+  if (event.key === 'Enter') {
+    this.state.submitted = this.state.text;
+  }
+  if (event.key === 'Escape') {
+    this.reset();
+  }
+}</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2><code>this.emit()</code> — sending events outward</h2>
+<p>Emit custom events that parent components or page scripts can listen to. All events are prefixed with <code>dv:</code>:</p>
+<pre><code>increment() {
+  this.state.count += 1;
+  this.emit('change', { count: this.state.count });
+  // Dispatches: new CustomEvent('dv:change', { detail: { count: 5 }, bubbles: true })
+}</code></pre>
+<p>Page scripts listen with standard <code>addEventListener</code>:</p>
+<pre><code>document.querySelector('dv-counter')
+  .addEventListener('dv:change', (e) => {
+    console.log('Counter changed to', e.detail.count);
+  });</code></pre>
+<div class="ck-alert ck-alert--success"><p class="ck-alert__title">Bubbling by default</p><p><code>this.emit()</code> creates bubbling events. Parent elements and the document can catch them. The <code>dv:</code> prefix makes the namespace clear.</p></div>
+</section>
+
+<section class="ck-stack">
+<h2><code>this.listen()</code> — safe external listeners</h2>
+<p>Listen to events on external targets (window, document, other DOM elements). The listener is automatically removed when the component disconnects:</p>
+<pre><code>connected() {
+  this.listen(window, 'resize', this.handleResize);
+  this.listen(document, 'scroll', this.handleScroll);
+  this.listen(someElement, 'custom-event', this.handleCustom);
+}
+
+handleResize() {
+  this.state.viewportWidth = window.innerWidth;
+  this.requestUpdate();
+}</code></pre>
+<p>No need to manually call <code>removeEventListener</code> in <code>disconnected()</code>.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Live demo: Event playground</h2>
+<div class="demo-preview">
+  <span class="demo-label">Live demo — click, type, and observe events</span>
+  <dv-event-demo></dv-event-demo>
+</div>
+</section>
+
+<section class="ck-stack">
+<h2>Event naming conventions</h2>
+<div class="ck-table-wrap">
+<table class="ck-table">
+<thead><tr><th>Pattern</th><th>Example</th><th>When</th></tr></thead>
+<tbody>
+<tr><td>State change</td><td><code>dv:change</code></td><td>Counter, toggle, any value mutation</td></tr>
+<tr><td>Selection</td><td><code>dv:select</code>, <code>dv:tab</code></td><td>User picks an item or tab</td></tr>
+<tr><td>Lifecycle</td><td><code>dv:open</code>, <code>dv:close</code></td><td>Modal, dropdown, disclosure</td></tr>
+<tr><td>User action</td><td><code>dv:confirm</code>, <code>dv:cancel</code></td><td>Explicit yes/no decisions</td></tr>
+<tr><td>Query</td><td><code>dv:query</code></td><td>Search input changes</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="ck-stack">
+<h2>Recap</h2>
+<div class="ck-grid ck-grid--2">
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">data-on:* for DOM events</p><p>Bind methods to click, input, keydown, and any native event.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">this.emit() for outward events</p><p>Tell the page what happened. Pages own persistence.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">this.listen() for external</p><p>Auto-cleaned listeners on window/document/other elements.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">dv:* namespace</p><p>All component events use the <code>dv:</code> prefix for clarity.</p></div>
+</div>
+</section>
+
+<nav class="lesson-nav" aria-label="Lesson navigation">
+  <a href="../04-reactivity/">← Reactivity</a>
+  <a href="../06-attributes/">Next: Attributes &amp; Data →</a>
+</nav>
+
+</article>
+</div>
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../../">Home</a> · <a href="../../docs/">Docs</a> · <a href="../">All tutorials</a></span>
+</footer>
+
+<script type="module">
+import { BaseComponent, html, define } from 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/core.min.js';
+class DvEventDemo extends BaseComponent {
+  initialState() { return { clicks: 0, text: '', lastEvent: 'none', keyLog: [] }; }
+  template() {
+    return html`
+      <div class="ck-stack ck-stack--compact">
+        <div class="ck-cluster">
+          <button class="ck-button" data-on:click="handleClick">Click me</button>
+          <span class="ck-badge">Clicks: ${this.state.clicks}</span>
+        </div>
+        <div class="ck-field">
+          <label class="ck-field__label">Type and press Enter</label>
+          <input class="ck-field__input" data-on:keydown="handleKey" placeholder="Type here..." value="${this.state.text}">
+        </div>
+        <div>
+          <span class="ck-badge ck-badge--success">Last event: ${this.state.lastEvent}</span>
+        </div>
+        ${this.state.keyLog.length > 0 && html`
+          <div style="font-size:.85rem;color:var(--muted)">
+            Key log: ${this.state.keyLog.join(', ')}
+          </div>
+        `}
+        <button class="ck-button ck-button--secondary" data-on:click="emitEvent">Emit dv:demo event</button>
+      </div>
+    `;
+  }
+  handleClick() {
+    this.state.clicks += 1;
+    this.state.lastEvent = 'click';
+    this.emit('clicked', { count: this.state.clicks });
+  }
+  handleKey(event) {
+    this.state.text = event.target.value;
+    this.state.lastEvent = `key: ${event.key}`;
+    this.state.keyLog = [...this.state.keyLog.slice(-4), event.key];
+    if (event.key === 'Enter') {
+      this.emit('submit', { value: this.state.text });
+      this.state.text = '';
+    }
+  }
+  emitEvent() {
+    this.emit('demo', { message: 'Event fired from component', time: Date.now() });
+    this.state.lastEvent = 'dv:demo emitted';
+  }
+}
+define('dv-event-demo', DvEventDemo);
+document.addEventListener('dv:demo', (e) => {
+  const el = document.querySelector('dv-event-demo');
+  if (el) el.state.lastEvent = `dv:demo caught — "${e.detail.message}"`;
+});
+</script>
+</body>
+</html>

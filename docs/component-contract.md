@@ -2,12 +2,22 @@
 
 This contract makes every DevinimJS component predictable to author, review and maintain.
 
+## Authoring paths
+
+DevinimJS supports two authoring paths:
+
+- **AI-first `.dv.js` (experimental v0.6):** use `component()` from `core/authoring.js` with
+  `props`, `state`, `sync`, `actions` and `view`. This is the recommended path for new, ordinary
+  components and for AI-generated code.
+- **Class API:** extend `BaseComponent` directly when a component needs advanced lifecycle or
+  structural control. This API remains supported and is the lower-level escape hatch.
+
 ## Required files
 
 For a component named `dv-example`, create:
 
 ```text
-src/components/dv-example.js
+src/components/dv-example.dv.js
 tests/unit/dv-example.test.js
 docs/components/dv-example.md
 ```
@@ -15,7 +25,31 @@ docs/components/dv-example.md
 Register it in `docs/component-manifest.json`, `design/component-library.md` and the Unreleased
 section of `CHANGELOG.md`.
 
-## Naming and API
+Generate the AI-first form with:
+
+```bash
+npm run create:component -- dv-example --format=dv
+```
+
+## AI-first API
+
+```js
+import { component, html } from '../core/authoring.js';
+
+component('acme-counter', {
+  props: { start: 0, step: 1 },
+  state() { return { count: this.props.start }; },
+  sync: { start(value) { this.state.count = value; } },
+  actions: { increment() { this.state.count += this.props.step; } },
+  view() { return html`<button on:click="increment">${this.state.count}</button>`; },
+});
+```
+
+`props` map to typed, live `data-*` attributes. The default value determines the type: strings,
+numbers, booleans and JSON arrays/objects are supported. Use `on:event="action"` in new code;
+the existing `data-on:event="action"` spelling remains supported.
+
+## Class naming and API
 
 | Concern | Contract |
 |---|---|
@@ -53,6 +87,9 @@ npm run verify
 ```bash
 npm run create:component -- app-example
 ```
+
+Pass `--format=dv` for the AI-first `.dv.js` template. The default remains `class` during the
+v0.6 experimental period.
 
 Use `--dry-run` to inspect generated paths and `--force` only when replacing deliberate local
 work. The generator never edits the manifest or design inventory automatically; those API

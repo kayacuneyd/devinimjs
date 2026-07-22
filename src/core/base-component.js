@@ -11,8 +11,8 @@ import { createReactive } from './reactive.js';
 import { html, HtmlString } from './html.js';
 import { morph } from './morph.js';
 
-/** Matches event directives in rendered templates, e.g. data-on:click / data-on:dv:save. */
-const EVENT_ATTR_PATTERN = /data-on:([\w:.-]+)=/g;
+/** Matches legacy and concise event directives, e.g. data-on:click / on:click. */
+const EVENT_ATTR_PATTERN = /(?:data-on|on):([\w:.-]+)=/g;
 
 /** Outlet tag is a transparent framework wrapper — exempt from the ownership boundary. */
 const OUTLET_TAG = 'DV-OUTLET';
@@ -217,17 +217,18 @@ export class BaseComponent extends HTMLElement {
     outlet.style.display = 'contents'; // structural transparency, not design (ADR-0009 #3)
     outlet.append(this.#childrenFragment);
     this.#childrenFragment = null;
-    // Outlet content carries no template string, so its data-on types are discovered from
+    // Outlet content carries no template string, so its event directive types are discovered from
     // the DOM instead (ADR-0004 #3): one scan, at placement time.
     for (const node of outlet.querySelectorAll('*')) {
       for (const attr of node.attributes) {
         if (attr.name.startsWith('data-on:')) this.#addDelegation(attr.name.slice(8));
+        if (attr.name.startsWith('on:')) this.#addDelegation(attr.name.slice(3));
       }
     }
   }
 
   /**
-   * Scans rendered output for `data-on:type` directives and delegates their event types
+   * Scans rendered output for `data-on:type` or `on:type` directives and delegates their event types
    * (ADR-0004 #2/#3).
    *
    * @param {string} htmlString - The rendered template string.
@@ -259,21 +260,22 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   #dispatch(event, type) {
-    const attr = `data-on:${type}`;
+    const legacyAttr = `data-on:${type}`;
+    const conciseAttr = `on:${type}`;
     // Walk up from the target to the directive element, bounded by this host. A manual walk
     // (instead of a dynamic attribute selector) sidesteps selector-escaping differences
     // between engines — `data-on:click` contains a colon.
     let el = event.target instanceof Element ? event.target : event.target?.parentElement;
-    while (el && el !== this && !el.hasAttribute(attr)) {
+    while (el && el !== this && !el.hasAttribute(legacyAttr) && !el.hasAttribute(conciseAttr)) {
       el = el.parentElement;
     }
     if (!el || el === this || !this.#owns(el)) return;
 
-    const method = el.getAttribute(attr);
+    const method = el.getAttribute(conciseAttr) ?? el.getAttribute(legacyAttr);
     if (!method) return;
     if (typeof this[method] !== 'function') {
       console.warn(
-        `[devinim] ${this.nodeName.toLowerCase()}: no method "${method}" for data-on:${type} (ADR-0004).`,
+        `[devinim] ${this.nodeName.toLowerCase()}: no method "${method}" for on:${type} (ADR-0004).`,
       );
       return;
     }
@@ -307,6 +309,9 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   requestUpdate() {
+    // A reactive state mutation in the same turn already owns the pending render. Avoid adding
+    // a misleading `<external>` change marker or scheduling duplicate work for adapter layers.
+    if (this.#updateQueued) return;
     this.#notify('<external>');
   }
 

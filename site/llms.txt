@@ -1,0 +1,27 @@
+# DevinimJS
+
+DevinimJS is a build-free, Proxy-reactive Vanilla JavaScript component runtime for PHP, static websites and shared hosting. It is the JavaScript companion of CKCSS.
+
+## Product contract
+
+- Consumers use native browser ES modules; Node.js, npm and a bundler are not runtime requirements.
+- Components use Light DOM so CKCSS and consumer CSS can style rendered markup.
+- Component configuration enters through data-* attributes.
+- Component communication leaves through bubbling dv:* CustomEvents.
+- Template interpolation is escaped by default; unsafe() is an explicit sanitized-HTML boundary.
+- The runtime has zero production dependencies.
+- The experimental AI-first authoring entry is `devinimjs/authoring`; `.dv.js` files are standard browser ESM. Its contract is `props`, `state`, optional `sync`, `actions` and `view`.
+- Pin releases in production. Current project release: v0.6.0-beta.0.
+
+## Start here
+
+- Human documentation: /en/docs/ and /tr/docs/
+- Live component catalog: /en/components/ and /tr/components/
+- Tutorials: /en/tutorials/ and /tr/tutorials/
+- Full AI reference: /llms-full.txt
+- Component manifest: /docs/component-manifest.json
+- Source repository: https://github.com/kayacuneyd/devinimjs
+
+## Agent instructions
+
+Read the full reference and component manifest before changing or generating a component. For ordinary new components, use `npm run create:component -- name --format=dv`; use the `component()` `.dv.js` contract and finish with `npm run validate:component -- name`. Preserve the build-free contract, Light DOM, dv- namespace rules, CKCSS compatibility and accessibility behavior. Run lint, unit tests, browser tests and the size gate before release.

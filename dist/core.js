@@ -215,7 +215,7 @@ function syncFormControl(oldEl, newEl) {
 }
 
 // src/core/base-component.js
-var EVENT_ATTR_PATTERN = /data-on:([\w:.-]+)=/g;
+var EVENT_ATTR_PATTERN = /(?:data-on|on):([\w:.-]+)=/g;
 var OUTLET_TAG2 = "DV-OUTLET";
 var BaseComponent = class extends HTMLElement {
   /** @type {boolean} True after the first connect initialized the component. */
@@ -409,11 +409,12 @@ var BaseComponent = class extends HTMLElement {
     for (const node of outlet.querySelectorAll("*")) {
       for (const attr of node.attributes) {
         if (attr.name.startsWith("data-on:")) this.#addDelegation(attr.name.slice(8));
+        if (attr.name.startsWith("on:")) this.#addDelegation(attr.name.slice(3));
       }
     }
   }
   /**
-   * Scans rendered output for `data-on:type` directives and delegates their event types
+   * Scans rendered output for `data-on:type` or `on:type` directives and delegates their event types
    * (ADR-0004 #2/#3).
    *
    * @param {string} htmlString - The rendered template string.
@@ -443,17 +444,18 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   #dispatch(event, type) {
-    const attr = `data-on:${type}`;
+    const legacyAttr = `data-on:${type}`;
+    const conciseAttr = `on:${type}`;
     let el = event.target instanceof Element ? event.target : event.target?.parentElement;
-    while (el && el !== this && !el.hasAttribute(attr)) {
+    while (el && el !== this && !el.hasAttribute(legacyAttr) && !el.hasAttribute(conciseAttr)) {
       el = el.parentElement;
     }
     if (!el || el === this || !this.#owns(el)) return;
-    const method = el.getAttribute(attr);
+    const method = el.getAttribute(conciseAttr) ?? el.getAttribute(legacyAttr);
     if (!method) return;
     if (typeof this[method] !== "function") {
       console.warn(
-        `[devinim] ${this.nodeName.toLowerCase()}: no method "${method}" for data-on:${type} (ADR-0004).`
+        `[devinim] ${this.nodeName.toLowerCase()}: no method "${method}" for on:${type} (ADR-0004).`
       );
       return;
     }
@@ -485,6 +487,7 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   requestUpdate() {
+    if (this.#updateQueued) return;
     this.#notify("<external>");
   }
   /**

@@ -3,28 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="DevinimJS is a build-free reactive component runtime for modern websites and shared hosting.">
-    <title>DevinimJS — reactive UI without a build step</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
-    <link rel="stylesheet" href="./assets/site.css">
+    <meta http-equiv="refresh" content="0; url=./en/">
+    <link rel="canonical" href="/en/">
+    <title>DevinimJS</title>
   </head>
-  <body>
-    <header class="site-header"><nav class="shell nav" aria-label="Primary"><a class="brand" href="./index.html">Devinim<span>JS</span></a><div class="nav-links"><a href="./docs.html">Docs</a><a href="./tutorials.html">Tutorials</a><a href="./components/">Components</a><a href="https://github.com/kayacuneyd/devinimjs">GitHub</a><a class="nav-cta" href="#start">Get started</a></div></nav></header>
-    <main>
-      <section class="hero"><div class="shell hero-grid"><div><p class="eyebrow">Build-free reactive UI</p><h1>Modern interaction, plain browser JavaScript.</h1><p class="lead">DevinimJS brings reactive components, accessible UI patterns and lightweight application tools to static sites, PHP projects and shared hosting—without Node.js, a bundler or a framework runtime.</p><div class="actions"><a class="button primary" href="#start">Use the CDN</a><a class="button" href="./tutorials.html">Start a tutorial</a></div></div><aside class="card demo-card" aria-label="Live component examples"><p class="eyebrow">Live components</p><div class="demo-row"><span>Counter</span><dv-counter data-start="3" data-step="1"></dv-counter></div><div class="demo-row"><span>Notification</span><button class="button" type="button" data-toast="Saved without a build step.">Show toast</button></div><div class="demo-row"><span>Dialog</span><button class="button" type="button" data-open-modal="#intro-modal">Open modal</button></div></aside></div></section>
-      <section><div class="shell"><div class="section-heading"><p class="eyebrow">Why DevinimJS</p><h2>Keep deployment boring. Keep the UI reactive.</h2><p>Upload files to any host, serve them from a CDN, and let native ES modules do the rest.</p></div><div class="grid"><article class="card"><span class="feature-number">1</span><h3>No consumer build</h3><p>Use native <code>&lt;script type="module"&gt;</code>. Your users never install Node, npm, Vite or Webpack.</p></article><article class="card"><span class="feature-number">2</span><h3>Works with your CSS</h3><p>Light DOM means CKCSS and your existing global stylesheet apply naturally to every component.</p></article><article class="card"><span class="feature-number">3</span><h3>Small by default</h3><p>The core runtime stays below 4 KB min+gzip. Async data, forms and routing are optional modules.</p></article><article class="card"><span class="feature-number">4</span><h3>Server-friendly</h3><p>HTML or PHP can provide initial state with <code>data-*</code>; components emit simple bubbling <code>dv:*</code> events.</p></article><article class="card"><span class="feature-number">5</span><h3>Safe rendering defaults</h3><p>Template interpolation escapes values by default, keeping the raw HTML boundary explicit.</p></article><article class="card"><span class="feature-number">6</span><h3>Predictable structure</h3><p>One component, one file, one clear API. Contracts, templates and a generator keep implementation consistent.</p></article></div></div></section>
-      <section id="start"><div class="shell split"><div><p class="eyebrow">One pinned import</p><h2>Start from a static HTML file.</h2><p>Use exact versions in production. The first import provides component authoring primitives; individual component modules register themselves.</p><div class="callout"><strong>Production rule:</strong> pin a tagged version, never <code>main</code> or an unversioned URL.</div></div><pre class="code"><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css"&gt;
-
-&lt;dv-counter data-start="5" data-step="2"&gt;&lt;/dv-counter&gt;
-
-&lt;script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.2.0/dist/modules/dv-counter.js"&gt;&lt;/script&gt;</code></pre></div></section>
-      <section><div class="shell"><div class="section-heading"><p class="eyebrow">From widget to application</p><h2>Use only the pieces your page needs.</h2></div><div class="grid two"><article class="card"><h3>Component runtime</h3><p>State, templates, keyed DOM updates, events, outlet composition and accessible components.</p><a href="./docs.html#core">Read the core API →</a></article><article class="card"><h3>Application runtime</h3><p>Optional async state, JSON requests, forms and hash routing for richer interfaces.</p><a href="./docs.html#application">Read the application API →</a></article><article class="card"><h3>PHP or no PHP</h3><p>Use backend-rendered attributes, JSON endpoints, LocalStorage or any external API. The UI layer is independent.</p><a href="./tutorials.html#first-component">See the first component →</a></article><article class="card"><h3>Learn by building</h3><p>Follow short tutorials from a counter to a routed product catalogue, with complete code at every step.</p><a href="./tutorials.html">Browse tutorials →</a></article></div></div></section>
-    </main>
-    <dv-modal id="intro-modal" data-label="DevinimJS"><p>Every demo on this page is a real DevinimJS component loaded directly from jsDelivr.</p></dv-modal><dv-toast data-duration="3500"></dv-toast>
-    <footer class="footer"><div class="shell footer-grid"><span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span><span><a href="./docs.html">Docs</a> · <a href="./tutorials.html">Tutorials</a> · <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a></span></div></footer>
-    <script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.2.0/dist/modules/dv-counter.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.2.0/dist/modules/dv-modal.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.2.0/dist/modules/dv-toast.js"></script>
-    <script type="module" src="./assets/site.js"></script>
-  </body>
+  <body><p><a href="./en/">Continue to DevinimJS</a></p></body>
 </html>

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lesson 3: The html tagged template — DevinimJS's only template mechanism. Learn interpolation, auto-escaping, conditionals, loops, and boolean attributes.">
+<link rel="canonical" href="/en/tutorials/03-html-templates/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>Lesson 03 — HTML Templates | DevinimJS Tutorials</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">Skip to content</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Primary navigation">
+    <a href="../../docs/">Docs</a><a href="../../components/">Components</a><a href="../" aria-current="page">Tutorials</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">Phase 1 · Lesson 3</span>
+  <h1>HTML Templates — The <code>html</code> Tag</h1>
+  <p class="ck-text-lead">The <code>html</code> tagged template is the only template mechanism in DevinimJS. Learn its rules once, build everything with it.</p>
+</section>
+
+<div class="tutorial-layout">
+
+<aside class="tutorial-nav" aria-label="Lesson outline">
+<details open>
+<summary>Phase 1: Foundations</summary>
+<ol>
+<li><a href="../01-hello-world/">01. Hello World</a></li>
+<li><a href="../02-component-lifecycle/">02. Component Lifecycle</a></li>
+<li><a href="./" aria-current="page">03. HTML Templates</a></li>
+<li><a href="../04-reactivity/">04. Reactivity</a></li>
+<li><a href="../05-events/">05. Events &amp; Actions</a></li>
+<li><a href="../06-attributes/">06. Attributes &amp; Data</a></li>
+<li><a href="../07-outlet-composition/">07. Outlet &amp; Composition</a></li>
+</ol>
+</details>
+<details>
+<summary>Phase 2–5</summary>
+<ol>
+<li class="coming-soon">08–26 Coming soon</li>
+</ol>
+</details>
+</aside>
+
+<article class="tutorial-lesson ck-stack ck-stack--relaxed">
+
+<div class="lesson-objectives">
+<strong>What you'll learn</strong>
+<ul>
+  <li>How <code>html`...`</code> works and why it's called a "tagged template"</li>
+  <li>Automatic HTML escaping for interpolated values</li>
+  <li>Boolean attribute shorthand: <code>disabled="${value}"</code></li>
+  <li>Conditional rendering with ternaries and <code>&amp;&amp;</code></li>
+  <li>List rendering with <code>.map()</code></li>
+  <li>When to use <code>unsafe()</code> (and when not to)</li>
+</ul>
+</div>
+
+<section class="ck-stack">
+<h2>Basic interpolation</h2>
+<p>Use <code>${expression}</code> inside a template to embed reactive state into HTML:</p>
+<pre><code>template() {
+  return html`
+    &lt;h1&gt;Welcome, ${this.state.username}&lt;/h1&gt;
+    &lt;p&gt;You have ${this.state.unread} unread messages.&lt;/p&gt;
+  `;
+}</code></pre>
+<p>Numbers, strings, booleans — all primitive values are converted to strings automatically.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Automatic escaping (XSS-safe by default)</h2>
+<p>Every interpolated value is HTML-escaped. User input cannot inject HTML:</p>
+<pre><code>// If this.state.comment is '&lt;script&gt;alert("xss")&lt;/script&gt;'
+template() {
+  return html`&lt;div&gt;${this.state.comment}&lt;/div&gt;`;
+}
+// Renders as: &lt;div&gt;&amp;lt;script&amp;gt;alert("xss")&amp;lt;/script&amp;gt;&lt;/div&gt;</code></pre>
+<div class="ck-alert ck-alert--success"><p class="ck-alert__title">Security baseline</p><p>You don't need to remember to escape. The template does it automatically. XSS via interpolation is not possible.</p></div>
+</section>
+
+<section class="ck-stack">
+<h2>Nested templates</h2>
+<p><code>html</code> tagged templates can nest. Each nested template is a valid <code>HtmlString</code>:</p>
+<pre><code>template() {
+  const badge = (count) => html`&lt;span class="ck-badge"&gt;${count}&lt;/span&gt;`;
+  return html`&lt;div&gt;Inbox ${badge(this.state.unread)}&lt;/div&gt;`;
+}</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Boolean attribute shorthand</h2>
+<p>HTML boolean attributes like <code>disabled</code>, <code>checked</code>, <code>selected</code>, and <code>hidden</code> get special handling:</p>
+<pre><code>template() {
+  return html`
+    &lt;input disabled="${this.state.isLocked}"&gt;
+    &lt;div hidden="${this.state.isEmpty}"&gt;No results&lt;/div&gt;
+  `;
+}</code></pre>
+<p>When the value is <code>true</code>, the attribute is present (bare). When <code>false</code>, the attribute is removed entirely:</p>
+<pre><code>this.state.isLocked === true  →  &lt;input disabled&gt;
+this.state.isLocked === false →  &lt;input&gt;</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Conditional rendering</h2>
+<p>Use JavaScript ternary or <code>&amp;&amp;</code> for conditional branches:</p>
+<pre><code>template() {
+  return html`
+    ${this.state.loggedIn
+      ? html`&lt;a href="/profile"&gt;Profile&lt;/a&gt;`
+      : html`&lt;a href="/login"&gt;Log in&lt;/a&gt;`}
+
+    ${this.state.error && html`&lt;div class="ck-alert ck-alert--error"&gt;${this.state.error}&lt;/div&gt;`}
+  `;
+}</code></pre>
+
+<div class="demo-preview">
+  <span class="demo-label">Live demo — toggle visibility</span>
+  <dv-template-demo></dv-template-demo>
+</div>
+</section>
+
+<section class="ck-stack">
+<h2>List rendering with <code>.map()</code></h2>
+<p>Map over arrays. Each item can return a nested template:</p>
+<pre><code>template() {
+  return html`
+    &lt;ul&gt;
+      ${this.state.items.map((item) => html`
+        &lt;li data-key="${item.id}"&gt;${item.name}&lt;/li&gt;
+      `)}
+    &lt;/ul&gt;
+  `;
+}</code></pre>
+<div class="ck-alert ck-alert--success"><p class="ck-alert__title">Tip: Use data-key for stable identity</p><p>Add <code>data-key</code> to list items when they can be reordered, inserted, or deleted. The morph engine uses it to preserve DOM nodes instead of recreating them.</p></div>
+</section>
+
+<section class="ck-stack">
+<h2>Escaping helpers: <code>escapeHtml()</code> and <code>unsafe()</code></h2>
+<p><code>escapeHtml(str)</code> escapes <code>&amp; &lt; &gt; " '</code>. Normally you don't need it because templates escape automatically — but it's useful when building strings outside a template.</p>
+<p><code>unsafe(rawHtml)</code> bypasses escaping. Use only with independently sanitized HTML:</p>
+<pre><code>import { html, unsafe, escapeHtml } from '.../core.min.js';
+
+// Only use unsafe() with vetted HTML
+const sanitized = DOMPurify.sanitize(userProvidedHtml);
+template() {
+  return html`&lt;div&gt;${unsafe(sanitized)}&lt;/div&gt;`;
+}</code></pre>
+<div class="ck-alert ck-alert--warning"><p class="ck-alert__title">unsafe() requires security review</p><p>Per ADR-0003, every call to <code>unsafe()</code> must be independently reviewed. Prefer escaping by default.</p></div>
+</section>
+
+<section class="ck-stack">
+<h2>Recap</h2>
+<div class="ck-grid ck-grid--2">
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Always return html`...`</p><p><code>template()</code> must return an <code>HtmlString</code>. The <code>html</code> tag creates one.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Auto-escaped</p><p>All interpolated values are escaped. XSS via <code>${}</code> is not possible.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Boolean shorthand</p><p><code>disabled="${val}"</code> emits the bare attribute when true, removes it when false.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Nest, map, branch</p><p>Templates compose. Use ternaries, <code>&amp;&amp;</code>, and <code>.map()</code> freely.</p></div>
+</div>
+</section>
+
+<nav class="lesson-nav" aria-label="Lesson navigation">
+  <a href="../02-component-lifecycle/">← Component Lifecycle</a>
+  <a href="../04-reactivity/">Next: Reactivity →</a>
+</nav>
+
+</article>
+</div>
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../../">Home</a> · <a href="../../docs/">Docs</a> · <a href="../">All tutorials</a></span>
+</footer>
+
+<script type="module">
+import { BaseComponent, html, define } from 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/core.min.js';
+class DvTemplateDemo extends BaseComponent {
+  initialState() { return { visible: true, items: ['React', 'Vue', 'Svelte', 'HTMX'] }; }
+  template() {
+    return html`
+      <button class="ck-button ck-button--secondary" data-on:click="toggle">${this.state.visible ? 'Hide' : 'Show'} list</button>
+      ${this.state.visible && html`
+        <ul class="ck-stack ck-stack--compact" style="margin-top:.8rem">
+          ${this.state.items.map((item) => html`<li>${item}</li>`)}
+        </ul>
+      `}
+    `;
+  }
+  toggle() { this.state.visible = !this.state.visible; }
+}
+define('dv-template-demo', DvTemplateDemo);
+</script>
+</body>
+</html>

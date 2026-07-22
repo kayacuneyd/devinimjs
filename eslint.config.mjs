@@ -75,6 +75,6 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/', 'dist/', 'coverage/'],
+    ignores: ['node_modules/', 'dist/', 'coverage/', 'site/assets/*.min.js'],
   },
 ];

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DevinimJS authoring API</title></head>
+  <body>
+    <main>
+      <h1>Build-free .dv.js component</h1>
+      <acme-authoring-counter data-start="4" data-step="2"></acme-authoring-counter>
+      <output id="result" aria-live="polite"></output>
+    </main>
+    <script type="module" src="./authoring-counter.dv.js"></script>
+    <script type="module">
+      document.querySelector('acme-authoring-counter').addEventListener('dv:change', (event) => {
+        document.querySelector('#result').textContent = `Changed to ${event.detail.count}`;
+      });
+    </script>
+  </body>
+</html>

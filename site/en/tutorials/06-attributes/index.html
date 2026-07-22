@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lesson 6: Pass configuration data from HTML to components using data-* attributes with str(), num(), bool(), and json() helpers.">
+<link rel="canonical" href="/en/tutorials/06-attributes/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>Lesson 06 — Attributes &amp; Data | DevinimJS Tutorials</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">Skip to content</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Primary navigation">
+    <a href="../../docs/">Docs</a><a href="../../components/">Components</a><a href="../" aria-current="page">Tutorials</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">Phase 1 · Lesson 6</span>
+  <h1>Attributes &amp; Data — Passing Configuration</h1>
+  <p class="ck-text-lead">Use <code>data-*</code> attributes to configure components from HTML. PHP, static sites, and CMS backends can all provide initial values.</p>
+</section>
+
+<div class="tutorial-layout">
+
+<aside class="tutorial-nav" aria-label="Lesson outline">
+<details open>
+<summary>Phase 1: Foundations</summary>
+<ol>
+<li><a href="../01-hello-world/">01. Hello World</a></li>
+<li><a href="../02-component-lifecycle/">02. Component Lifecycle</a></li>
+<li><a href="../03-html-templates/">03. HTML Templates</a></li>
+<li><a href="../04-reactivity/">04. Reactivity</a></li>
+<li><a href="../05-events/">05. Events &amp; Actions</a></li>
+<li><a href="./" aria-current="page">06. Attributes &amp; Data</a></li>
+<li><a href="../07-outlet-composition/">07. Outlet &amp; Composition</a></li>
+</ol>
+</details>
+<details>
+<summary>Phase 2–5</summary>
+<ol>
+<li class="coming-soon">08–26 Coming soon</li>
+</ol>
+</details>
+</aside>
+
+<article class="tutorial-lesson ck-stack ck-stack--relaxed">
+
+<div class="lesson-objectives">
+<strong>What you'll learn</strong>
+<ul>
+  <li>Read configuration from HTML with <code>this.str()</code>, <code>this.num()</code>, <code>this.bool()</code>, and <code>this.json()</code></li>
+  <li>Provide sensible defaults for every attribute</li>
+  <li>React to live attribute changes with <code>observedAttributes</code> and <code>onAttribute()</code></li>
+  <li>Use <code>data-*</code> as the bridge between server-rendered HTML and client-side reactivity</li>
+</ul>
+</div>
+
+<section class="ck-stack">
+<h2>The <code>data-*</code> contract</h2>
+<p>DevinimJS components read their configuration from <code>this.dataset</code>. The HTML (or PHP template) provides values:</p>
+<pre><code>&lt;dv-counter
+  data-start="10"
+  data-step="5"
+  data-label="Quantity"
+  data-disabled="false"
+&gt;&lt;/dv-counter&gt;</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2>Four attribute helpers</h2>
+<div class="ck-table-wrap">
+<table class="ck-table">
+<thead><tr><th>Helper</th><th>Reads</th><th>Returns</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><code>this.str(key, fallback)</code></td><td><code>data-key</code></td><td>string</td><td><code>this.str('label', 'Default')</code></td></tr>
+<tr><td><code>this.num(key, fallback)</code></td><td><code>data-key</code></td><td>finite number</td><td><code>this.num('start', 0)</code></td></tr>
+<tr><td><code>this.bool(key, fallback)</code></td><td><code>data-key</code></td><td>boolean</td><td><code>this.bool('disabled', false)</code></td></tr>
+<tr><td><code>this.json(key, fallback)</code></td><td><code>data-key</code></td><td>parsed JSON</td><td><code>this.json('items', [])</code></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="ck-stack">
+<h2><code>str()</code> — string values</h2>
+<pre><code>initialState() {
+  return {
+    label: this.str('label', 'Submit'),
+    placeholder: this.str('placeholder', 'Enter value...'),
+  };
+}</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2><code>num()</code> — numeric values</h2>
+<p>Returns a finite number. Non-numeric values fall back to the default:</p>
+<pre><code>initialState() {
+  return {
+    min: this.num('min', 0),
+    max: this.num('max', 100),
+    step: this.num('step', 1),
+  };
+}
+// data-min="0" data-max="100" data-step="5"
+// If data-step is missing or "abc", returns 1 (the fallback)</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2><code>bool()</code> — boolean values</h2>
+<p>Understands <code>'false'</code> and <code>'0'</code> as <code>false</code>. Everything else is <code>true</code>:</p>
+<pre><code>initialState() {
+  return {
+    disabled: this.bool('disabled', false),
+    required: this.bool('required', false),
+    autofocus: this.bool('autofocus', false),
+  };
+}
+// data-disabled  → true  (present with any value except 'false'/'0')
+// data-disabled="false" → false
+// no attribute   → false (the fallback)</code></pre>
+</section>
+
+<section class="ck-stack">
+<h2><code>json()</code> — structured data</h2>
+<p>Pass arrays and objects from the server. Use single quotes in HTML attributes:</p>
+<pre><code>&lt;!-- HTML --&gt;
+&lt;dv-product-list data-items='[{"id":1,"name":"Widget"},{"id":2,"name":"Gadget"}]'&gt;&lt;/dv-product-list&gt;</code></pre>
+<pre><code>initialState() {
+  return {
+    items: this.json('items', []),
+  };
+}</code></pre>
+<div class="ck-alert ck-alert--success"><p class="ck-alert__title">PHP integration pattern</p><p>In PHP: <code>&lt;dv-product-list data-items='&lt;?= json_encode($products) ?&gt;'&gt;</code>. The server renders the data as JSON in the attribute. The component reads it at mount time.</p></div>
+</section>
+
+<section class="ck-stack">
+<h2>Live attribute changes with <code>observedAttributes</code></h2>
+<p>If an attribute changes after the component is connected (e.g., via <code>setAttribute</code>), the component can react:</p>
+<pre><code>static observedAttributes = ['data-start'];
+
+onAttribute(name, newValue, oldValue) {
+  if (name === 'data-start') {
+    this.state.count = Number(newValue) || 0;
+  }
+}</code></pre>
+<p>Note: <code>observedAttributes</code> only works with the exact attribute name including the <code>data-</code> prefix.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Live demo: Configurable badge</h2>
+<div class="demo-preview">
+  <span class="demo-label">Live demo — configured from data-* attributes</span>
+  <dv-badge-demo data-text="Hello" data-color="brand" data-size="medium"></dv-badge-demo>
+</div>
+</section>
+
+<section class="ck-stack">
+<h2>Recap</h2>
+<div class="ck-grid ck-grid--2">
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Four helpers</p><p><code>str()</code>, <code>num()</code>, <code>bool()</code>, <code>json()</code> — typed reads from <code>data-*</code>.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Always provide fallbacks</p><p>The second argument is the default. Your component works even if attributes are missing.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Server-friendly</p><p>PHP, Laravel, WordPress — any backend can write <code>data-*</code> attributes.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Live updates</p><p>Use <code>observedAttributes</code> + <code>onAttribute()</code> for post-connect attribute changes.</p></div>
+</div>
+</section>
+
+<nav class="lesson-nav" aria-label="Lesson navigation">
+  <a href="../05-events/">← Events &amp; Actions</a>
+  <a href="../07-outlet-composition/">Next: Outlet &amp; Composition →</a>
+</nav>
+
+</article>
+</div>
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../../">Home</a> · <a href="../../docs/">Docs</a> · <a href="../">All tutorials</a></span>
+</footer>
+
+<script type="module">
+import { BaseComponent, html, define } from 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/core.min.js';
+class DvBadgeDemo extends BaseComponent {
+  initialState() {
+    return {
+      text: this.str('text', 'Badge'),
+      color: this.str('color', 'brand'),
+      size: this.str('size', 'medium'),
+    };
+  }
+  template() {
+    const sizes = { small: '.75rem', medium: '1rem', large: '1.5rem' };
+    const colors = { brand: '#146c94', accent: '#fca311', ink: '#14213d', muted: '#52616b' };
+    return html`
+      <span style="
+        display:inline-block;padding:.3em .7em;border-radius:.4em;
+        background:${colors[this.state.color] || '#146c94'};color:white;
+        font-size:${sizes[this.state.size] || '1rem'};font-weight:700">
+        ${this.state.text}
+      </span>
+      <p class="ck-text-muted" style="margin-top:.8rem;font-size:.82rem">
+        Config: data-text="${this.state.text}" data-color="${this.state.color}" data-size="${this.state.size}"
+      </p>
+    `;
+  }
+}
+define('dv-badge-demo', DvBadgeDemo);
+</script>
+</body>
+</html>

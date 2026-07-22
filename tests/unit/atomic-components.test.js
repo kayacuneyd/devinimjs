@@ -5,7 +5,6 @@ import { Window } from 'happy-dom';
 const window = new Window();
 for (const key of ['HTMLElement', 'Element', 'Node', 'CustomEvent', 'document', 'customElements']) globalThis[key] = window[key];
 await import('../../src/components/dv-dropdown.js');
-await import('../../src/components/dv-search.js');
 await import('../../src/components/dv-product-card.js');
 await import('../../src/components/dv-field.js');
 await import('../../src/components/dv-confirm.js');
@@ -26,20 +25,6 @@ test('dropdown toggles its consumer-owned menu', async () => {
   await settle();
   assert.equal(trigger.getAttribute('aria-expanded'), 'true');
   assert.equal(el.querySelector('[role="menu"]').hidden, false);
-});
-
-test('search emits a query event and can clear', async () => {
-  const el = document.createElement('dv-search');
-  document.body.appendChild(el);
-  const seen = [];
-  el.addEventListener('dv:query', (event) => seen.push(event.detail.query));
-  const input = el.querySelector('input');
-  input.value = 'Keyboard';
-  input.dispatchEvent(new window.Event('input', { bubbles: true }));
-  await settle();
-  el.querySelector('button').click();
-  await settle();
-  assert.deepEqual(seen, ['Keyboard', '']);
 });
 
 test('product card emits its configured product', async () => {

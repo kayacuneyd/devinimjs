@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lesson 4: Understand DevinimJS's Proxy-based reactivity — how mutating this.state triggers automatic DOM updates with batched microtask rendering.">
+<link rel="canonical" href="/en/tutorials/04-reactivity/">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+<link rel="stylesheet" href="/assets/devinim-ckcss.css">
+<link rel="stylesheet" href="/assets/tutorial.css">
+<title>Lesson 04 — Reactivity | DevinimJS Tutorials</title>
+</head>
+<body class="dv-site">
+<a class="ck-skip-link" href="#main">Skip to content</a>
+<header class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <a href="../../"><strong>DevinimJS</strong></a>
+  <nav class="ck-cluster" aria-label="Primary navigation">
+    <a href="../../docs/">Docs</a><a href="../../components/">Components</a><a href="../" aria-current="page">Tutorials</a>
+    <a href="https://github.com/kayacuneyd/devinimjs">GitHub</a>
+  </nav>
+</header>
+
+<main id="main" class="ck-container ck-container--wide ck-stack ck-stack--relaxed">
+
+<section class="ck-stack">
+  <span class="ck-badge">Phase 1 · Lesson 4</span>
+  <h1>Reactivity — <code>this.state</code> and Batched Rendering</h1>
+  <p class="ck-text-lead">Mutate <code>this.state</code> directly. DevinimJS detects changes, batches them, and updates the DOM in one efficient pass.</p>
+</section>
+
+<div class="tutorial-layout">
+
+<aside class="tutorial-nav" aria-label="Lesson outline">
+<details open>
+<summary>Phase 1: Foundations</summary>
+<ol>
+<li><a href="../01-hello-world/">01. Hello World</a></li>
+<li><a href="../02-component-lifecycle/">02. Component Lifecycle</a></li>
+<li><a href="../03-html-templates/">03. HTML Templates</a></li>
+<li><a href="./" aria-current="page">04. Reactivity</a></li>
+<li><a href="../05-events/">05. Events &amp; Actions</a></li>
+<li><a href="../06-attributes/">06. Attributes &amp; Data</a></li>
+<li><a href="../07-outlet-composition/">07. Outlet &amp; Composition</a></li>
+</ol>
+</details>
+<details>
+<summary>Phase 2–5</summary>
+<ol>
+<li class="coming-soon">08–26 Coming soon</li>
+</ol>
+</details>
+</aside>
+
+<article class="tutorial-lesson ck-stack ck-stack--relaxed">
+
+<div class="lesson-objectives">
+<strong>What you'll learn</strong>
+<ul>
+  <li>How JavaScript Proxy makes <code>this.state</code> reactive</li>
+  <li>Mutate state directly — no <code>setState()</code>, no immutability requirement</li>
+  <li>Batched rendering: multiple mutations = one DOM update</li>
+  <li>Using <code>requestUpdate()</code> for non-state triggers</li>
+  <li>Nested reactivity with objects and arrays</li>
+</ul>
+</div>
+
+<section class="ck-stack">
+<h2>Direct mutation, not <code>setState()</code></h2>
+<p>In DevinimJS you mutate <code>this.state</code> directly. There is no <code>setState()</code>, no <code>useState()</code>, no dispatch function:</p>
+<pre><code>increment() {
+  this.state.count += 1;  // ← direct mutation. That's it.
+}
+
+reset() {
+  this.state.count = 0;
+  this.state.lastReset = new Date().toISOString();
+}</code></pre>
+<p>The Proxy traps the assignment and schedules a re-render on the next microtask.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Batched rendering</h2>
+<p>Multiple state mutations in the same synchronous block trigger <strong>one</strong> re-render:</p>
+<pre><code>shuffle() {
+  this.state.score += 10;
+  this.state.round += 1;
+  this.state.message = `Round ${this.state.round} complete`;
+  // All three mutations → one template() call on the next microtask
+}</code></pre>
+<p>This is efficient and predictable. You don't need to batch manually — the framework does it.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Deep reactivity</h2>
+<p>Nested objects and arrays are also reactive. The Proxy wraps deeply:</p>
+<pre><code>initialState() {
+  return {
+    user: { name: 'Guest', email: '' },
+    items: []
+  };
+}
+
+updateName() {
+  this.state.user.name = 'Alice';  // ← deep mutation detected
+}
+
+addItem(product) {
+  this.state.items.push(product);  // ← array mutation detected
+}</code></pre>
+<div class="ck-alert ck-alert--success"><p class="ck-alert__title">Dot-path tracking</p><p>The <code>updated(changedKeys)</code> hook receives dot-paths like <code>['user.name']</code> or <code>['items.0']</code>. You can react to specific nested changes.</p></div>
+</section>
+
+<section class="ck-stack">
+<h2><code>requestUpdate()</code> — the escape hatch</h2>
+<p>Sometimes you need a re-render without mutating state. Use <code>requestUpdate()</code> for external triggers:</p>
+<pre><code>connected() {
+  // Timers, WebSocket messages, external DOM events
+  this.listen(window, 'resize', () => this.requestUpdate());
+  this.listen(someExternalSource, 'data', () => this.requestUpdate());
+}</code></pre>
+<p>After <code>requestUpdate()</code>, <code>template()</code> runs again but <code>updated()</code> is <strong>not</strong> called (since no state keys changed).</p>
+</section>
+
+<section class="ck-stack">
+<h2>How the Proxy works (briefly)</h2>
+<p><code>createReactive(target, onChange)</code> wraps your object in a <code>Proxy</code>:</p>
+<pre><code>import { createReactive } from '.../core.min.js';
+
+const data = createReactive({ count: 0, items: [] }, (path) => {
+  console.log('Changed:', path);  // e.g. "count", "items.0"
+});
+
+data.count += 1;       // logs "Changed: count"
+data.items.push('a');   // logs "Changed: items" and "Changed: items.0"</code></pre>
+<p><code>BaseComponent</code> calls <code>createReactive()</code> internally. The <code>onChange</code> callback schedules <code>template()</code> for the next microtask.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Things that pass through un-wrapped</h2>
+<p>Class instances like <code>Date</code>, <code>Map</code>, <code>Set</code>, and non-plain objects are <strong>not</strong> wrapped by the Proxy. They pass through as-is:</p>
+<pre><code>initialState() {
+  return {
+    since: new Date(),        // ← Date is not proxied
+    tags: new Set(['ui']),    // ← Set is not proxied
+    cache: new Map(),         // ← Map is not proxied
+  };
+}</code></pre>
+<p>If you need reactivity on these values, replace them entirely: <code>this.state.since = new Date()</code>.</p>
+</section>
+
+<section class="ck-stack">
+<h2>Live demo: Batched mutations</h2>
+<div class="demo-preview">
+  <span class="demo-label">Live demo — watch batched updates</span>
+  <dv-batch-demo></dv-batch-demo>
+  <p class="ck-text-muted" style="margin-top:.8rem">Click "Multi-step update" to see 3 state mutations in one re-render.</p>
+</div>
+</section>
+
+<section class="ck-stack">
+<h2>Recap</h2>
+<div class="ck-grid ck-grid--2">
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Mutate directly</p><p><code>this.state.x = y</code>. No setter function, no immutability.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Batched automatically</p><p>Multiple sync mutations → one <code>template()</code> call on next microtask.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Deeply reactive</p><p>Nested objects and arrays are tracked. Dot-path in <code>updated()</code>.</p></div>
+  <div class="ck-alert ck-alert--success"><p class="ck-alert__title">Escape hatch</p><p><code>requestUpdate()</code> for external triggers that aren't state mutations.</p></div>
+</div>
+</section>
+
+<nav class="lesson-nav" aria-label="Lesson navigation">
+  <a href="../03-html-templates/">← HTML Templates</a>
+  <a href="../05-events/">Next: Events &amp; Actions →</a>
+</nav>
+
+</article>
+</div>
+</main>
+
+<footer class="ck-container ck-container--wide ck-cluster ck-cluster--spread">
+  <span>DevinimJS by <a href="https://kayacuneyt.com">Cüneyt Kaya</a></span>
+  <span><a href="../../">Home</a> · <a href="../../docs/">Docs</a> · <a href="../">All tutorials</a></span>
+</footer>
+
+<script type="module">
+import { BaseComponent, html, define } from 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/core.min.js';
+class DvBatchDemo extends BaseComponent {
+  _renders = 0;
+  initialState() { return { x: 0, y: 0, z: 0, lastAction: '' }; }
+  template() { this._renders++; return html`
+    <div class="ck-grid ck-grid--auto-fit" style="margin-bottom:.8rem">
+      <span class="ck-badge">x: ${this.state.x}</span>
+      <span class="ck-badge">y: ${this.state.y}</span>
+      <span class="ck-badge">z: ${this.state.z}</span>
+    </div>
+    <p class="ck-text-muted" style="font-size:.85rem;margin-bottom:.5rem">${this.state.lastAction}</p>
+    <div class="ck-cluster">
+      <button class="ck-button" data-on:click="single">Single +1 x</button>
+      <button class="ck-button" data-on:click="multi">Multi-step update</button>
+      <button class="ck-button ck-button--secondary" data-on:click="reset">Reset</button>
+    </div>
+  `; }
+  single() { this.state.x += 1; this.state.lastAction = '1 mutation → 1 render'; }
+  multi() { this.state.x += 1; this.state.y += 1; this.state.z += 1; this.state.lastAction = '3 mutations → 1 render'; }
+  reset() { this.state.x = 0; this.state.y = 0; this.state.z = 0; this.state.lastAction = 'Reset'; }
+}
+define('dv-batch-demo', DvBatchDemo);
+</script>
+</body>
+</html>
