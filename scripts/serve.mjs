@@ -31,7 +31,8 @@ createServer(async (req, res) => {
       return;
     }
     let path = normalize(decodeURIComponent(url.pathname)).replace(/^([/\\])+/, '');
-    if (path === '' || path.endsWith('/')) path += 'examples/counter.html';
+    if (path === '') path = 'examples/counter.html';
+    else if (path.endsWith('/')) path += 'index.html';
     const file = join(root, path);
     if (!file.startsWith(root)) throw new Error('path escape');
     const body = await readFile(file);
