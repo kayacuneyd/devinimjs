@@ -98,6 +98,40 @@ disabled controls at their boundaries.
 
 ---
 
+## `<dv-field>` — shipped (unreleased)
+
+A labelled native input for forms that want a small, predictable event API. Configure it with
+`data-name`, `data-label`, `data-type`, `data-value`, `data-placeholder`, `data-required`,
+`data-disabled` and `data-error`. It emits `dv:input` and `dv:change` with `{ value, valid }`.
+The surrounding form remains responsible for submission and persistence.
+
+---
+
+## `<dv-confirm>` — shipped (unreleased)
+
+A two-step control for consequential actions. The first activation shows a message plus Confirm
+and Cancel controls; the second emits `dv:confirm` with `{ value }`. Cancel emits `dv:cancel`.
+Configure labels and value through `data-label`, `data-message`, `data-confirm-label`,
+`data-cancel-label` and `data-value`.
+
+---
+
+## `<dv-autocomplete>` — shipped (unreleased)
+
+An accessible local-data combobox. Give it a JSON `data-items` list and optionally a
+`data-query`/`data-label`; it emits `dv:query` as the user types and `dv:select` with
+`{ value }` after a choice. Application code owns remote fetching and replaces `data-items`.
+
+---
+
+## `<dv-data-table>` — shipped (unreleased)
+
+A small semantic table for already-loaded JSON. `data-columns` accepts strings or
+`{ key, label }` objects, `data-rows` accepts objects and `data-label` labels the table.
+Column headers sort rows locally and emit `dv:sort` with `{ key, direction }`.
+
+---
+
 ## Consumer components
 
 Your own components follow the identical contract. Reserve `dv-` for framework components;

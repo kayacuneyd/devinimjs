@@ -17,3 +17,7 @@ export { DvPagination } from './components/dv-pagination.js';
 export { DvDropdown } from './components/dv-dropdown.js';
 export { DvSearch } from './components/dv-search.js';
 export { DvProductCard } from './components/dv-product-card.js';
+export { DvField } from './components/dv-field.js';
+export { DvConfirm } from './components/dv-confirm.js';
+export { DvAutocomplete } from './components/dv-autocomplete.js';
+export { DvDataTable } from './components/dv-data-table.js';

@@ -7,6 +7,10 @@ for (const key of ['HTMLElement', 'Element', 'Node', 'CustomEvent', 'document', 
 await import('../../src/components/dv-dropdown.js');
 await import('../../src/components/dv-search.js');
 await import('../../src/components/dv-product-card.js');
+await import('../../src/components/dv-field.js');
+await import('../../src/components/dv-confirm.js');
+await import('../../src/components/dv-autocomplete.js');
+await import('../../src/components/dv-data-table.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -46,4 +50,61 @@ test('product card emits its configured product', async () => {
   el.querySelector('button').click();
   await settle();
   assert.deepEqual(seen, [{ id: 'keyboard', name: 'Keyboard', price: 99 }]);
+});
+
+test('field reports value and native validity', async () => {
+  const el = document.createElement('dv-field');
+  el.setAttribute('data-required', 'true');
+  document.body.appendChild(el);
+  const seen = [];
+  el.addEventListener('dv:input', (event) => seen.push(event.detail));
+  const input = el.querySelector('input');
+  input.value = 'Ada';
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  await settle();
+  assert.equal(seen[0].value, 'Ada');
+  assert.equal(seen[0].valid, true);
+});
+
+test('confirm requires a second activation before emitting', async () => {
+  const el = document.createElement('dv-confirm');
+  el.setAttribute('data-value', 'account-1');
+  document.body.appendChild(el);
+  const seen = [];
+  el.addEventListener('dv:confirm', (event) => seen.push(event.detail));
+  el.querySelector('button').click();
+  await settle();
+  assert.equal(el.querySelectorAll('button').length, 2);
+  el.querySelector('button').click();
+  await settle();
+  assert.deepEqual(seen, [{ value: 'account-1' }]);
+});
+
+test('autocomplete filters local items and emits a selected value', async () => {
+  const el = document.createElement('dv-autocomplete');
+  el.setAttribute('data-items', '["Keyboard", "Mouse"]');
+  document.body.appendChild(el);
+  const seen = [];
+  el.addEventListener('dv:select', (event) => seen.push(event.detail.value));
+  const input = el.querySelector('input');
+  input.value = 'key';
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  await settle();
+  assert.equal(el.querySelectorAll('[role="option"]').length, 1);
+  el.querySelector('[role="option"] button').click();
+  await settle();
+  assert.deepEqual(seen, ['Keyboard']);
+});
+
+test('data table sorts rows and emits its ordering', async () => {
+  const el = document.createElement('dv-data-table');
+  el.setAttribute('data-columns', '["name"]');
+  el.setAttribute('data-rows', '[{"name":"Zoe"},{"name":"Ada"}]');
+  document.body.appendChild(el);
+  const seen = [];
+  el.addEventListener('dv:sort', (event) => seen.push(event.detail));
+  el.querySelector('button').click();
+  await settle();
+  assert.equal(el.querySelector('tbody td').textContent, 'Ada');
+  assert.deepEqual(seen, [{ key: 'name', direction: 'asc' }]);
 });

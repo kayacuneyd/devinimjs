@@ -10,6 +10,10 @@
     { "tag": "dv-pagination", "class": "DvPagination", "module": "src/components/dv-pagination.js", "attributes": ["data-page", "data-total", "data-size", "data-label"], "events": ["dv:page"] },
     { "tag": "dv-dropdown", "class": "DvDropdown", "module": "src/components/dv-dropdown.js", "attributes": ["data-open", "data-label"], "events": ["dv:toggle"] },
     { "tag": "dv-search", "class": "DvSearch", "module": "src/components/dv-search.js", "attributes": ["data-query", "data-label", "data-placeholder"], "events": ["dv:query"] },
-    { "tag": "dv-product-card", "class": "DvProductCard", "module": "src/components/dv-product-card.js", "attributes": ["data-id", "data-name", "data-price", "data-action"], "events": ["dv:add-to-cart"] }
+    { "tag": "dv-product-card", "class": "DvProductCard", "module": "src/components/dv-product-card.js", "attributes": ["data-id", "data-name", "data-price", "data-action"], "events": ["dv:add-to-cart"] },
+    { "tag": "dv-field", "class": "DvField", "module": "src/components/dv-field.js", "attributes": ["data-id", "data-name", "data-label", "data-type", "data-value", "data-placeholder", "data-required", "data-disabled", "data-error"], "events": ["dv:input", "dv:change"] },
+    { "tag": "dv-confirm", "class": "DvConfirm", "module": "src/components/dv-confirm.js", "attributes": ["data-label", "data-message", "data-confirm-label", "data-cancel-label", "data-value"], "events": ["dv:confirm", "dv:cancel"] },
+    { "tag": "dv-autocomplete", "class": "DvAutocomplete", "module": "src/components/dv-autocomplete.js", "attributes": ["data-items", "data-query", "data-label"], "events": ["dv:query", "dv:select"] },
+    { "tag": "dv-data-table", "class": "DvDataTable", "module": "src/components/dv-data-table.js", "attributes": ["data-columns", "data-rows", "data-label"], "events": ["dv:sort"] }
   ]
 }
