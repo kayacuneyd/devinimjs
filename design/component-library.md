@@ -100,10 +100,11 @@ disabled controls at their boundaries.
 
 ## `<dv-field>` — shipped (unreleased)
 
-A labelled native input for forms that want a small, predictable event API. Configure it with
-`data-name`, `data-label`, `data-type`, `data-value`, `data-placeholder`, `data-required`,
-`data-disabled` and `data-error`. It emits `dv:input` and `dv:change` with `{ value, valid }`.
-The surrounding form remains responsible for submission and persistence.
+A labelled native control for forms that want a small, predictable event API. Use
+`data-control="input"`, `"textarea"` or `"select"`; selects accept JSON `data-options`.
+Configure `data-name`, `data-label`, `data-type`, `data-value`, `data-placeholder`,
+`data-required`, `data-disabled` and `data-error`. It emits `dv:input` and `dv:change` with
+`{ value, valid }`. The surrounding form remains responsible for submission and persistence.
 
 ---
 
@@ -129,6 +130,27 @@ An accessible local-data combobox. Give it a JSON `data-items` list and optional
 A small semantic table for already-loaded JSON. `data-columns` accepts strings or
 `{ key, label }` objects, `data-rows` accepts objects and `data-label` labels the table.
 Column headers sort rows locally and emit `dv:sort` with `{ key, direction }`.
+
+---
+
+## `<dv-cart>` — shipped (unreleased)
+
+A presentational cart for page-owned data. Supply JSON `data-items` or call `setItems(items)`;
+it emits `dv:change` with current items/total and `dv:remove` with `{ id }`.
+
+---
+
+## `<dv-toast-stack>` — shipped (unreleased)
+
+Page-level notification queue. Call `show(message)` and optionally `dismiss(id)`; each message
+uses a polite live region and emits `dv:show`/`dv:hide`.
+
+---
+
+## `<dv-state>` — shipped (unreleased)
+
+Explicit `loading`, `empty` and `error` state indicator. Error renders a retry button that emits
+`dv:retry`; the page owns requests and retries.
 
 ---
 

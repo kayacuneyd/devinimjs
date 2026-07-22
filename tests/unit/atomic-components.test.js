@@ -11,6 +11,9 @@ await import('../../src/components/dv-field.js');
 await import('../../src/components/dv-confirm.js');
 await import('../../src/components/dv-autocomplete.js');
 await import('../../src/components/dv-data-table.js');
+await import('../../src/components/dv-cart.js');
+await import('../../src/components/dv-toast-stack.js');
+await import('../../src/components/dv-state.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -107,4 +110,48 @@ test('data table sorts rows and emits its ordering', async () => {
   await settle();
   assert.equal(el.querySelector('tbody td').textContent, 'Ada');
   assert.deepEqual(seen, [{ key: 'name', direction: 'asc' }]);
+});
+
+test('field renders select options and retains native control semantics', async () => {
+  const el = document.createElement('dv-field');
+  el.setAttribute('data-control', 'select');
+  el.setAttribute('data-options', '["Small", "Large"]');
+  el.setAttribute('data-value', 'Large');
+  document.body.appendChild(el);
+  assert.equal(el.querySelector('select').value, 'Large');
+});
+
+test('cart changes quantities and emits current total', async () => {
+  const el = document.createElement('dv-cart');
+  el.setAttribute('data-items', '[{"id":"keyboard","name":"Keyboard","price":99}]');
+  document.body.appendChild(el);
+  const seen = [];
+  el.addEventListener('dv:change', (event) => seen.push(event.detail.total));
+  el.querySelector('[aria-label="Increase Keyboard"]').click();
+  await settle();
+  assert.equal(el.querySelector('output').textContent, '2');
+  assert.deepEqual(seen, [198]);
+});
+
+test('toast stack queues and dismisses messages', async () => {
+  const el = document.createElement('dv-toast-stack');
+  el.setAttribute('data-duration', '0');
+  document.body.appendChild(el);
+  const id = el.show('Saved');
+  await settle();
+  assert.equal(el.querySelector('output').textContent, 'Saved×');
+  el.dismiss(id);
+  await settle();
+  assert.equal(el.querySelector('output'), null);
+});
+
+test('state emits retry in its error state', async () => {
+  const el = document.createElement('dv-state');
+  el.setAttribute('data-state', 'error');
+  document.body.appendChild(el);
+  let retried = false;
+  el.addEventListener('dv:retry', () => { retried = true; });
+  el.querySelector('button').click();
+  await settle();
+  assert.equal(retried, true);
 });

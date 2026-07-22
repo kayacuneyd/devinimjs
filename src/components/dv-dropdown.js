@@ -10,8 +10,19 @@ export class DvDropdown extends BaseComponent {
    * @param {string | null} value - Value.
    */
   onAttribute(name, value) { if (name === 'data-open') this.state.open = value !== null && value !== 'false'; }
-  /** Toggles the menu. */ toggle() { this.state.open = !this.state.open; this.emit('toggle', { open: this.state.open }); }
-  /** @param {KeyboardEvent} event - Key event. */ onKeydown(event) { if (event.key === 'Escape' && this.state.open) { event.preventDefault(); this.state.open = false; } }
+  /** Toggles the menu. */
+  toggle() { this.state.open = !this.state.open; this.emit('toggle', { open: this.state.open }); }
+  /** @param {KeyboardEvent} event - Key event. */
+  onKeydown(event) {
+    if (event.key === 'Escape' && this.state.open) { event.preventDefault(); this.state.open = false; return; }
+    if (!this.state.open || !['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    const items = [...this.querySelectorAll('[role="menuitem"]')];
+    if (!items.length) return;
+    event.preventDefault();
+    const current = items.indexOf(document.activeElement);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (current + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+    items[next].focus();
+  }
   /** @returns {import('../core/html.js').HtmlString} Markup. */ template() { return html`<div class="dv-dropdown" data-on:keydown="onKeydown"><button type="button" aria-expanded="${String(this.state.open)}" data-on:click="toggle">${this.str('label', 'Menu')}</button><div role="menu" hidden="${!this.state.open}">${this.outlet}</div></div>`; }
 }
 define('dv-dropdown', DvDropdown);

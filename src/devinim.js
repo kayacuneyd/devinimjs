@@ -21,3 +21,6 @@ export { DvField } from './components/dv-field.js';
 export { DvConfirm } from './components/dv-confirm.js';
 export { DvAutocomplete } from './components/dv-autocomplete.js';
 export { DvDataTable } from './components/dv-data-table.js';
+export { DvCart } from './components/dv-cart.js';
+export { DvToastStack } from './components/dv-toast-stack.js';
+export { DvState } from './components/dv-state.js';
