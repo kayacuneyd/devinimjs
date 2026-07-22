@@ -29,4 +29,20 @@ test('component catalog loads atomic components from the pinned CDN release', as
 
   await page.locator('dv-product-card').getByRole('button', { name: 'Add to cart' }).click();
   await expect(page.locator('#cart-result')).toContainText('Cart: 1');
+
+  await page.locator('dv-field input').fill('hello@example.com');
+  await page.locator('dv-field input').press('Tab');
+  await expect(page.locator('#field-result')).toHaveText('Email saved.');
+
+  const confirm = page.locator('dv-confirm');
+  await confirm.getByRole('button', { name: 'Delete draft' }).click();
+  await confirm.getByRole('button', { name: 'Confirm' }).click();
+  await expect(page.locator('#confirm-result')).toHaveText('Deleted draft-12.');
+
+  await page.locator('dv-autocomplete input').fill('key');
+  await page.locator('dv-autocomplete').getByRole('button', { name: 'Keyboard' }).click();
+  await expect(page.locator('#autocomplete-result')).toHaveText('Selected Keyboard.');
+
+  await page.locator('dv-data-table').getByRole('button', { name: 'Product' }).click();
+  await expect(page.locator('dv-data-table tbody tr').first()).toContainText('Keyboard');
 });

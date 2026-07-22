@@ -33,7 +33,7 @@ export class DvDataTable extends BaseComponent {
   template() {
     const rows = [...this.state.rows];
     if (this.state.sort) rows.sort((left, right) => String(left[this.state.sort] ?? '').localeCompare(String(right[this.state.sort] ?? '')) * this.state.direction);
-    return html`<div class="dv-data-table"><table><caption>${this.str('label', 'Data table')}</caption><thead><tr>${this.state.columns.map((column) => html`<th scope="col"><button type="button" data-key="${column.key}" aria-sort="${this.state.sort === column.key ? (this.state.direction === 1 ? 'ascending' : 'descending') : 'none'}" data-on:click="sortBy">${column.label}</button></th>`)}</tr></thead><tbody>${rows.map((row) => html`<tr>${this.state.columns.map((column) => html`<td>${row[column.key] ?? ''}</td>`)}</tr>`)}</tbody></table></div>`;
+    return html`<div class="dv-data-table"><table><caption>${this.str('label', 'Data table')}</caption><thead><tr>${this.state.columns.map((column) => html`<th scope="col" aria-sort="${this.state.sort === column.key ? (this.state.direction === 1 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-key="${column.key}" data-on:click="sortBy">${column.label}</button></th>`)}</tr></thead><tbody>${rows.map((row) => html`<tr>${this.state.columns.map((column) => html`<td>${row[column.key] ?? ''}</td>`)}</tr>`)}</tbody></table></div>`;
   }
 
   /** @returns {Array<{ key: string, label: string }>} Parsed columns. */
