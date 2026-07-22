@@ -40,13 +40,12 @@ export class DvField extends BaseComponent {
   template() {
     const id = this.str('id', this.str('name', 'field'));
     const control = this.str('control', 'input');
-    const attrs = html`id="${id}" name="${this.str('name')}" required=${this.bool('required', false)} disabled=${this.bool('disabled', false)} aria-invalid="${String(this.state.invalid)}" data-on:input="onInput" data-on:change="onChange"`;
     const options = this.#options();
     const input = control === 'textarea'
-      ? html`<textarea ${attrs} placeholder="${this.str('placeholder')}">${this.state.value}</textarea>`
+      ? html`<textarea id="${id}" name="${this.str('name')}" required="${this.bool('required', false)}" disabled="${this.bool('disabled', false)}" aria-invalid="${String(this.state.invalid)}" data-on:input="onInput" data-on:change="onChange" placeholder="${this.str('placeholder')}">${this.state.value}</textarea>`
       : control === 'select'
-        ? html`<select ${attrs}>${options.map((option) => html`<option value="${option.value}" selected=${option.value === this.state.value}>${option.label}</option>`)}</select>`
-        : html`<input ${attrs} type="${this.str('type', 'text')}" value="${this.state.value}" placeholder="${this.str('placeholder')}">`;
+        ? html`<select id="${id}" name="${this.str('name')}" required="${this.bool('required', false)}" disabled="${this.bool('disabled', false)}" aria-invalid="${String(this.state.invalid)}" data-on:input="onInput" data-on:change="onChange">${options.map((option) => html`<option value="${option.value}" selected="${option.value === this.state.value}">${option.label}</option>`)}</select>`
+        : html`<input id="${id}" name="${this.str('name')}" required="${this.bool('required', false)}" disabled="${this.bool('disabled', false)}" aria-invalid="${String(this.state.invalid)}" data-on:input="onInput" data-on:change="onChange" type="${this.str('type', 'text')}" value="${this.state.value}" placeholder="${this.str('placeholder')}">`;
     return html`<div class="dv-field"><label for="${id}">${this.str('label', 'Field')}</label>${input}<p hidden=${!this.state.invalid} role="alert">${this.str('error', 'Please enter a valid value.')}</p></div>`;
   }
 

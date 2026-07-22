@@ -5,7 +5,7 @@ visual treatment without making CKCSS a runtime dependency.
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.0/dist/devinim-ckcss.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.5.1/dist/devinim-ckcss.css">
 ```
 
 Load CKCSS first, then the adapter. The adapter uses CKCSS public color and focus tokens only;
