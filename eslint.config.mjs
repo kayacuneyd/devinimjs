@@ -48,6 +48,14 @@ export default [
     },
   },
   {
+    files: ['site/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: { ...browserGlobals, window: 'readonly' },
+    },
+  },
+  {
     files: ['tests/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,

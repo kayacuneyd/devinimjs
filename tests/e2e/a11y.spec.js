@@ -5,7 +5,7 @@
 import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
-for (const pagePath of ['/examples/counter.html', '/examples/tabs.html', '/examples/components.html']) {
+for (const pagePath of ['/examples/counter.html', '/examples/tabs.html', '/examples/components.html', '/site/index.html']) {
   test(`${pagePath} has no detectable WCAG A/AA violations`, async ({ page }) => {
     await page.goto(pagePath);
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
