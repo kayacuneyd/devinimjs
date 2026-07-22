@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-22
+
+### Added
+
+- Atomic components: `<dv-dropdown>`, `<dv-search>` and `<dv-product-card>`.
+- Shared cart store example and a live component catalog at `/components/`.
+
 ## [0.2.0] - 2026-07-22
 
 ### Added

@@ -4,7 +4,7 @@ This contract makes every DevinimJS component predictable to author, review and 
 
 ## Required files
 
-For a framework component named `dv-example`, create:
+For a component named `dv-example`, create:
 
 ```text
 src/components/dv-example.js
@@ -19,7 +19,7 @@ section of `CHANGELOG.md`.
 
 | Concern | Contract |
 |---|---|
-| Tag | Lowercase `dv-` prefix, kebab-case |
+| Tag | Lowercase custom-element name, kebab-case; reserve `dv-` for DevinimJS components |
 | Class | Matching PascalCase name, e.g. `DvExample` |
 | File | Exact tag name, e.g. `dv-example.js` |
 | Registration | Explicit `define('dv-example', DvExample)` at module end |
@@ -51,7 +51,7 @@ npm run verify
 ## Generator
 
 ```bash
-npm run create:component -- dv-example
+npm run create:component -- app-example
 ```
 
 Use `--dry-run` to inspect generated paths and `--force` only when replacing deliberate local

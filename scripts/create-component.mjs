@@ -11,8 +11,8 @@ const tag = args.find((arg) => !arg.startsWith('--'));
 const dryRun = args.includes('--dry-run');
 const force = args.includes('--force');
 
-if (!tag || !/^dv-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(tag)) {
-  console.error('Usage: npm run create:component -- dv-example [--dry-run] [--force]');
+if (!tag || !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/.test(tag)) {
+  console.error('Usage: npm run create:component -- prefix-example [--dry-run] [--force]');
   process.exit(1);
 }
 

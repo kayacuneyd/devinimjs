@@ -14,3 +14,6 @@ export { DvDisclosure } from './components/dv-disclosure.js';
 export { DvModal } from './components/dv-modal.js';
 export { DvToast } from './components/dv-toast.js';
 export { DvPagination } from './components/dv-pagination.js';
+export { DvDropdown } from './components/dv-dropdown.js';
+export { DvSearch } from './components/dv-search.js';
+export { DvProductCard } from './components/dv-product-card.js';

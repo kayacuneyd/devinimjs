@@ -7,6 +7,9 @@
     { "tag": "dv-disclosure", "class": "DvDisclosure", "module": "src/components/dv-disclosure.js", "attributes": ["data-open", "data-summary"], "events": ["dv:toggle"] },
     { "tag": "dv-modal", "class": "DvModal", "module": "src/components/dv-modal.js", "attributes": ["data-open", "data-label"], "events": ["dv:open", "dv:close"] },
     { "tag": "dv-toast", "class": "DvToast", "module": "src/components/dv-toast.js", "attributes": ["data-message", "data-open", "data-duration"], "events": ["dv:show", "dv:hide"] },
-    { "tag": "dv-pagination", "class": "DvPagination", "module": "src/components/dv-pagination.js", "attributes": ["data-page", "data-total", "data-size", "data-label"], "events": ["dv:page"] }
+    { "tag": "dv-pagination", "class": "DvPagination", "module": "src/components/dv-pagination.js", "attributes": ["data-page", "data-total", "data-size", "data-label"], "events": ["dv:page"] },
+    { "tag": "dv-dropdown", "class": "DvDropdown", "module": "src/components/dv-dropdown.js", "attributes": ["data-open", "data-label"], "events": ["dv:toggle"] },
+    { "tag": "dv-search", "class": "DvSearch", "module": "src/components/dv-search.js", "attributes": ["data-query", "data-label", "data-placeholder"], "events": ["dv:query"] },
+    { "tag": "dv-product-card", "class": "DvProductCard", "module": "src/components/dv-product-card.js", "attributes": ["data-id", "data-name", "data-price", "data-action"], "events": ["dv:add-to-cart"] }
   ]
 }

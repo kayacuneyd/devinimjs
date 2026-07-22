@@ -1,6 +1,6 @@
 {
   "name": "devinimjs",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Build-free, Proxy-reactive Vanilla JS component library for PHP and shared-hosting projects. The JS companion of CKCSS.",
   "type": "module",
   "keywords": [
