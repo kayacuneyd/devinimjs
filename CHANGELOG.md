@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Starter-kit scaffolding CLI (ADR-0016): `npm run create:project -- <target-dir> [--format=static|php]`
+  generates a build-free `dv-counter` starter (static `index.html` or PHP-fed `index.php`) from
+  the committed `dist/` artifacts — see `docs/guides/starter-kit.md`.
+
 ## [0.6.0-beta.0] - 2026-07-22
 
 ### Added

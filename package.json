@@ -42,6 +42,7 @@
     "size": "node scripts/size-check.mjs",
     "serve": "node scripts/serve.mjs",
     "create:component": "node scripts/create-component.mjs",
+    "create:project": "node scripts/create-project.mjs",
     "verify": "npm run lint && npm test && npm run test:e2e && npm run size"
   },
   "devDependencies": {

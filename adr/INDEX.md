@@ -19,6 +19,7 @@ sequential number, register here.
 | [0012](0012-hash-router.md) | Hash-based micro-router | Accepted | 2026-07-21 |
 | [0013](0013-named-outlets.md) | Named outlets (multi-slot composition) | Proposed | 2026-07-21 |
 | [0014](0014-keyed-morph.md) | Keyed list morph (`data-key`) | Accepted | 2026-07-21 |
+| [0016](0016-starter-kit-cli.md) | Starter-kit scaffolding CLI | Accepted | 2026-07-23 |
 
 ## Dependency graph
 
@@ -34,5 +35,6 @@ sequential number, register here.
 0008 testing           │
 0010 MVP scope         │
 0011 shared store     ─┘
+0016 starter-kit CLI — depends on 0007 distribution, 0010 MVP scope
 0013 proposed (named outlets) — parked, see its file
 ```
