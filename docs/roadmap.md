@@ -44,17 +44,24 @@ fast-to-learn, fast-to-build JS runtime — for human developers and AI coding a
 
 ### P0 — blocks the "learn and build fast" claim directly
 
-- **No project scaffolding/starter-kit.** No `bin` entry in `package.json`, no
-  `npm create devinimjs`-style bootstrap. A new project today is assembled file-by-file from the
-  README snippet or a CDN pin. This is the single biggest friction point for building fast, for
-  humans and agents alike.
-- **Component test coverage lags the catalog.** 9 of 16 shipped components have no dedicated unit
-  test file, which weakens the "production-ready" claim the size/lint/e2e gates otherwise
-  support.
-- **No `.d.ts` type declarations** (open since ADR-0010's follow-ups). Prioritized here
-  specifically because of the AI-agent goal — editors and AI coding tools lean heavily on type
-  hints to constrain correct output; this is disproportionately high-leverage for the target
-  audience.
+All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent Swarm — see
+`docs/swarm/active-work.md` and `docs/swarm/reviews/TASK-001-003-orchestrator-review.md`).
+
+- ~~**No project scaffolding/starter-kit.**~~ Closed by ADR-0016: `npm run create:project --
+  <target-dir> [--format=static|php]` (`scripts/create-project.mjs`,
+  `docs/guides/starter-kit.md`). No `npx devinimjs create` entry yet — deliberately deferred, see
+  ADR-0016's follow-ups.
+- ~~**Component test coverage lags the catalog.**~~ Closed: 90 → 144 tests, deep edge-case/
+  keyboard/cleanup coverage added for `dv-autocomplete`, `dv-data-table`, `dv-dropdown`,
+  `dv-modal`, `dv-field`, `dv-toast-stack`, plus at least one edge case for every remaining
+  component. Surfaced and fixed two real pre-existing bugs as a side effect: `dv-field`'s
+  unquoted `hidden=` attribute (a11y) and `dv-cart`'s `remove()` shadowing the native
+  `Element.prototype.remove()` (renamed to `removeItem`) — see `CHANGELOG.md`.
+- ~~**No `.d.ts` type declarations.**~~ Closed by ADR-0017: generated from existing JSDoc via
+  `npm run build:types` (`typescript` devDependency, declaration-only, never bundled into
+  `dist/`). `package.json`'s `types` field and every `exports` entry resolve to real types.
+  Known gap: some internal modules (`morph.js`, `component()`'s `this` context) still have loose
+  `checkJs` diagnostics, tracked as advisory in ADR-0017 rather than blocking.
 
 ### P1 — competitive parity / DizgePHP-companion leverage
 
