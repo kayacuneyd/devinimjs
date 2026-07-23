@@ -46,7 +46,7 @@ export class DvField extends BaseComponent {
       : control === 'select'
         ? html`<select id="${id}" name="${this.str('name')}" required="${this.bool('required', false)}" disabled="${this.bool('disabled', false)}" aria-invalid="${String(this.state.invalid)}" data-on:input="onInput" data-on:change="onChange">${options.map((option) => html`<option value="${option.value}" selected="${option.value === this.state.value}">${option.label}</option>`)}</select>`
         : html`<input id="${id}" name="${this.str('name')}" required="${this.bool('required', false)}" disabled="${this.bool('disabled', false)}" aria-invalid="${String(this.state.invalid)}" data-on:input="onInput" data-on:change="onChange" type="${this.str('type', 'text')}" value="${this.state.value}" placeholder="${this.str('placeholder')}">`;
-    return html`<div class="dv-field"><label for="${id}">${this.str('label', 'Field')}</label>${input}<p hidden=${!this.state.invalid} role="alert">${this.str('error', 'Please enter a valid value.')}</p></div>`;
+    return html`<div class="dv-field"><label for="${id}">${this.str('label', 'Field')}</label>${input}<p hidden="${!this.state.invalid}" role="alert">${this.str('error', 'Please enter a valid value.')}</p></div>`;
   }
 
   /** @returns {Array<{ value: string, label: string }>} Parsed select options. */

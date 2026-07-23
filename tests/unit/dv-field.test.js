@@ -119,20 +119,14 @@ test('regression (commit bcdfa04): boolean attributes render correctly for texta
   assert.equal(select.querySelector('select').hasAttribute('required'), true);
 });
 
-// SUSPECTED REAL BUG (reported in the handoff, not fixed here — out of scope for a test-only
-// task): the inline error <p> uses UNQUOTED `hidden=${!this.state.invalid}` (dv-field.js line
-// 49), unlike every other boolean attribute in this codebase, which always writes the quoted
-// `attr="${value}"` form the `html` tag's boolean-omission rule (ADR-0002 #5) actually requires.
-// Consequence, verified directly against `html()`'s output: when the interpolated value is
-// `false` (i.e. exactly when the field IS invalid and the message should become visible), the
-// tag function has no sole-attribute match, so it falls through to plain string rendering.
-// `false` renders as '', producing the raw fragment `<p hidden= role="alert">…`, which an HTML
-// parser reads as `hidden="role"` plus a stray `alert=""` attribute — `role="alert"` is
-// destroyed and the element stays `hidden` even though it should now be visible. Net effect: a
-// required field's validation message never actually appears to sighted users, and never carries
-// `role="alert"` for assistive tech either. This test pins the current (broken) behavior so a
-// future fix flips it, rather than silently asserting around the bug.
-test('KNOWN BUG: the invalid-state error message never becomes visible or keeps role="alert" (unquoted hidden=${…} in dv-field.js)', async () => {
+// Regression test for a real bug found via TASK-002/003 (see docs/swarm/reviews/
+// TASK-001-003-orchestrator-review.md): the inline error <p> used to render `hidden=` unquoted,
+// which the `html` tag's boolean-omission rule (ADR-0002 #5) does not recognize as the
+// sole-value attribute form, so it fell through to plain string interpolation and produced the
+// malformed fragment `hidden= role="alert">`, destroying `role="alert"` and leaving the message
+// permanently hidden. Fixed by quoting it (`hidden="${…}"`), matching every other boolean
+// attribute in this file.
+test('the invalid-state error message becomes visible and keeps role="alert"', async () => {
   const el = document.createElement('dv-field');
   el.setAttribute('data-required', 'true');
   document.body.appendChild(el);
@@ -143,10 +137,8 @@ test('KNOWN BUG: the invalid-state error message never becomes visible or keeps 
   await settle();
 
   assert.equal(input.getAttribute('aria-invalid'), 'true', 'the input itself does correctly report invalid');
-  // What SHOULD be true once fixed: el.querySelector('[role="alert"]') is non-null and .hidden
-  // is false. What IS actually true today:
-  assert.equal(el.querySelector('[role="alert"]'), null, 'role="alert" is lost due to the malformed attribute string');
-  assert.equal(el.querySelector('p').hidden, true, 'the error message stays hidden even though the field is invalid');
+  assert.ok(el.querySelector('[role="alert"]'), 'role="alert" is present on the error message');
+  assert.equal(el.querySelector('p').hidden, false, 'the error message becomes visible once the field is invalid');
 });
 
 test('a live data-value change resets the field value (ADR-0005 sync)', async () => {

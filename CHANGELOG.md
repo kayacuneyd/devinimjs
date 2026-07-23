@@ -23,6 +23,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `import { BaseComponent } from 'devinimjs'` gets editor/AI-agent autocomplete without any
   runtime dependency or compile step for consumers.
 
+### Fixed
+
+- `dv-field`: the inline validation message used an unquoted `hidden=${…}` attribute, which fell
+  outside the `html` tag's boolean-attribute rule (ADR-0002 #5) and produced malformed markup —
+  the message never became visible and lost `role="alert"` when a required field was invalid.
+  Found while verifying TASK-003's test-depth work; fixed by quoting the attribute.
+
+### Changed
+
+- `dv-cart`'s `remove(id)` action method is renamed to `removeItem(id)` — the old name shadowed
+  every custom element's inherited native `Element.prototype.remove()`. The `dv:remove` event
+  name is unchanged. Found while verifying TASK-002's type-declarations work (checkJs surfaced
+  the shadowing). If you called `cartEl.remove(id)` directly rather than clicking the built-in
+  remove button, update the call site.
+
 ### Tests
 
 - Deepened unit coverage for `dv-autocomplete`, `dv-data-table`, `dv-dropdown`, `dv-modal`,

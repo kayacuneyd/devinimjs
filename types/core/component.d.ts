@@ -12,6 +12,7 @@
  *   reconnected?: () => void,
  *   disconnected?: () => void,
  *   updated?: (changedKeys: string[]) => void,
+ *   onError?: (error: unknown, phase: 'render' | 'action') => void,
  * }} config - Factory component contract.
  * @returns {CustomElementConstructor} The registered custom-element constructor.
  */
@@ -25,4 +26,5 @@ export function component(tagName: string, config: {
     reconnected?: () => void;
     disconnected?: () => void;
     updated?: (changedKeys: string[]) => void;
+    onError?: (error: unknown, phase: "render" | "action") => void;
 }): CustomElementConstructor;

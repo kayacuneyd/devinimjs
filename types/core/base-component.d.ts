@@ -48,6 +48,17 @@ export class BaseComponent extends HTMLElement {
      */
     onAttribute(name: string, newValue: string | null, oldValue: string | null): void;
     /**
+     * Called when `template()` throws during a render, or an action method throws during
+     * dispatch (ADR-0015). Default: re-throws, so an uncaught error surfaces exactly as it did
+     * before this hook existed — override to contain it (render a fallback state, report to a
+     * monitoring endpoint) instead of leaving the error uncaught.
+     *
+     * @param {unknown} error - The thrown value (usually an Error).
+     * @param {'render' | 'action'} phase - Where the error originated.
+     * @returns {void}
+     */
+    onError(error: unknown, phase: "render" | "action"): void;
+    /**
      * The reactive state proxy. Mutate it directly — rendering follows automatically.
      *
      * @type {object}

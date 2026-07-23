@@ -30,8 +30,12 @@ export class DvCart extends BaseComponent {
      * @param {Element} button - Remove button.
      */
     removeButton(_event: Event, button: Element): void;
-    /** @param {string | null} id - Item id. */
-    remove(id: string | null): void;
+    /**
+     * Named `removeItem`, not `remove` — `remove` would shadow the native
+     * `Element.prototype.remove()` every custom element inherits.
+     * @param {string | null} id - Item id.
+     */
+    removeItem(id: string | null): void;
     /** @returns {Array<{ id: string, name: string, price: number, quantity: number }>} Current items. */
     get items(): Array<{
         id: string;

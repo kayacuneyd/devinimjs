@@ -25,7 +25,7 @@ export class DvCart extends BaseComponent {
     const item = this.state.items.find((entry) => entry.id === id);
     if (!item) return;
     item.quantity += amount;
-    if (item.quantity <= 0) this.remove(id);
+    if (item.quantity <= 0) this.removeItem(id);
     else this.emit('change', { items: this.items, total: this.total });
   }
 
@@ -33,10 +33,14 @@ export class DvCart extends BaseComponent {
    * @param {Event} _event - Click event.
    * @param {Element} button - Remove button.
    */
-  removeButton(_event, button) { this.remove(button.getAttribute('data-id')); }
+  removeButton(_event, button) { this.removeItem(button.getAttribute('data-id')); }
 
-  /** @param {string | null} id - Item id. */
-  remove(id) {
+  /**
+   * Named `removeItem`, not `remove` — `remove` would shadow the native
+   * `Element.prototype.remove()` every custom element inherits.
+   * @param {string | null} id - Item id.
+   */
+  removeItem(id) {
     this.state.items = this.state.items.filter((item) => item.id !== id);
     this.emit('remove', { id });
     this.emit('change', { items: this.items, total: this.total });
