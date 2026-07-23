@@ -14,4 +14,7 @@ Thumbs.db
 coverage/
 .tmp/
 
+# Agent-harness worktrees (docs/swarm/ task implementations, ephemeral)
+.claude/
+
 # NOTE: dist/ is intentionally NOT ignored — release artifacts are committed (ADR-0007).
