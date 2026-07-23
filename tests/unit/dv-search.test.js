@@ -27,3 +27,16 @@ test('search emits a query event, clears state and honours a live data-query pro
   assert.deepEqual(seen, ['Keyboard', '']);
   assert.equal(el.querySelector('input').value, 'Mouse');
 });
+
+test('the Clear button starts disabled and stays a no-op (no dv:query) while the query is empty', async () => {
+  const el = document.createElement('dv-search');
+  document.body.appendChild(el);
+  const seen = [];
+  el.addEventListener('dv:query', (event) => seen.push(event.detail.query));
+  const button = el.querySelector('button');
+  assert.equal(button.disabled, true);
+
+  button.click(); // disabled buttons do not dispatch click's default activation
+  await settle();
+  assert.deepEqual(seen, []);
+});
