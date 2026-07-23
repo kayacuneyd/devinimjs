@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   error instead. Available in both the `BaseComponent` class API and as `config.onError` in the
   `component()` factory.
 
+### Tests
+
+- Deepened unit coverage for `dv-autocomplete`, `dv-data-table`, `dv-dropdown`, `dv-modal`,
+  `dv-field`, `dv-toast-stack` and eight further components with edge-case, keyboard and
+  cleanup-timing tests (TASK-003; 90 → 137 tests), including a passing test that documents
+  `dv-modal`'s known lack of focus-trap cycling (`docs/roadmap.md` P1).
+
 ## [0.6.0-beta.0] - 2026-07-22
 
 ### Added

@@ -30,3 +30,20 @@ test('disclosure preserves light-DOM content and updates ARIA state', async () =
   assert.equal(panel.hidden, false);
   assert.deepEqual(events, [true]);
 });
+
+test('a live data-open attribute change opens/closes the panel (ADR-0005 sync)', async () => {
+  const el = document.createElement('dv-disclosure');
+  document.body.appendChild(el);
+  const button = el.querySelector('button');
+  const panel = el.querySelector('[id$="-panel"]');
+  assert.equal(panel.hidden, true);
+
+  el.setAttribute('data-open', 'true');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(panel.hidden, false);
+  assert.equal(button.getAttribute('aria-expanded'), 'true');
+
+  el.setAttribute('data-open', 'false');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(panel.hidden, true);
+});

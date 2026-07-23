@@ -8,3 +8,13 @@ test('cart store coalesces matching products into a quantity', () => {
   addToCart({ id: 'keyboard', name: 'Keyboard', price: 99 });
   assert.deepEqual(cartStore.state.items, [{ id: 'keyboard', name: 'Keyboard', price: 99, quantity: 2 }]);
 });
+
+test('cart store keeps distinct products separate by id', () => {
+  cartStore.state.items.splice(0);
+  addToCart({ id: 'keyboard', name: 'Keyboard', price: 99 });
+  addToCart({ id: 'mouse', name: 'Mouse', price: 25 });
+  assert.deepEqual(cartStore.state.items, [
+    { id: 'keyboard', name: 'Keyboard', price: 99, quantity: 1 },
+    { id: 'mouse', name: 'Mouse', price: 25, quantity: 1 },
+  ]);
+});
