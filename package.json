@@ -19,11 +19,24 @@
     "type": "git",
     "url": "https://github.com/kayacuneyd/devinimjs.git"
   },
+  "types": "./types/core/core.d.ts",
   "exports": {
-    ".": "./src/core/core.js",
-    "./authoring": "./src/core/authoring.js",
-    "./app": "./src/core/app.js",
-    "./components/*": "./src/components/*"
+    ".": {
+      "types": "./types/core/core.d.ts",
+      "default": "./src/core/core.js"
+    },
+    "./authoring": {
+      "types": "./types/core/authoring.d.ts",
+      "default": "./src/core/authoring.js"
+    },
+    "./app": {
+      "types": "./types/core/app.d.ts",
+      "default": "./src/core/app.js"
+    },
+    "./components/*": {
+      "types": "./types/components/*.d.ts",
+      "default": "./src/components/*"
+    }
   },
   "files": [
     "src",
@@ -31,13 +44,15 @@
     "docs",
     "adr",
     "scripts",
-    "templates"
+    "templates",
+    "types"
   ],
   "scripts": {
     "test": "node --test tests/unit/*.test.js",
     "test:e2e": "playwright test",
     "lint": "eslint .",
-    "build": "node scripts/build-dist.mjs",
+    "build": "npm run build:types && node scripts/build-dist.mjs",
+    "build:types": "node scripts/build-types.mjs",
     "validate:component": "node scripts/validate-component.mjs",
     "size": "node scripts/size-check.mjs",
     "serve": "node scripts/serve.mjs",
@@ -52,6 +67,7 @@
     "esbuild": "^0.28.1",
     "eslint": "^9.30.0",
     "eslint-plugin-jsdoc": "^51.0.0",
-    "happy-dom": "^17.4.0"
+    "happy-dom": "^17.4.0",
+    "typescript": "^5.9.3"
   }
 }
