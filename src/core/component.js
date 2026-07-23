@@ -26,6 +26,7 @@ const RESERVED_ACTIONS = new Set([
  *   reconnected?: () => void,
  *   disconnected?: () => void,
  *   updated?: (changedKeys: string[]) => void,
+ *   onError?: (error: unknown, phase: 'render' | 'action') => void,
  * }} config - Factory component contract.
  * @returns {CustomElementConstructor} The registered custom-element constructor.
  */
@@ -96,6 +97,14 @@ export function component(tagName, config) {
     FactoryComponent.prototype[name] = action;
   }
 
+  // Only assigned when provided (ADR-0015): a factory component with no config.onError must
+  // still inherit BaseComponent.prototype.onError's rethrow default, not silently swallow errors.
+  if (config.onError) {
+    FactoryComponent.prototype.onError = function onError(error, phase) {
+      config.onError.call(this, error, phase);
+    };
+  }
+
   return define(tagName, FactoryComponent);
 }
 
@@ -136,7 +145,7 @@ function validateConfig(tagName, config) {
       throw new TypeError(`[devinim] component(tag, config): sync "${name}" must match a prop and be a function.`);
     }
   }
-  for (const hook of ['connected', 'reconnected', 'disconnected', 'updated']) {
+  for (const hook of ['connected', 'reconnected', 'disconnected', 'updated', 'onError']) {
     if (config[hook] !== undefined && typeof config[hook] !== 'function') {
       throw new TypeError(`[devinim] component(tag, config): ${hook} must be a function.`);
     }

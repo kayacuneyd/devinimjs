@@ -1,0 +1,83 @@
+# Competitive position & roadmap
+
+Snapshot date: 2026-07-23. This is a living reference for where DevinimJS stands against
+comparable build-free/lightweight JS libraries, and which gaps are worth closing next — not a
+decision record (see `adr/` for those) and not a changelog (see `CHANGELOG.md`). Update it when
+the landscape or the gap list materially changes; don't let it silently rot.
+
+## Positioning
+
+DevinimJS aims to be two things at once: the deepest browser-interaction companion for the
+build-free PHP full-stack framework DizgePHP (`/var/www/dizgephp`), and a standalone,
+fast-to-learn, fast-to-build JS runtime — for human developers and AI coding agents alike.
+
+## Competitive landscape
+
+| | Bundle (gzip) | Model | Component system | Light-DOM / CSS fit | AI-authoring contract |
+|---|---|---|---|---|---|
+| **DevinimJS** | **3.35 KB** (budget 4 KB, CI-gated, `scripts/size-check.mjs`) | Proxy state + class/factory components + keyed morph render | Yes — `BaseComponent` + `component()` factory | Light DOM only, by design | `component()` 5-field contract + `site/llms.txt`/`llms-full.txt` + `create:component`/`validate:component` CLI |
+| Alpine.js | 7.1 KB | Attribute directives (`x-data`, `x-show`) | No component class | Light DOM | None dedicated; wins on sheer training-data familiarity |
+| htmx | ~16 KB | Hypermedia, server round-trip per interaction | No | Light DOM | None dedicated |
+| Datastar | 14.4 KB | Alpine+htmx hybrid over SSE | No | Light DOM | None dedicated; young ecosystem |
+| Lit | ~5 KB | Real Web Components | Yes | Shadow DOM by default — fights a CKCSS-style global-CSS stack | None dedicated |
+| Stimulus | 10.9 KB | Controllers, minimal reactivity | Loose | Light DOM | None dedicated |
+| Petite-Vue | ~6 KB | Vue-lite progressive enhancement | Loose | Light DOM | None dedicated; low recent maintenance velocity |
+
+### Where DevinimJS already wins
+
+1. **Smallest footprint with the most capability.** Real component classes, reactive state and
+   keyed-list morphing, all under 3.35 KB — every competitor above is bigger while offering less
+   structure (Alpine/htmx/Datastar) or fighting the CSS story (Lit's Shadow DOM).
+2. **Only one with a *designed* AI-authoring contract**, not incidental AI-friendliness:
+   `component()`'s 5 named fields, `site/llms.txt`, and a scaffold+validate CLI
+   (`scripts/create-component.mjs`, `scripts/validate-component.mjs`).
+3. **Deepest first-party full-stack pairing.** DizgePHP's `dv()`/`dv_bridge()` plus its ADR-0005
+   server-authoritative `Patch` protocol is a level of framework-specific integration none of the
+   generic competitors above have with any PHP framework.
+4. **Light DOM only, permanently** (`src/core/base-component.js`, never `attachShadow`) — CKCSS
+   applies directly, a structural advantage over Lit for exactly this stack.
+5. **Unusually rigorous ADR/constitution-driven process** for a project this size — itself a
+   trust/predictability differentiator, especially for AI agents that benefit from explicit,
+   compact contracts (mirrors DizgePHP's own `bin/dizge inspect --json` philosophy).
+
+## Prioritized gaps
+
+### P0 — blocks the "learn and build fast" claim directly
+
+- **No project scaffolding/starter-kit.** No `bin` entry in `package.json`, no
+  `npm create devinimjs`-style bootstrap. A new project today is assembled file-by-file from the
+  README snippet or a CDN pin. This is the single biggest friction point for building fast, for
+  humans and agents alike.
+- **Component test coverage lags the catalog.** 9 of 16 shipped components have no dedicated unit
+  test file, which weakens the "production-ready" claim the size/lint/e2e gates otherwise
+  support.
+- **No `.d.ts` type declarations** (open since ADR-0010's follow-ups). Prioritized here
+  specifically because of the AI-agent goal — editors and AI coding tools lean heavily on type
+  hints to constrain correct output; this is disproportionately high-leverage for the target
+  audience.
+
+### P1 — competitive parity / DizgePHP-companion leverage
+
+- `dv-data-table` has no pagination/filtering/virtualization — for the DizgeCMS Studio /
+  admin-panel use case DizgePHP already ships, this is probably the highest-leverage component to
+  invest in next.
+- `dv-pagination` is Prev/Next only — no page-number list or jump-to-page; same admin-panel gap.
+- No selector-based store subscriptions (`src/core/store.js` re-renders all subscribers on any
+  change; flagged as a future candidate in ADR-0011) — will cost more as apps grow past toy size.
+- No animation/transition primitives anywhere (modal, toast, disclosure, tabs) — Alpine ships
+  `x-transition` out of the box; a visible polish gap.
+- `dv-modal` has no real focus-trap cycling or nested-modal handling — an a11y/robustness gap in
+  a library that otherwise invests in a11y (axe-core in e2e).
+- No locale-bundle/i18n system for component copy (all defaults are hardcoded English,
+  override-only via `data-*` strings) — notable given the target audience (Turkish
+  agencies/freelancers on shared hosting) and DevinimJS's own site already being bilingual.
+
+### P2 — already YAGNI-tagged and correctly parked; don't reopen without a real use case
+
+- Named multi-slot outlets (ADR-0013, explicitly "sketch, not a decision").
+- Extending `onError`'s `phase` to lifecycle hooks beyond render/action (ADR-0015 follow-up).
+- Form-associated custom elements via `ElementInternals` (low impact today since `dv-field` wraps
+  native `<input>`/`<select>`, which already participate in native form submission).
+
+Not a gap: static-asset cache-busting/versioning for self-hosted DevinimJS files is already
+solved on the DizgePHP side (`Dizge\Devinim\Renderer`, DizgePHP swarm task TASK-003).
