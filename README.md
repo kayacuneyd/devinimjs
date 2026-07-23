@@ -109,6 +109,7 @@ define('dv-counter', DvCounter);
 - [Component contract](docs/component-contract.md) — deterministic component authoring and review rules
 - [Component library](design/component-library.md) — component inventory & states
 - [ADRs](adr/INDEX.md) — every significant decision, recorded
+- [Roadmap](docs/roadmap.md) — competitive position and prioritized gaps
 - [Examples](examples/) — `counter.html` (static) and `counter.php` (PHP-fed)
 
 ## Browser support

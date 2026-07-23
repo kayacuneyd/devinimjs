@@ -19,6 +19,7 @@ sequential number, register here.
 | [0012](0012-hash-router.md) | Hash-based micro-router | Accepted | 2026-07-21 |
 | [0013](0013-named-outlets.md) | Named outlets (multi-slot composition) | Proposed | 2026-07-21 |
 | [0014](0014-keyed-morph.md) | Keyed list morph (`data-key`) | Accepted | 2026-07-21 |
+| [0015](0015-error-boundary.md) | Component error boundary (`onError`) | Accepted | 2026-07-23 |
 | [0016](0016-starter-kit-cli.md) | Starter-kit scaffolding CLI | Accepted | 2026-07-23 |
 
 ## Dependency graph
@@ -28,6 +29,7 @@ sequential number, register here.
  ├── 0002 template syntax
  ├── 0003 escaping / XSS
  ├── 0004 event model
+ │    └── 0015 error boundary
  └── 0009 composition / outlet
 0005 attribute↔state ─┐
 0006 naming/registry   │ independent

@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Starter-kit scaffolding CLI (ADR-0016): `npm run create:project -- <target-dir> [--format=static|php]`
   generates a build-free `dv-counter` starter (static `index.html` or PHP-fed `index.php`) from
   the committed `dist/` artifacts — see `docs/guides/starter-kit.md`.
+- Component error boundary (ADR-0015): `onError(error, phase)` lifecycle hook, called when
+  `template()` throws during a render or an action method throws during dispatch. Default
+  behavior (rethrow) is unchanged for every existing component; overriding it contains the
+  error instead. Available in both the `BaseComponent` class API and as `config.onError` in the
+  `component()` factory.
 
 ## [0.6.0-beta.0] - 2026-07-22
 

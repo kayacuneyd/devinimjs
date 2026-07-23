@@ -69,6 +69,10 @@ the existing `data-on:event="action"` spelling remains supported.
 - `connected()` is for first-connection setup; `reconnected()` handles later attachments.
 - `listen()` and `onCleanup()` own timers, observers and external listeners.
 - `updated(changedKeys)` is for post-render synchronization only.
+- `onError(error, phase)` — optional (ADR-0015). Called when `template()` throws during a render
+  or an action throws during dispatch (`phase` is `'render'` or `'action'`). Default: rethrows,
+  so an uncaught component leaves no different a trace than before this hook existed. Override
+  to contain the error (fallback state, reporting) instead of leaving it uncaught.
 
 ## Accessibility and quality
 
