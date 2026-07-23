@@ -20,6 +20,7 @@ sequential number, register here.
 | [0013](0013-named-outlets.md) | Named outlets (multi-slot composition) | Proposed | 2026-07-21 |
 | [0014](0014-keyed-morph.md) | Keyed list morph (`data-key`) | Accepted | 2026-07-21 |
 | [0015](0015-error-boundary.md) | Component error boundary (`onError`) | Accepted | 2026-07-23 |
+| [0016](0016-starter-kit-cli.md) | Starter-kit scaffolding CLI | Accepted | 2026-07-23 |
 
 ## Dependency graph
 
@@ -36,5 +37,6 @@ sequential number, register here.
 0008 testing           │
 0010 MVP scope         │
 0011 shared store     ─┘
+0016 starter-kit CLI — depends on 0007 distribution, 0010 MVP scope
 0013 proposed (named outlets) — parked, see its file
 ```

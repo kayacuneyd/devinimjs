@@ -54,6 +54,9 @@ Freelance and agency projects built with **native PHP, CodeIgniter, Laravel, Wor
 <script type="module" src="/assets/devinim/components/dv-counter.js"></script>
 ```
 
+**Starter kit:** bootstrap a working project in one command instead of assembling files by hand —
+`node scripts/create-project.mjs <target-dir> --format=static|php` (see [`docs/guides/starter-kit.md`](docs/guides/starter-kit.md)).
+
 AI-first component authoring (experimental v0.6):
 
 ```js
