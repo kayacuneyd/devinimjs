@@ -17,7 +17,14 @@ export class DvToastStack extends BaseComponent {
     const id = ++this.#sequence;
     this.state.items.push({ id, message: String(message) });
     const duration = this.num('duration', 5000);
-    if (duration > 0) this.#timers.set(id, setTimeout(() => this.dismiss(id), duration));
+    if (duration > 0) {
+      const timer = setTimeout(() => this.dismiss(id), duration);
+      // A stack shows/dismisses toasts throughout a long-lived page, so the per-timer cleanup
+      // is un-registered on early dismissal too — otherwise #cleanupFns would keep accumulating
+      // one stale no-op entry per toast for the component's whole lifetime.
+      const cancelCleanup = this.onCleanup(() => clearTimeout(timer));
+      this.#timers.set(id, { timer, cancelCleanup });
+    }
     this.emit('show', { id, message: String(message) });
     return id;
   }
@@ -25,8 +32,8 @@ export class DvToastStack extends BaseComponent {
   /** @param {number | string} id - Message id. */
   dismiss(id) {
     const numericId = Number(id);
-    const timer = this.#timers.get(numericId);
-    if (timer) clearTimeout(timer);
+    const entry = this.#timers.get(numericId);
+    if (entry) { clearTimeout(entry.timer); entry.cancelCleanup(); }
     this.#timers.delete(numericId);
     const item = this.state.items.find((entry) => entry.id === numericId);
     this.state.items = this.state.items.filter((entry) => entry.id !== numericId);
@@ -38,9 +45,6 @@ export class DvToastStack extends BaseComponent {
    * @param {Element} button - Dismiss button.
    */
   dismissButton(_event, button) { this.dismiss(button.getAttribute('data-id') ?? ''); }
-
-  /** Releases timers when removed from the document. */
-  disconnected() { for (const timer of this.#timers.values()) clearTimeout(timer); this.#timers.clear(); }
 
   /** @returns {import('../core/html.js').HtmlString} Stack markup. */
   template() { return html`<section class="dv-toast-stack" aria-live="polite" aria-label="${this.str('label', 'Notifications')}">${this.state.items.map((item) => html`<output role="status">${item.message}<button type="button" aria-label="Dismiss" data-id="${item.id}" data-on:click="dismissButton">×</button></output>`)}</section>`; }

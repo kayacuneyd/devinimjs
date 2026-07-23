@@ -44,7 +44,10 @@ export class DvAutocomplete extends BaseComponent {
   }
 
   /** Closes the list after a click outside it can be observed. */
-  close() { setTimeout(() => { this.state.open = false; }, 0); }
+  close() {
+    const timer = setTimeout(() => { this.state.open = false; }, 0);
+    this.onCleanup(() => clearTimeout(timer));
+  }
 
   /** @returns {import('../core/html.js').HtmlString} Combobox markup. */
   template() {

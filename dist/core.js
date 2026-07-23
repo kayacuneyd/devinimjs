@@ -300,6 +300,19 @@ var BaseComponent = class extends HTMLElement {
   }
   // eslint-disable-line no-unused-vars
   /**
+   * Called when `template()` throws during a render, or an action method throws during
+   * dispatch (ADR-0015). Default: re-throws, so an uncaught error surfaces exactly as it did
+   * before this hook existed — override to contain it (render a fallback state, report to a
+   * monitoring endpoint) instead of leaving the error uncaught.
+   *
+   * @param {unknown} error - The thrown value (usually an Error).
+   * @param {'render' | 'action'} phase - Where the error originated.
+   * @returns {void}
+   */
+  onError(error, phase) {
+    throw error;
+  }
+  /**
    * The reactive state proxy. Mutate it directly — rendering follows automatically.
    *
    * @type {object}
@@ -376,16 +389,20 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   #render() {
-    const output = this.template();
-    if (!(output instanceof HtmlString)) {
-      throw new TypeError(
-        `[devinim] ${this.nodeName.toLowerCase()}: template() must return an HtmlString produced by the html tag (ADR-0002).`
-      );
+    try {
+      const output = this.template();
+      if (!(output instanceof HtmlString)) {
+        throw new TypeError(
+          `[devinim] ${this.nodeName.toLowerCase()}: template() must return an HtmlString produced by the html tag (ADR-0002).`
+        );
+      }
+      const htmlString = output.toString();
+      morph(this, htmlString);
+      this.#placeOutletChildren();
+      this.#refreshDelegation(htmlString);
+    } catch (error) {
+      this.onError(error, "render");
     }
-    const htmlString = output.toString();
-    morph(this, htmlString);
-    this.#placeOutletChildren();
-    this.#refreshDelegation(htmlString);
   }
   /**
    * Moves the captured initial children into the first `<dv-outlet>` (once). Warns when a
@@ -459,7 +476,11 @@ var BaseComponent = class extends HTMLElement {
       );
       return;
     }
-    this[method](event, el);
+    try {
+      this[method](event, el);
+    } catch (error) {
+      this.onError(error, "action");
+    }
   }
   /**
    * Ownership rule (ADR-0004 #5): the directive element belongs to this component when, walking
