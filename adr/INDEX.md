@@ -19,6 +19,7 @@ sequential number, register here.
 | [0012](0012-hash-router.md) | Hash-based micro-router | Accepted | 2026-07-21 |
 | [0013](0013-named-outlets.md) | Named outlets (multi-slot composition) | Proposed | 2026-07-21 |
 | [0014](0014-keyed-morph.md) | Keyed list morph (`data-key`) | Accepted | 2026-07-21 |
+| [0017](0017-generated-type-declarations.md) | Generated `.d.ts` type declarations | Accepted | 2026-07-23 |
 
 ## Dependency graph
 
@@ -35,4 +36,5 @@ sequential number, register here.
 0010 MVP scope         │
 0011 shared store     ─┘
 0013 proposed (named outlets) — parked, see its file
+0010 MVP scope ── 0017 generated type declarations (deferred post-MVP candidate, now delivered)
 ```

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Generated TypeScript declaration files (`types/`), built from the existing JSDoc via a new
+  `typescript` devDependency and `npm run build:types` (wired into `npm run build`); see
+  ADR-0017. `package.json`'s `types` field and every `exports` entry now resolve to real types —
+  `import { BaseComponent } from 'devinimjs'` gets editor/AI-agent autocomplete without any
+  runtime dependency or compile step for consumers.
+
 ## [0.6.0-beta.0] - 2026-07-22
 
 ### Added
