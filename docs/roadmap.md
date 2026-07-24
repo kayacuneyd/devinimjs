@@ -87,17 +87,19 @@ All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent
 - ~~`dv-modal` has no real focus-trap cycling or nested-modal handling.~~ Closed 2026-07-24 via
   TASK-006: WAI-ARIA APG Tab-cycling focus trap plus a module-level open-modal stack so only the
   topmost dialog traps Tab when modals nest.
-- **Partially closed 2026-07-24 via TASK-008.** The primitive now exists
-  (`src/core/i18n.js`'s `t`/`registerLocales`/`setLocale`, ADR-0019, kept outside the size-gated
-  `core.js` export barrel — same exclusion pattern as ADR-0018's transition primitive) with `en`/
-  `tr` bundles, wired into three reference components (`dv-modal`, `dv-confirm`, `dv-cart`) that
-  deliberately exercise the single-string, multi-string, and parameterized-string cases. Locale
-  bundles are co-located per-component by design, specifically so wiring the remaining ~10
-  components (`dv-autocomplete`, `dv-data-table`, `dv-dropdown`, `dv-field`, `dv-pagination`,
-  `dv-product-card`, `dv-state`, `dv-tabs`, `dv-toast`, `dv-toast-stack`) can split cleanly across
-  parallel follow-up tasks with zero file overlap — see `docs/guides/i18n.md`. Not yet done: those
-  ~10 components, and a `docs/component-manifest.json` refresh (found stale across TASK-004..008
-  during TASK-008's review, pre-existing drift unrelated to i18n specifically).
+- ~~No locale-bundle/i18n system for component copy.~~ **Closed 2026-07-24 via TASK-008..011.**
+  `src/core/i18n.js`'s `t`/`registerLocales`/`setLocale` (ADR-0019, kept outside the size-gated
+  `core.js` export barrel, same exclusion pattern as ADR-0018's transition primitive) with
+  co-located per-component `en`/`tr` bundles. All originally-affected components wired:
+  `dv-modal`, `dv-confirm`, `dv-cart` (TASK-008), `dv-pagination`, `dv-data-table` (TASK-009),
+  `dv-field`, `dv-state`, `dv-toast-stack` (TASK-010), `dv-autocomplete`, `dv-dropdown`, `dv-tabs`,
+  `dv-product-card` (TASK-011) — `dv-toast` audited and confirmed to have no hardcoded English
+  copy to translate. Found and fixed four pre-existing, never-tested `data-*` override bugs along
+  the way (kebab-case keys passed to `dataset[key]` lookups, which only ever resolve as camelCase
+  per spec) in `dv-confirm`, `dv-cart`, `dv-data-table`, `dv-state`. See `docs/guides/i18n.md` for
+  the pattern to extend to any future component. Known follow-up, not blocking: a
+  `docs/component-manifest.json` refresh (found stale since TASK-004, unrelated to i18n
+  specifically).
 
 ### P2 — already YAGNI-tagged and correctly parked; don't reopen without a real use case
 

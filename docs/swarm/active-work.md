@@ -10,9 +10,21 @@
 | [TASK-006](tasks/TASK-006-modal-focus-trap.md) — `dv-modal` focus-trap/nested-modal | Merged to `main` | claude (this session) | `swarm/task-006-modal-focus-trap` | Closed |
 | [TASK-007](tasks/TASK-007-transition-primitives.md) — Transition primitives (`dv-modal`/`dv-toast`/`dv-toast-stack`/`dv-disclosure`) | Merged to `main` | claude (this session) | `swarm/task-007-transition-primitives` | Closed |
 | [TASK-008](tasks/TASK-008-i18n-primitive-reference-wiring.md) — i18n/locale primitive design + reference wiring (`dv-modal`/`dv-confirm`/`dv-cart`) | Merged to `main` | claude (this session) | `swarm/task-008-i18n-primitive-reference-wiring` | Closed |
-| [TASK-009](tasks/TASK-009-i18n-wiring-pagination-data-table.md) — i18n wiring: `dv-pagination`, `dv-data-table` | Reviewed, awaiting merge approval | claude (this session) | `swarm/task-009-i18n-wiring-pagination-data-table` | Human merge approval |
-| [TASK-010](tasks/TASK-010-i18n-wiring-field-state-toast-stack.md) — i18n wiring: `dv-field`, `dv-state`, `dv-toast-stack` | Reviewed, awaiting merge approval | claude (this session) | `swarm/task-010-i18n-wiring-field-state-toast-stack` | Human merge approval |
-| [TASK-011](tasks/TASK-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast.md) — i18n wiring: `dv-autocomplete`, `dv-dropdown`, `dv-tabs`, `dv-product-card`, `dv-toast` | Reviewed, awaiting merge approval | claude (this session) | `swarm/task-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast` | Human merge approval |
+| [TASK-009](tasks/TASK-009-i18n-wiring-pagination-data-table.md) — i18n wiring: `dv-pagination`, `dv-data-table` | Merged to `main` | claude (this session) | `swarm/task-009-i18n-wiring-pagination-data-table` | Closed |
+| [TASK-010](tasks/TASK-010-i18n-wiring-field-state-toast-stack.md) — i18n wiring: `dv-field`, `dv-state`, `dv-toast-stack` | Merged to `main` | claude (this session) | `swarm/task-010-i18n-wiring-field-state-toast-stack` | Closed |
+| [TASK-011](tasks/TASK-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast.md) — i18n wiring: `dv-autocomplete`, `dv-dropdown`, `dv-tabs`, `dv-product-card`, `dv-toast` | Merged to `main` | claude (this session) | `swarm/task-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast` | Closed |
+
+## Public-site redesign round (2026-07-24)
+
+| Task | Status | Orchestrator | Implementation branch/worktree | Next gate |
+| --- | --- | --- | --- | --- |
+| [TASK-012](tasks/TASK-012-site-responsive-shell.md) — Responsive shell and accessibility | Dispatched | Codex | isolated agent workspace | Handoff + integration review |
+| [TASK-013](tasks/TASK-013-site-home-components.md) — Homepage demo and component catalog | Dispatched | Codex | isolated agent workspace | Handoff + integration review |
+| [TASK-014](tasks/TASK-014-site-learning-content.md) — Docs, tutorials and examples | Dispatched | Codex | isolated agent workspace | Handoff + integration review |
+| [TASK-015](tasks/TASK-015-site-translation-and-trust-pages.md) — Translation and trust pages | Dispatched | Codex | isolated agent workspace | Handoff + integration review |
+
+All four tasks own disjoint `site-next/` paths. Shared constitution, design-system, redesign-spec,
+legacy `site/` and library source files are read-only for this round.
 
 TASK-001..003 merged 2026-07-23 (human-approved). Post-merge: `.claude/` worktree/lint noise fixed
 (eslint ignores + `.gitignore`), and the two bugs found as a side effect were fixed directly on
@@ -86,9 +98,13 @@ every `en` bundle is byte-identical to the prior hardcoded defaults. Merged resu
 e2e tests, lint clean, size gate unchanged (3352 B/4096 B). Two more pre-existing kebab-case
 `dataset[key]` bugs found and fixed (`dv-data-table`, `dv-state`), same class as TASK-008's. See
 [`reviews/TASK-009-011-orchestrator-review.md`](reviews/TASK-009-011-orchestrator-review.md).
-This closes i18n wiring for all originally-affected components. Awaiting human merge approval per
-swarm rule 6.
+This closes i18n wiring for all originally-affected components. Merged to `main` 2026-07-24
+(human-approved). Post-merge on `main`: 223 unit + 23 e2e tests, lint clean (scoped to this
+round's files — `npm run lint`'s whole-repo run also surfaces unrelated errors in the
+concurrently in-progress, uncommitted `site-next/` from the Public-site redesign round above; not
+this round's concern), size gate unchanged (3352 B/4096 B). `docs/roadmap.md`'s i18n P1 item
+marked fully closed.
 
-Still recommended after this round merges: a small standalone task to refresh
-`docs/component-manifest.json` (stale since TASK-004, unrelated to i18n specifically) — the user
-has asked for this to start once the i18n wiring is done.
+Next: a small standalone task to refresh `docs/component-manifest.json` (stale since TASK-004,
+unrelated to i18n specifically) — the user has asked for this to start now that the i18n wiring
+is done.
