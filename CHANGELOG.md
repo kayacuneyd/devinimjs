@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `docs/component-manifest.json` (the AI-authoring contract manifest) refreshed against current
+  component source — stale since TASK-004 (2026-07-23), never in any single task's file
+  ownership so it drifted silently across five rounds. Added: `dv-modal`'s `data-close`;
+  `dv-pagination`'s `data-jump-label`, `data-previous-label`, `data-next-label`,
+  `data-previous-page-label`, `data-next-page-label`, `data-page-label`, `data-jump-aria-label`,
+  `data-go-label`; `dv-confirm`'s `data-confirming-label`; `dv-data-table`'s `data-page-size`,
+  `data-filter-label`, `data-pagination-label` and its `dv:filter` event; `dv-cart`'s
+  `data-decrease-label`, `data-increase-label`, `data-quantity-label`; `dv-toast-stack`'s
+  `data-dismiss`. No source behavior changed — this is a documentation-only sync.
+
 ### Added
 
 - i18n/locale primitive wiring for `dv-field`, `dv-state`, `dv-toast-stack` (ADR-0019, TASK-010,
