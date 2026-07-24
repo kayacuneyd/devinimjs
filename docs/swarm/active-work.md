@@ -8,7 +8,7 @@
 | [TASK-004](tasks/TASK-004-data-table-pagination-filtering.md) — `dv-data-table` pagination/filtering | Merged to `main` | claude (this session) | `swarm/task-004-data-table-pagination-filtering` | Closed |
 | [TASK-005](tasks/TASK-005-pagination-page-list.md) — `dv-pagination` page-number list/jump-to-page | Merged to `main` | claude (this session) | `swarm/task-005-pagination-page-list` | Closed |
 | [TASK-006](tasks/TASK-006-modal-focus-trap.md) — `dv-modal` focus-trap/nested-modal | Merged to `main` | claude (this session) | `swarm/task-006-modal-focus-trap` | Closed |
-| [TASK-007](tasks/TASK-007-transition-primitives.md) — Transition primitives (`dv-modal`/`dv-toast`/`dv-toast-stack`/`dv-disclosure`) | Reviewed, awaiting merge approval | claude (this session) | `swarm/task-007-transition-primitives` | Human merge approval |
+| [TASK-007](tasks/TASK-007-transition-primitives.md) — Transition primitives (`dv-modal`/`dv-toast`/`dv-toast-stack`/`dv-disclosure`) | Merged to `main` | claude (this session) | `swarm/task-007-transition-primitives` | Closed |
 
 TASK-001..003 merged 2026-07-23 (human-approved). Post-merge: `.claude/` worktree/lint noise fixed
 (eslint ignores + `.gitignore`), and the two bugs found as a side effect were fixed directly on
@@ -36,10 +36,14 @@ TASK-007 opened 2026-07-24: animation/transition primitives for `dv-modal`/`dv-t
 other remaining P1 item, touches nearly every component's default copy including all four this
 task touches, so it's deferred to its own round once TASK-007 merges.
 
-Implemented and independently verified 2026-07-24: new `src/core/transition.js` primitive
-(`awaitTransition`, kept out of the size-gated `core.js` export barrel), wired into all four
-named components; `dv-tabs` explicitly deferred (different crossfade state-machine shape, see
-ADR-0018). 174 unit + 21 e2e tests, lint clean, size gate unchanged (3352 B/4096 B, byte-for-byte
-identical to baseline). See
-[`reviews/TASK-007-orchestrator-review.md`](reviews/TASK-007-orchestrator-review.md). Awaiting
-human merge approval per swarm rule 6.
+Implemented, independently verified, and merged to `main` 2026-07-24 (human-approved): new
+`src/core/transition.js` primitive (`awaitTransition`, kept out of the size-gated `core.js`
+export barrel), wired into all four named components; `dv-tabs` explicitly deferred (different
+crossfade state-machine shape, see ADR-0018). Post-merge on `main`: 174 unit + 21 e2e tests, lint
+clean, size gate unchanged (3352 B/4096 B, byte-for-byte identical to baseline). See
+[`reviews/TASK-007-orchestrator-review.md`](reviews/TASK-007-orchestrator-review.md).
+`docs/roadmap.md` P1 updated accordingly.
+
+Only remaining P1 item: i18n/locale-bundle system for component copy — touches nearly every
+component, so it needs its own dedicated round rather than pairing with anything else. Not opened
+yet — awaiting direction.

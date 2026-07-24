@@ -78,8 +78,12 @@ All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent
   and only re-renders on matching changes, with test coverage
   (`tests/unit/store.test.js`: "useStore filters unrelated state paths…"). ADR-0011 §4 was written
   before this shipped; no gap here, no follow-up task needed.
-- No animation/transition primitives anywhere (modal, toast, disclosure, tabs) — Alpine ships
-  `x-transition` out of the box; a visible polish gap.
+- ~~No animation/transition primitives anywhere.~~ Closed 2026-07-24 via TASK-007 for `dv-modal`/
+  `dv-toast`/`dv-toast-stack`/`dv-disclosure`: a new `awaitTransition` primitive
+  (`src/core/transition.js`, ADR-0018, kept outside the size-gated `core.js` export barrel) defers
+  DOM teardown until a real CSS transition (or a timeout fallback) completes. `dv-tabs`'
+  panel-crossfade is a different state-machine shape (both panels stay mounted) and remains open —
+  tracked as a follow-up in ADR-0018, not forced into this primitive's shape.
 - ~~`dv-modal` has no real focus-trap cycling or nested-modal handling.~~ Closed 2026-07-24 via
   TASK-006: WAI-ARIA APG Tab-cycling focus trap plus a module-level open-modal stack so only the
   topmost dialog traps Tab when modals nest.
