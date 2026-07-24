@@ -129,7 +129,17 @@ An accessible local-data combobox. Give it a JSON `data-items` list and optional
 
 A small semantic table for already-loaded JSON. `data-columns` accepts strings or
 `{ key, label }` objects, `data-rows` accepts objects and `data-label` labels the table.
-Column headers sort rows locally and emit `dv:sort` with `{ key, direction }`.
+Column headers sort rows locally (numeric-aware when both compared values parse as finite
+numbers, locale-aware text compare otherwise) and emit `dv:sort` with `{ key, direction }`.
+
+A built-in text filter narrows rows by case-insensitive substring match across every visible
+column and emits `dv:filter` with `{ query }`. `data-page-size` (absent or `0`, the default,
+means no pagination — every filtered/sorted row renders) slices the filtered-then-sorted result
+set and composes a `<dv-pagination>` for the page controls; changing the sort, the filter, or
+`data-rows` resets to page 1 so the view never strands on a page past the end. Both features
+operate on `this.state.rows` as already loaded — this component does not fetch or page a remote
+source (see its module docstring; virtualization/server-side pagination are explicit non-goals,
+tracked on the roadmap).
 
 ---
 
