@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `dv-data-table` gains client-side pagination and filtering (TASK-004, closes a P1 roadmap gap):
+  a built-in text filter narrows rows by case-insensitive substring match across every visible
+  column and emits `dv:filter` with `{ query }`; a new `data-page-size` attribute (absent or `0`,
+  the default, means no pagination — unchanged behavior for existing callers) slices the
+  filtered-then-sorted result set and composes the existing `<dv-pagination>` for page controls.
+  Changing the sort, the filter, or `data-rows` resets to page 1 so the view never strands past
+  the end of a shrunk result set. Sorting is also now numeric-aware when both compared values
+  parse as finite numbers (previously always lexicographic — `"10"` sorted before `"2"`
+  ascending), falling back to locale-aware text compare otherwise. See
+  `design/component-library.md`.
 - Starter-kit scaffolding CLI (ADR-0016): `npm run create:project -- <target-dir> [--format=static|php]`
   generates a build-free `dv-counter` starter (static `index.html` or PHP-fed `index.php`) from
   the committed `dist/` artifacts — see `docs/guides/starter-kit.md`.
