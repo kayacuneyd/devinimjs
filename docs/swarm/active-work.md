@@ -8,6 +8,7 @@
 | [TASK-004](tasks/TASK-004-data-table-pagination-filtering.md) — `dv-data-table` pagination/filtering | Merged to `main` | claude (this session) | `swarm/task-004-data-table-pagination-filtering` | Closed |
 | [TASK-005](tasks/TASK-005-pagination-page-list.md) — `dv-pagination` page-number list/jump-to-page | Merged to `main` | claude (this session) | `swarm/task-005-pagination-page-list` | Closed |
 | [TASK-006](tasks/TASK-006-modal-focus-trap.md) — `dv-modal` focus-trap/nested-modal | Merged to `main` | claude (this session) | `swarm/task-006-modal-focus-trap` | Closed |
+| [TASK-007](tasks/TASK-007-transition-primitives.md) — Transition primitives (`dv-modal`/`dv-toast`/`dv-toast-stack`/`dv-disclosure`) | In progress | claude (this session) | `swarm/task-007-transition-primitives` | Implementation |
 
 TASK-001..003 merged 2026-07-23 (human-approved). Post-merge: `.claude/` worktree/lint noise fixed
 (eslint ignores + `.gitignore`), and the two bugs found as a side effect were fixed directly on
@@ -30,5 +31,7 @@ reshaped `dv-pagination` from different sides — was found and fixed during orc
 full evidence. Post-merge on `main`: 163 unit + 19 e2e tests, lint clean, size gate passed
 (3352 B/4096 B, unchanged). `docs/roadmap.md` P1 updated accordingly.
 
-Next candidates from `docs/roadmap.md`'s P1 list: animation/transition primitives, i18n/locale
-bundle. Neither opened yet — awaiting direction.
+TASK-007 opened 2026-07-24: animation/transition primitives for `dv-modal`/`dv-toast`/
+`dv-toast-stack`/`dv-disclosure`. Opened alone (not paired with another task) — i18n, the only
+other remaining P1 item, touches nearly every component's default copy including all four this
+task touches, so it's deferred to its own round once TASK-007 merges.
