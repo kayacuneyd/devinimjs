@@ -105,6 +105,11 @@ concurrently in-progress, uncommitted `site-next/` from the Public-site redesign
 this round's concern), size gate unchanged (3352 B/4096 B). `docs/roadmap.md`'s i18n P1 item
 marked fully closed.
 
-Next: a small standalone task to refresh `docs/component-manifest.json` (stale since TASK-004,
-unrelated to i18n specifically) — the user has asked for this to start now that the i18n wiring
-is done.
+`docs/component-manifest.json` refreshed 2026-07-24 (documentation-only, done directly by the
+orchestrator rather than a full task-contract/worktree cycle — small mechanical sync, no source
+behavior change, verified against 223/223 tests still passing): added `dv-modal`'s `data-close`;
+`dv-pagination`'s 8 previously-un-manifested override levers; `dv-confirm`'s
+`data-confirming-label`; `dv-data-table`'s `data-page-size`/`data-filter-label`/
+`data-pagination-label` and its `dv:filter` event; `dv-cart`'s three parameterized-label
+attributes; `dv-toast-stack`'s `data-dismiss`. `docs/roadmap.md`'s P1 list is now fully closed —
+next candidates require going back to `docs/roadmap.md`'s P2 list or a fresh gap analysis.
