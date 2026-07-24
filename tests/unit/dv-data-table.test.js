@@ -176,17 +176,17 @@ test('a positive data-page-size slices the filtered/sorted rows and composes <dv
   assert.ok(pagination, '<dv-pagination> is composed for page controls');
   assert.equal(pagination.getAttribute('data-total'), '5');
   assert.equal(pagination.getAttribute('data-size'), '2');
-  assert.equal(pagination.querySelector('[aria-current="page"]').textContent.trim(), 'Page 1 of 3');
+  assert.equal(pagination.querySelector('.dv-pagination-status').textContent.trim(), 'Page 1 of 3');
 
-  pagination.querySelectorAll('button')[1].click(); // Next, dispatched by dv-pagination itself
+  pagination.querySelector('[aria-label="Next page"]').click(); // dispatched by dv-pagination itself
   await settle();
   assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['C', 'D']);
   // Regression guard: a naive `<dv-pagination>` written directly in template() gets its own
   // self-rendered <nav>/buttons wiped out by this component's *next* re-render (morph() only
   // exempts <dv-outlet> from recursive diffing) — the very re-render that dv:page just caused.
   // If dv-pagination's DOM survives this second settle, the private-outlet mount is doing its job.
-  assert.equal(el.querySelector('[aria-current="page"]').textContent.trim(), 'Page 2 of 3');
-  assert.equal(el.querySelectorAll('dv-pagination button').length, 2, 'Previous/Next controls are still in the DOM');
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 2 of 3');
+  assert.ok(el.querySelector('[aria-label="Previous page"]'), 'Previous/Next controls are still in the DOM');
 });
 
 test('changing the sort while on page 2+ resets to page 1 so it never strands on an empty page', async () => {
@@ -197,14 +197,14 @@ test('changing the sort while on page 2+ resets to page 1 so it never strands on
   document.body.appendChild(el);
   await settle();
 
-  el.querySelector('dv-pagination').querySelectorAll('button')[1].click(); // -> page 2
+  el.querySelector('[aria-label="Next page"]').click(); // -> page 2
   await settle();
-  assert.equal(el.querySelector('[aria-current="page"]').textContent.trim(), 'Page 2 of 3');
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 2 of 3');
 
   el.querySelector('button[data-key="name"]').click(); // sort ascending, must reset to page 1
   await settle();
 
-  assert.equal(el.querySelector('[aria-current="page"]').textContent.trim(), 'Page 1 of 3');
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 1 of 3');
   assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['A', 'B']);
 });
 
@@ -216,15 +216,15 @@ test('changing the filter while on page 2+ resets to page 1 so it never strands 
   document.body.appendChild(el);
   await settle();
 
-  el.querySelector('dv-pagination').querySelectorAll('button')[1].click(); // -> page 2
+  el.querySelector('[aria-label="Next page"]').click(); // -> page 2
   await settle();
-  assert.equal(el.querySelector('[aria-current="page"]').textContent.trim(), 'Page 2 of 3');
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 2 of 3');
 
   const input = el.querySelector('input[type="search"]');
   input.value = 'A4'; // narrows to a single row; staying on page 2 would strand on an empty page
   input.dispatchEvent(new window.Event('input', { bubbles: true }));
   await settle();
 
-  assert.equal(el.querySelector('[aria-current="page"]').textContent.trim(), 'Page 1 of 1');
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 1 of 1');
   assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['A4']);
 });
