@@ -40,7 +40,7 @@
           <a class="ck-button" href="../tutorials/">Follow the learning path</a>
           <a class="ck-button ck-button--secondary" href="../examples/">Compare examples</a>
         </div>
-        <pre class="ck-card"><code>&lt;script type="module" src="/assets/devinim/authoring.min.js"&gt;&lt;/script&gt;
+        <pre class="ck-card" tabindex="0"><code>&lt;script type="module" src="/assets/devinim/authoring.min.js"&gt;&lt;/script&gt;
 &lt;acme-counter data-start="4" data-step="2"&gt;&lt;/acme-counter&gt;</code></pre>
         <p>Serve the module as ordinary JavaScript. No bundler, transpiler or Node.js process is required for consumers.</p>
       </section>
@@ -49,7 +49,7 @@
         <span class="ck-badge">Core contract</span>
         <h2>Use <code>component()</code> for ordinary components</h2>
         <p>The recommended authoring path is a standard <code>.dv.js</code> module. Keep external configuration in typed <code>props</code>, mutable UI data in <code>state</code>, attribute synchronization in <code>sync</code>, user actions in <code>actions</code>, and escaped markup in <code>view</code>.</p>
-        <pre class="ck-card"><code>import { component, html } from '/assets/devinim/authoring.min.js';
+        <pre class="ck-card" tabindex="0"><code>import { component, html } from '/assets/devinim/authoring.min.js';
 
 component('acme-counter', {
   props: { start: 0, step: 1 },
