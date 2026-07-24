@@ -11,6 +11,11 @@
 - 2026-07-22: Let’s Encrypt certificate `/etc/letsencrypt/live/devinimjs.digitaltamam.com/` is active through 2026-10-20 and Certbot renewal is scheduled.
 - 2026-07-22: The public component manifest is exposed at `/docs/component-manifest.json` through `site/docs/component-manifest.json` symlink.
 - 2026-07-22: Experimental v0.6 AI-first authoring is exposed from `src/core/authoring.js` (`component`, `html`, `unsafe`); `.dv.js` files are ordinary browser ESM and must stay compiler-free.
+- 2026-07-24: Public-site redesign is being developed in `site-next/`; the existing `site/` tree is legacy reference material and must not be overwritten during migration.
+- 2026-07-24: Product/design principles are constitutional constraints in `constitution.md`; operational rules live in `docs/design-system.md`, and the site information architecture lives in `docs/specs/2026-07-24-devinimjs-site-redesign.md`.
+- 2026-07-24: New site baseline is static HTML + CKCSS pinned CDN asset + site CSS/JS; preview from repository root with `node scripts/serve.mjs --port 8080` and open `/site-next/`.
+- 2026-07-24: Public-site redesign swarm TASK-012..015 is integration-ready in `site-next/`; it includes live DevinimJS homepage/catalog demos, learning/trust pages and initial Turkish routes. Review record: `docs/swarm/reviews/TASK-012-015-site-orchestrator-review.md`.
+- 2026-07-24: TASK-016..017 added canonical/hreflang/robots/sitemap metadata and permanent site-next Playwright/axe coverage. Final local gate passed after narrowing the site navigation selector that overrode CKCSS button contrast; review: `docs/swarm/reviews/TASK-016-017-site-launch-review.md`.
 - 2026-07-22: `component()` maps its compact `props` contract to typed live `data-*` attributes; prefer `on:event="action"` for new components, while `data-on:event` remains compatible.
 - 2026-07-22: The authoring distribution is `dist/authoring.min.js`; the generator supports `npm run create:component -- tag-name --format=dv` and the full verification result is 85 unit plus 19 Playwright/Axe E2E tests.
 - 2026-07-22: The built authoring distribution is copied to `site/assets/authoring.min.js`; bilingual docs load `site/assets/authoring-demo.dv.js` as a real browser-direct demonstration.

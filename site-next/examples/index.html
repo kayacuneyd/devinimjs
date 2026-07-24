@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DevinimJS and CKCSS examples separated by client-only capability and backend requirements.">
+  <title>Examples — DevinimJS</title>
+  <link rel="canonical" href="https://devinimjs.digitaltamam.com/examples/">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body class="dv-site">
+  <a class="ck-skip-link" href="#main">Skip to content</a>
+  <header class="dv-header">
+    <a class="dv-brand" href="../">DevinimJS <span>× CKCSS</span></a>
+    <nav class="dv-nav dv-nav--static" aria-label="Primary navigation">
+      <a href="../docs/">Docs</a><a href="../tutorials/">Tutorials</a><a href="../components/">Components</a><a aria-current="page" class="ck-button" href="./">Examples</a>
+    </nav>
+  </header>
+
+  <main id="main" class="ck-container ck-container--wide dv-page ck-stack">
+    <section class="ck-stack">
+      <p class="ck-badge">Application patterns</p>
+      <h1>See the boundary before you copy the pattern.</h1>
+      <p class="ck-text-lead">CKCSS owns presentation. DevinimJS owns browser behavior. The project owns persistence, identity, authorization and trusted business rules.</p>
+      <div class="ck-cluster"><a class="ck-button" href="../tutorials/">Build in order</a><a class="ck-button ck-button--secondary" href="../docs/#boundaries">Understand the boundary</a></div>
+    </section>
+
+    <section class="ck-stack">
+      <h2>Client-only examples</h2>
+      <p>These can be built and hosted with HTML, CSS, DevinimJS and browser APIs. They are useful learning projects and prototypes; browser storage is not a shared database.</p>
+      <div class="ck-grid ck-grid--3">
+        <article class="ck-card ck-stack"><span class="ck-badge ck-badge--success">Client-only</span><h3>Counter and tabs</h3><p>Learn <code>component()</code>, state, actions, escaped templates and accessible interaction without a backend.</p><a href="../docs/#authoring">View the contract</a></article>
+        <article class="ck-card ck-stack"><span class="ck-badge ck-badge--success">Client-only</span><h3>Todo and notes</h3><p>Use component events and page-owned <code>localStorage</code> or <code>IndexedDB</code> for a single-browser prototype.</p><a href="../tutorials/#path">Follow the project path</a></article>
+        <article class="ck-card ck-stack"><span class="ck-badge ck-badge--success">Client-only UI</span><h3>Product catalog and cart</h3><p>Compose product cards and cart state with local fixture data. A real checkout is a different boundary.</p><a href="../components/">Browse components</a></article>
+        <article class="ck-card ck-stack"><span class="ck-badge ck-badge--success">Client-only</span><h3>Dashboard prototype</h3><p>Build cards, filters, modal feedback and a hash-routed shell around fixture data.</p><a href="../docs/#runtime">Add runtime helpers</a></article>
+        <article class="ck-card ck-stack"><span class="ck-badge ck-badge--success">Client-only</span><h3>Form interaction</h3><p>Model values, dirty state and client-side feedback with <code>createForm()</code> before connecting a submit handler.</p><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/application-runtime.md#forms">Read the form guide</a></article>
+        <article class="ck-card ck-stack"><span class="ck-badge">Planned</span><h3>WYSIWYG editor</h3><p>A complete editor is not in the current component contract. Selection, sanitization, undo/redo and upload need a designed implementation first.</p><a href="../tutorials/#path">See the honest progression</a></article>
+      </div>
+    </section>
+
+    <section class="ck-stack">
+      <h2>Backend-dependent production flows</h2>
+      <p>The UI can still be prototyped with fixtures, but production behavior needs an application backend. DevinimJS provides the browser-side request, state and form primitives; it does not provide the server.</p>
+      <div class="ck-grid ck-grid--2">
+        <article class="ck-card ck-stack"><span class="ck-badge">API required</span><h3>Admin CRUD</h3><p>Compose data table, search, pagination, field, modal, confirm and toast components. Add an API for records, validation, authorization and mutations.</p><p><code>createAsyncState()</code>, <code>fetchJson()</code> and <code>createForm()</code> are the current runtime pieces.</p><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/application-runtime.md">Application runtime guide</a></article>
+        <article class="ck-card ck-stack"><span class="ck-badge">API required</span><h3>Accounts and customer portal</h3><p>Use server-rendered <code>data-*</code> values or JSON responses to hydrate UI components. Authentication, sessions, authorization and sensitive data remain server responsibilities.</p><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/php-integration.md">PHP integration guide</a></article>
+        <article class="ck-card ck-stack"><span class="ck-badge">API required</span><h3>Ecommerce checkout</h3><p>Client cart interaction is not payment authorization. Inventory, prices, orders, payment provider calls and webhook verification require a trusted backend.</p></article>
+        <article class="ck-card ck-stack"><span class="ck-badge">API required</span><h3>Uploads and autosave</h3><p>The page can call an upload or save handler through <code>fetchJson()</code>; the project must implement validation, storage, access control and persistence.</p></article>
+      </div>
+    </section>
+
+    <section class="ck-card ck-stack">
+      <h2>Common shape</h2>
+      <pre><code>CKCSS       → layout, tokens and visual states
+DevinimJS   → components, state, events and async UI
+Page/app    → orchestration and persistence adapter
+Backend     → identity, data, business rules and trusted writes</code></pre>
+      <p>For PHP, Laravel, WordPress or another server, print escaped <code>data-*</code> attributes and load the browser module. For a static prototype, replace the backend with fixtures or browser storage and label that boundary clearly.</p>
+    </section>
+  </main>
+
+  <footer class="dv-footer ck-container ck-container--wide"><a href="../">DevinimJS × CKCSS</a><span><a href="../contact/">Contact</a> · <a href="../license/">License</a></span></footer>
+</body>
+</html>

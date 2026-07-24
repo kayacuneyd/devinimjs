@@ -18,10 +18,12 @@
 
 | Task | Status | Orchestrator | Implementation branch/worktree | Next gate |
 | --- | --- | --- | --- | --- |
-| [TASK-012](tasks/TASK-012-site-responsive-shell.md) — Responsive shell and accessibility | Dispatched | Codex | isolated agent workspace | Handoff + integration review |
-| [TASK-013](tasks/TASK-013-site-home-components.md) — Homepage demo and component catalog | Dispatched | Codex | isolated agent workspace | Handoff + integration review |
-| [TASK-014](tasks/TASK-014-site-learning-content.md) — Docs, tutorials and examples | Dispatched | Codex | isolated agent workspace | Handoff + integration review |
-| [TASK-015](tasks/TASK-015-site-translation-and-trust-pages.md) — Translation and trust pages | Dispatched | Codex | isolated agent workspace | Handoff + integration review |
+| [TASK-012](tasks/TASK-012-site-responsive-shell.md) — Responsive shell and accessibility | Merged to `main` | Codex | isolated agent workspace | Closed |
+| [TASK-013](tasks/TASK-013-site-home-components.md) — Homepage demo and component catalog | Merged to `main` | Codex | isolated agent workspace | Closed |
+| [TASK-014](tasks/TASK-014-site-learning-content.md) — Docs, tutorials and examples | Merged to `main` | Codex | isolated agent workspace | Closed |
+| [TASK-015](tasks/TASK-015-site-translation-and-trust-pages.md) — Translation and trust pages | Merged to `main` | Codex | isolated agent workspace | Closed |
+| [TASK-016](tasks/TASK-016-site-seo-metadata.md) — SEO metadata and discovery files | Merged to `main` | Codex | isolated agent workspace | Closed |
+| [TASK-017](tasks/TASK-017-site-e2e-verification.md) — New-site browser verification | Merged to `main` | Codex | isolated agent workspace | Closed |
 
 All four tasks own disjoint `site-next/` paths. Shared constitution, design-system, redesign-spec,
 legacy `site/` and library source files are read-only for this round.

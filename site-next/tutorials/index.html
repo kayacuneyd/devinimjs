@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Build project-based DevinimJS tutorials from a counter to a deployable PHP or static application.">
+  <title>Tutorials — DevinimJS</title>
+  <link rel="canonical" href="https://devinimjs.digitaltamam.com/tutorials/">
+  <link rel="alternate" hreflang="en" href="https://devinimjs.digitaltamam.com/tutorials/">
+  <link rel="alternate" hreflang="tr" href="https://devinimjs.digitaltamam.com/tr/tutorials/">
+  <link rel="alternate" hreflang="x-default" href="https://devinimjs.digitaltamam.com/tutorials/">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body class="dv-site">
+  <a class="ck-skip-link" href="#main">Skip to content</a>
+  <header class="dv-header">
+    <a class="dv-brand" href="../">DevinimJS <span>× CKCSS</span></a>
+    <nav class="dv-nav dv-nav--static" aria-label="Primary navigation">
+      <a href="../docs/">Docs</a><a aria-current="page" href="./">Tutorials</a><a href="../components/">Components</a><a class="ck-button" href="../">Home</a>
+    </nav>
+  </header>
+
+  <main id="main" class="ck-container ck-container--reading dv-page ck-stack">
+    <section class="ck-stack">
+      <p class="ck-badge">Learn by building</p>
+      <h1>One product, ten deliberate steps.</h1>
+      <p class="ck-text-lead">Build a small task-and-notes workspace as the concepts accumulate. Every step stays usable in a browser; backend work is marked when persistence or shared data begins.</p>
+      <div class="ck-cluster"><a class="ck-button" href="#path">See the path</a><a class="ck-button ck-button--secondary" href="../docs/">Read the API contracts</a></div>
+    </section>
+
+    <section id="path" class="ck-stack">
+      <h2>Project path</h2>
+      <ol class="ck-stack">
+        <li class="ck-card ck-stack"><span class="dv-layer-number">01</span><h3>Counter: the smallest component</h3><p>Write a <code>.dv.js</code> file with <code>component()</code>, typed <code>props</code>, reactive <code>state</code>, an action and an escaped <code>html``</code> view.</p><p><strong>Outcome:</strong> a working counter custom element.</p><a href="../docs/#authoring">Use the authoring contract</a></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">02</span><h3>Task list: state and events</h3><p>Model task creation, completion and removal in component state. Emit a bubbling <code>dv:change</code> event when the component’s public result changes.</p><p><strong>Outcome:</strong> an interactive task list with no server.</p></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">03</span><h3>Notes: persistence at the page boundary</h3><p>Keep the component focused on UI behavior. Let page code connect its emitted data to browser <code>localStorage</code>; this is a client-only prototype, not shared persistence.</p><p><strong>Outcome:</strong> notes survive a refresh in one browser.</p></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">04</span><h3>Form: values, errors and submit state</h3><p>Use <code>createForm()</code> for values, field errors, dirty tracking and the async submission lifecycle. Keep the submit handler in application code.</p><p><strong>Outcome:</strong> a validated profile or note form with clear feedback.</p><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/application-runtime.md#forms">Read the form guide</a></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">05</span><h3>Shared store: one cart or workspace state</h3><p>Introduce <code>createStore()</code> when multiple components need the same state. Subscribe from components and release external resources with the supported lifecycle helpers.</p><p><strong>Outcome:</strong> task summary, filters or cart count stay synchronized.</p></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">06</span><h3>API screen: async loading and errors</h3><p>Replace local fixtures with <code>createAsyncState()</code> and <code>fetchJson()</code>. Render loading, success, empty and error states explicitly.</p><p><strong>Boundary:</strong> backend-dependent. The API, response shape and authorization belong to the project.</p><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/application-runtime.md#async-api-data">Read the async guide</a></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">07</span><h3>CRUD workspace: table, filter and pagination</h3><p>Compose the existing data-table, field, modal, confirm and toast components around the API flow. Keep server mutations in the page/application layer.</p><p><strong>Boundary:</strong> backend-dependent for real records; client-only with fixtures for the UI exercise.</p><a href="../components/">Browse component contracts</a></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">08</span><h3>Product flow: catalog to cart</h3><p>Use product-card and cart components with shared state. Add search or autocomplete only after the static product flow is clear.</p><p><strong>Boundary:</strong> the cart interaction can be client-only; inventory, prices, accounts and checkout require a trusted backend.</p></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">09</span><h3>Hash-routed application shell</h3><p>Use <code>createHashRouter()</code> for static-hosting-friendly routes such as <code>#/tasks</code> and <code>#/settings</code>. Preserve ordinary links and accessible headings.</p><p><strong>Outcome:</strong> a multi-view client application without server rewrite rules.</p><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/application-runtime.md#hash-routing">Read the routing guide</a></li>
+        <li class="ck-card ck-stack"><span class="dv-layer-number">10</span><h3>Ship the same assets</h3><p>Deploy the browser modules and CKCSS assets to static hosting, shared hosting, PHP or a VPS. For PHP, print escaped <code>data-*</code> attributes and load the component module.</p><p><strong>Boundary:</strong> deployment does not create an API; add the backend separately when the product needs persistence, identity or uploads.</p><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/php-integration.md">Read the PHP integration guide</a></li>
+      </ol>
+    </section>
+
+    <section class="ck-card ck-stack">
+      <h2>What comes after the path?</h2>
+      <p>A professional WYSIWYG editor is not a current DevinimJS component. Treat it as planned product work: define the document model, selection behavior, paste sanitization, undo/redo and upload contract before teaching it as a supported tutorial.</p>
+      <p>For the current release, practice the editor boundary with a safe preview of sanitized content rather than claiming a finished editor API.</p>
+    </section>
+  </main>
+
+  <footer class="dv-footer ck-container ck-container--wide"><a href="../">DevinimJS × CKCSS</a><span><a href="../contact/">Contact</a> · <a href="../license/">License</a></span></footer>
+</body>
+</html>

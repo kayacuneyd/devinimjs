@@ -34,5 +34,34 @@ runtime capabilities to grow:
 
 Build may be used; build must never be required.
 
+## Product and design principles
+
+DevinimJS and its companion CKCSS are governed by a shared product boundary. The detailed
+visual and interaction rules live in [`docs/design-system.md`](docs/design-system.md); the
+following principles are constitutional constraints:
+
+1. **Separate responsibilities:** semantic HTML owns content and structure, CKCSS owns
+   presentation, and DevinimJS owns interaction and application state.
+2. **Progressive disclosure:** a page must remain understandable and useful before optional
+   application behavior is loaded. This applies to the documentation site and static content;
+   the deliberate component-runtime exception remains defined by ADR-0001.
+3. **Responsive by default:** start mobile-first, let content determine layout, and test real
+   narrow, wide, touch and keyboard states rather than treating responsiveness as a final pass.
+4. **Accessible by default:** native controls, visible focus, semantic landmarks, readable
+   contrast, reduced-motion support and keyboard-complete interaction are release requirements.
+5. **Token-led design:** colors, type, spacing, radii, elevation and motion come from CKCSS
+   tokens or documented aliases; one-off visual values require a recorded reason.
+6. **Explainable interfaces:** documentation and examples should show a working path with the
+   smallest understandable amount of code. Product claims must be demonstrated, not merely
+   asserted.
+7. **Composable contracts:** every reusable component documents its inputs, outputs, states,
+   accessibility behavior and failure behavior before implementation.
+8. **Calm technical character:** visual hierarchy, whitespace and typography serve comprehension;
+   decoration must not compete with code, demos or task completion.
+
+Changes to these principles require an ADR or an explicit constitutional amendment. Use the
+design-system document for operational guidance and page-specific redesign specs for content
+and information architecture.
+
 If this file and the canonical constitution diverge, the canonical source wins.
 Amendments follow the process defined in the constitution itself.

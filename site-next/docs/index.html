@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DevinimJS documentation: start with component(), add reactive state, and opt into application runtime helpers when needed.">
+  <title>Docs — DevinimJS</title>
+  <link rel="canonical" href="https://devinimjs.digitaltamam.com/docs/">
+  <link rel="alternate" hreflang="en" href="https://devinimjs.digitaltamam.com/docs/">
+  <link rel="alternate" hreflang="tr" href="https://devinimjs.digitaltamam.com/tr/docs/">
+  <link rel="alternate" hreflang="x-default" href="https://devinimjs.digitaltamam.com/docs/">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body class="dv-site">
+  <a class="ck-skip-link" href="#main">Skip to content</a>
+  <header class="dv-header">
+    <a class="dv-brand" href="../">DevinimJS <span>× CKCSS</span></a>
+    <nav class="dv-nav dv-nav--static" aria-label="Primary navigation">
+      <a aria-current="page" href="./">Docs</a><a href="../tutorials/">Tutorials</a><a href="../components/">Components</a><a class="ck-button" href="../">Home</a>
+    </nav>
+  </header>
+
+  <main id="main" class="ck-container ck-container--wide dv-doc-layout">
+    <aside class="ck-card ck-stack" aria-label="Documentation sections">
+      <p class="ck-badge">Start path</p>
+      <a href="#quick-start">Quick start</a>
+      <a href="#authoring">Authoring contract</a>
+      <a href="#runtime">Application runtime</a>
+      <a href="#boundaries">Choose the right boundary</a>
+      <a href="#reference">Authoritative reference</a>
+    </aside>
+
+    <article class="dv-page ck-stack">
+      <section id="quick-start" class="ck-stack">
+        <p class="ck-badge">Reference · v0.6.0-beta.0</p>
+        <h1>Start with HTML. Add behavior when you need it.</h1>
+        <p class="ck-text-lead">DevinimJS is a native browser ES module runtime. Begin with a custom element and a small component contract; add the optional application helpers only when the page needs async data, forms or routing.</p>
+        <div class="ck-cluster">
+          <a class="ck-button" href="../tutorials/">Follow the learning path</a>
+          <a class="ck-button ck-button--secondary" href="../examples/">Compare examples</a>
+        </div>
+        <pre class="ck-card"><code>&lt;script type="module" src="/assets/devinim/authoring.min.js"&gt;&lt;/script&gt;
+&lt;acme-counter data-start="4" data-step="2"&gt;&lt;/acme-counter&gt;</code></pre>
+        <p>Serve the module as ordinary JavaScript. No bundler, transpiler or Node.js process is required for consumers.</p>
+      </section>
+
+      <section id="authoring" class="ck-stack">
+        <span class="ck-badge">Core contract</span>
+        <h2>Use <code>component()</code> for ordinary components</h2>
+        <p>The recommended authoring path is a standard <code>.dv.js</code> module. Keep external configuration in typed <code>props</code>, mutable UI data in <code>state</code>, attribute synchronization in <code>sync</code>, user actions in <code>actions</code>, and escaped markup in <code>view</code>.</p>
+        <pre class="ck-card"><code>import { component, html } from '/assets/devinim/authoring.min.js';
+
+component('acme-counter', {
+  props: { start: 0, step: 1 },
+  state() { return { count: this.props.start }; },
+  sync: { start(value) { this.state.count = value; } },
+  actions: {
+    increment() {
+      this.state.count += this.props.step;
+      this.emit('change', { count: this.state.count });
+    },
+  },
+  view() {
+    return html`&lt;button type="button" on:click="increment"&gt;${this.state.count}&lt;/button&gt;`;
+  },
+});</code></pre>
+        <p>Use <code>on:event="action"</code> for new code. Interpolated values are escaped by the <code>html</code> tag. Components emit bubbling <code>dv:*</code> events with <code>this.emit()</code>.</p>
+      </section>
+
+      <section id="runtime" class="ck-stack">
+        <span class="ck-badge">Optional application runtime</span>
+        <h2>Grow a page into an application</h2>
+        <p>Import <code>/app</code> or the corresponding distribution module only when you need application-level coordination. The page or application owns persistence; components expose state and events.</p>
+        <div class="ck-grid ck-grid--2">
+          <article class="ck-card ck-stack"><h3><code>createStore()</code></h3><p>Shared reactive state and subscriptions across components.</p></article>
+          <article class="ck-card ck-stack"><h3><code>createAsyncState()</code></h3><p>Stale-safe loading, success, empty and error lifecycle for promise-backed work.</p></article>
+          <article class="ck-card ck-stack"><h3><code>fetchJson()</code></h3><p>JSON requests for an API or a PHP endpoint.</p></article>
+          <article class="ck-card ck-stack"><h3><code>createForm()</code> / <code>createHashRouter()</code></h3><p>Form values, errors and submission state; serverless hash routes for static hosting.</p></article>
+        </div>
+      </section>
+
+      <section id="boundaries" class="ck-stack">
+        <span class="ck-badge">Architecture rule</span>
+        <h2>Know what the runtime does not own</h2>
+        <p>DevinimJS can run client-only applications with browser storage supplied by your page, but it does not provide a database, authentication, payment service or server-side rendering.</p>
+        <div class="ck-table-wrap">
+          <table class="ck-table">
+            <caption>Client-only and backend-dependent work</caption>
+            <thead><tr><th scope="col">Flow</th><th scope="col">Works client-only?</th><th scope="col">What the project owns</th></tr></thead>
+            <tbody>
+              <tr><td>Counter, tabs, modal, filters</td><td>Yes</td><td>HTML, browser state and component events</td></tr>
+              <tr><td>Todo or notes prototype</td><td>Yes</td><td><code>localStorage</code> or <code>IndexedDB</code> integration in page code</td></tr>
+              <tr><td>CRUD, account, shared records</td><td>No</td><td>API, authentication, authorization and database</td></tr>
+              <tr><td>Image upload or autosave</td><td>No</td><td>Upload endpoint, validation, storage and persistence</td></tr>
+              <tr><td>WYSIWYG editor</td><td>Planned</td><td>Editor model, sanitization and a supported upload contract</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="security" class="ck-stack">
+        <span class="ck-badge">Safety boundary</span>
+        <h2>Keep untrusted content escaped</h2>
+        <p>Use <code>html``</code> for normal templates. <code>unsafe()</code> is an explicit raw-HTML boundary and is appropriate only for independently sanitized content. API values, user input and future editor output are untrusted.</p>
+      </section>
+
+      <section id="reference" class="ck-stack">
+        <span class="ck-badge">Repository reference</span>
+        <h2>Read the contract, then build</h2>
+        <p>These links are the source-of-truth guides for the current release:</p>
+        <ul class="ck-stack">
+          <li><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/authoring-api.md">AI-first authoring API</a> — <code>component()</code> and <code>.dv.js</code>.</li>
+          <li><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/application-runtime.md">Application runtime guide</a> — async state, JSON, forms and hash routing.</li>
+          <li><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/guides/php-integration.md">PHP integration guide</a> — <code>data-*</code>, events, CSP and shared hosting.</li>
+          <li><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/component-contract.md">Component contract</a> — required files, lifecycle and quality rules.</li>
+          <li><a href="https://github.com/kayacuneyd/devinimjs/blob/main/docs/architecture.md">Architecture</a> — module map and ownership boundaries.</li>
+        </ul>
+      </section>
+    </article>
+  </main>
+
+  <footer class="dv-footer ck-container ck-container--wide"><a href="../">DevinimJS × CKCSS</a><span><a href="../security/">Security</a> · <a href="../privacy/">Privacy</a></span></footer>
+</body>
+</html>
