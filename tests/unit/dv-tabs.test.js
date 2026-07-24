@@ -13,6 +13,7 @@ for (const key of [
 }
 
 await import('../../src/components/dv-tabs.js'); // side effect: registers <dv-tabs>
+const { setLocale } = await import('../../src/core/i18n.js');
 
 // Flushes the microtask queue so batched renders settle.
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -148,4 +149,37 @@ test('multiple instances get unique ARIA ids', () => {
   const idsA = a.tabs.map((t) => t.id);
   const idsB = b.tabs.map((t) => t.id);
   assert.ok(idsA.every((id) => !idsB.includes(id)), 'no id collisions across instances');
+});
+
+// i18n primitive reference wiring (ADR-0019). Only the tablist's aria-label is wired — tab
+// activation, keyboard nav and panel/aria-selected logic are untouched by this task.
+
+test('the active locale bundle drives the tablist aria-label when no data-* override is set', async () => {
+  const { el } = makeTabs();
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('[role="tablist"]').getAttribute('aria-label'), 'Sekmeler');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('a data-label override still wins over the active locale bundle (ADR-0005 regression)', async () => {
+  const { el } = makeTabs();
+  el.setAttribute('data-label', 'Account settings');
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('[role="tablist"]').getAttribute('aria-label'), 'Account settings', 'the explicit override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('the tablist aria-label falls back to the unchanged hardcoded default with no locale/override set', () => {
+  const { el } = makeTabs();
+  assert.equal(el.querySelector('[role="tablist"]').getAttribute('aria-label'), 'Tabs');
 });

@@ -1,10 +1,15 @@
 /** @module components/dv-dropdown - Accessible light-DOM dropdown menu. */
 import { BaseComponent, html, define } from '../core/core.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-dropdown.locale.js';
+
+registerLocales('dv-dropdown', locales);
 
 /** Toggleable menu that preserves consumer-provided menu content. */
 export class DvDropdown extends BaseComponent {
   /** @returns {string[]} Live attributes. */ static observedAttributes = ['data-open'];
   /** @returns {{ open: boolean }} Initial state. */ initialState() { return { open: this.bool('open', false) }; }
+  /** Subscribes to locale changes (ADR-0019). */ connected() { this.onCleanup(onLocaleChange(() => this.requestUpdate())); }
   /**
    * @param {string} name - Attribute.
    * @param {string | null} value - Value.
@@ -23,6 +28,6 @@ export class DvDropdown extends BaseComponent {
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (current + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
     items[next].focus();
   }
-  /** @returns {import('../core/html.js').HtmlString} Markup. */ template() { return html`<div class="dv-dropdown" data-on:keydown="onKeydown"><button type="button" aria-expanded="${String(this.state.open)}" data-on:click="toggle">${this.str('label', 'Menu')}</button><div role="menu" hidden="${!this.state.open}">${this.outlet}</div></div>`; }
+  /** @returns {import('../core/html.js').HtmlString} Markup. */ template() { return html`<div class="dv-dropdown" data-on:keydown="onKeydown"><button type="button" aria-expanded="${String(this.state.open)}" data-on:click="toggle">${t(this, 'label', 'Menu')}</button><div role="menu" hidden="${!this.state.open}">${this.outlet}</div></div>`; }
 }
 define('dv-dropdown', DvDropdown);

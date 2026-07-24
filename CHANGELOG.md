@@ -31,6 +31,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `examples/i18n.html` demonstrates a live `en`/`tr` locale switch across all three components.
   Wiring the remaining ~10 components is deferred to follow-up tasks — see
   `docs/guides/i18n.md` and ADR-0019.
+- i18n/locale primitive (ADR-0019) wired into `dv-autocomplete` (`label`), `dv-dropdown`
+  (`label`), `dv-tabs` (`label`, the tablist's `aria-label` only — its ARIA reference wiring for
+  tab activation, keyboard nav and panel/`aria-selected` logic, ADR-0010, is untouched), and
+  `dv-product-card` (`action`) (TASK-011), each with its own co-located `*.locale.js` bundle
+  file. `dv-product-card`'s `name` fallback (`'Product'`) was deliberately left unwired — it's a
+  generic missing-product-data placeholder read once via `initialState()`, not UI chrome copy in
+  the same sense as the other wired strings; see `src/components/dv-product-card.locale.js`.
+  `dv-toast` was audited and found to have nothing to wire: its one `str()` call (`message`) has
+  an empty-string fallback with no hardcoded English default, since the toast always displays
+  consumer-supplied text — no `dv-toast.locale.js` was created. `npm run size`: unchanged at
+  `3352 B min+gzip`, confirmed before/after.
 - Transition/animation primitive (ADR-0018, TASK-007, closes a P1 roadmap gap): a new
   `awaitTransition(el, { timeout })` helper (`src/core/transition.js`) resolves on a real
   `transitionend`/`animationend`, or a 200ms timeout fallback for consumers with no CSS defined
