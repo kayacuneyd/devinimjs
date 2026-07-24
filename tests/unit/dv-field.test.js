@@ -14,6 +14,7 @@ for (const key of ['HTMLElement', 'Element', 'Node', 'CustomEvent', 'document', 
 }
 
 await import('../../src/components/dv-field.js');
+const { setLocale } = await import('../../src/core/i18n.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -149,4 +150,46 @@ test('a live data-value change resets the field value (ADR-0005 sync)', async ()
   el.setAttribute('data-value', 'second');
   await settle();
   assert.equal(el.querySelector('input').getAttribute('value'), 'second');
+});
+
+// i18n primitive reference wiring (ADR-0019). Only `label`/`error` are wired — `id`/`name`/
+// `control`/`type`/`placeholder` stay on `this.str()` (configuration, not copy, per
+// docs/guides/i18n.md §1) and are covered by the depth tests above, unaffected by this wiring.
+
+test('the active locale bundle drives the label and error message when no data-* override is set', async () => {
+  const el = document.createElement('dv-field');
+  el.setAttribute('data-required', 'true');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('label').textContent, 'Alan');
+    assert.equal(el.querySelector('[role="alert"]').textContent, 'Lütfen geçerli bir değer girin.');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('a data-label/data-error override still wins over the active locale bundle (ADR-0005 regression)', async () => {
+  const el = document.createElement('dv-field');
+  el.setAttribute('data-label', 'Email');
+  el.setAttribute('data-error', 'Enter a valid email.');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('label').textContent, 'Email', 'the explicit label override must still win over the tr bundle entry');
+    assert.equal(el.querySelector('[role="alert"]').textContent, 'Enter a valid email.', 'the explicit error override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('the unchanged fallback still applies with no locale override and no data-* override', () => {
+  const el = document.createElement('dv-field');
+  document.body.appendChild(el);
+  assert.equal(el.querySelector('label').textContent, 'Field');
+  assert.equal(el.querySelector('[role="alert"]').textContent, 'Please enter a valid value.');
 });

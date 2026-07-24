@@ -13,6 +13,7 @@ for (const key of ['HTMLElement', 'Element', 'Node', 'CustomEvent', 'document', 
 }
 
 await import('../../src/components/dv-toast-stack.js');
+const { setLocale } = await import('../../src/core/i18n.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -165,4 +166,55 @@ test('disconnecting the stack clears all pending timers without throwing (ADR-00
   await settle();
   assert.doesNotThrow(() => el.remove());
   await new Promise((resolve) => setTimeout(resolve, 20)); // past the timers — must not error
+});
+
+// i18n primitive reference wiring (ADR-0019). `label` was already routed through `str()`;
+// `dismiss` is newly wired — it used to be a literal `aria-label="Dismiss"` in the template,
+// never passed through `str()`/`t()` at all (same situation as `dv-modal`'s `close` aria-label
+// before TASK-008).
+
+test('the active locale bundle drives the stack aria-label and each item\'s dismiss aria-label when no data-* override is set', async () => {
+  const el = document.createElement('dv-toast-stack');
+  el.setAttribute('data-duration', '0');
+  document.body.appendChild(el);
+  el.show('Saved');
+  await settle();
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('.dv-toast-stack').getAttribute('aria-label'), 'Bildirimler');
+    assert.equal(el.querySelector('button').getAttribute('aria-label'), 'Kapat');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('data-label/data-dismiss overrides still win over the active locale bundle (ADR-0005 regression)', async () => {
+  const el = document.createElement('dv-toast-stack');
+  el.setAttribute('data-duration', '0');
+  el.setAttribute('data-label', 'Alerts');
+  el.setAttribute('data-dismiss', 'Close alert');
+  document.body.appendChild(el);
+  el.show('Saved');
+  await settle();
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('.dv-toast-stack').getAttribute('aria-label'), 'Alerts', 'the explicit label override must still win over the tr bundle entry');
+    assert.equal(el.querySelector('button').getAttribute('aria-label'), 'Close alert', 'the explicit dismiss override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('the unchanged fallback copy still applies with no locale override and no data-* override', async () => {
+  const el = document.createElement('dv-toast-stack');
+  el.setAttribute('data-duration', '0');
+  document.body.appendChild(el);
+  el.show('Saved');
+  await settle();
+  assert.equal(el.querySelector('.dv-toast-stack').getAttribute('aria-label'), 'Notifications');
+  assert.equal(el.querySelector('button').getAttribute('aria-label'), 'Dismiss');
 });
