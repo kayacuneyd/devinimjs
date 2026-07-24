@@ -1,6 +1,10 @@
 /** @module components/dv-data-table - Small sortable, filterable, paginated table for already-loaded rows. */
 import { BaseComponent, html, define } from '../core/core.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-data-table.locale.js';
 import './dv-pagination.js';
+
+registerLocales('dv-data-table', locales);
 
 /**
  * Compares two cell values for sorting: numeric-aware when both sides parse as finite numbers,
@@ -92,8 +96,17 @@ export class DvDataTable extends BaseComponent {
     this.state.page = event.detail.page;
   }
 
-  /** Runs once, after the first render — mounts the composed `<dv-pagination>` (if enabled). */
+  /**
+   * Subscribes to active-locale changes (ADR-0019), then mounts the composed `<dv-pagination>`
+   * (if enabled). Order matters: the locale subscription must be registered before
+   * `#syncPagination()` creates the child `<dv-pagination>`, so that a later `setLocale()` call
+   * re-renders this component (and forwards the freshly-resolved `pagination-label`, via
+   * `#syncPagination()`'s `updated()` re-run) before the child's own `onLocaleChange` subscriber
+   * re-renders it — both queued microtasks run in registration order, so the child always reads
+   * the fresh forwarded `data-label` override on its own next render.
+   */
   connected() {
+    this.onCleanup(onLocaleChange(() => this.requestUpdate()));
     this.#syncPagination();
   }
 
@@ -132,9 +145,9 @@ export class DvDataTable extends BaseComponent {
     // subsequent re-render of this component. Mounting it inside a private outlet instead
     // (`#syncPagination`) keeps its DOM outside this component's diffing entirely.
     return html`<div class="dv-data-table">
-      <label class="dv-data-table-filter">${this.str('filter-label', 'Filter')}<input type="search" value="${this.state.filter}" data-on:input="onFilter"></label>
+      <label class="dv-data-table-filter">${t(this, 'filterLabel', 'Filter')}<input type="search" value="${this.state.filter}" data-on:input="onFilter"></label>
       <table>
-        <caption>${this.str('label', 'Data table')}</caption>
+        <caption>${t(this, 'label', 'Data table')}</caption>
         <thead><tr>${this.state.columns.map((column) => html`<th scope="col" aria-sort="${this.state.sort === column.key ? (this.state.direction === 1 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-key="${column.key}" data-on:click="sortBy">${column.label}</button></th>`)}</tr></thead>
         <tbody>${pageRows.map((row) => html`<tr>${this.state.columns.map((column) => html`<td>${row[column.key] ?? ''}</td>`)}</tr>`)}</tbody>
       </table>
@@ -167,7 +180,7 @@ export class DvDataTable extends BaseComponent {
       'data-size': String(this.state.pageSize),
       'data-total': String(this.#visibleTotal),
       'data-page': String(this.state.page),
-      'data-label': this.str('pagination-label', 'Pagination'),
+      'data-label': t(this, 'paginationLabel', 'Pagination'),
     };
     for (const [name, value] of Object.entries(attrs)) {
       if (pagination.getAttribute(name) !== value) pagination.setAttribute(name, value);
