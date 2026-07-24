@@ -67,12 +67,12 @@ pre { max-inline-size: 100%; overflow-x: auto; overscroll-behavior-inline: conta
 .dv-proof { align-items: center; display: flex; gap: var(--ck-space-6); justify-content: space-between; margin-inline: auto; max-inline-size: var(--dv-content); padding-inline: var(--ck-space-4); }
 .dv-proof > * { min-width: 0; }
 .dv-footer { border-block-end: 0; flex-wrap: wrap; margin-block-start: var(--ck-space-8); }
-.dv-footer nav { display: flex; flex-wrap: wrap; gap: var(--ck-space-2); }
-.dv-footer nav { max-inline-size: 56rem; }
+.dv-footer nav { align-items: center; display: flex; flex-wrap: wrap; gap: var(--ck-space-3); }
+.dv-footer nav { max-inline-size: 32rem; }
 .dv-footer nav a, .dv-contact-actions a { text-decoration: none; }
 .dv-contact-actions { display: flex; flex-wrap: wrap; gap: var(--ck-space-3); }
 .dv-site .ck-button { min-block-size: var(--ck-control-height-sm); padding-block: var(--ck-space-2); }
-.dv-footer a { min-block-size: var(--ck-control-height-md); padding-block: var(--ck-space-2); }
+.dv-footer a { min-block-size: var(--ck-control-height-sm); padding-block: var(--ck-space-1); }
 
 .dv-page { margin-inline: auto; max-inline-size: var(--dv-reading); padding-block: var(--ck-space-7); }
 .dv-page--brief, .dv-page--catalog { max-inline-size: var(--dv-content); }
@@ -82,6 +82,8 @@ pre { max-inline-size: 100%; overflow-x: auto; overscroll-behavior-inline: conta
 .dv-page--brief .dv-brief-grid { display: grid; gap: var(--ck-space-4); grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
 .dv-page--brief .dv-brief-grid > * { min-width: 0; }
 .dv-page--brief > p { max-inline-size: 66ch; }
+.dv-site .ck-card.ck-stack { padding: var(--ck-space-5); }
+.dv-site .ck-card.ck-stack > .ck-badge { align-self: flex-start; }
 
 .dv-doc-layout { display: grid; gap: var(--ck-space-7); grid-template-columns: minmax(0, 1fr); margin-inline: auto; max-inline-size: var(--dv-content); padding: var(--ck-space-7) var(--ck-space-4); }
 .dv-doc-layout aside { align-self: start; position: sticky; top: var(--ck-space-4); }
@@ -138,8 +140,6 @@ dv-data-table th button:is(:hover, :focus-visible) { color: var(--ck-color-prima
 @media (max-width: 39.99rem) {
   .dv-header { align-items: flex-start; flex-wrap: wrap; }
   .dv-nav-toggle { margin-inline-start: auto; }
-  .dv-nav--static { align-items: stretch; flex-basis: 100%; justify-content: flex-start; }
-  .dv-nav--static a { display: flex; }
   .dv-proof { align-items: flex-start; flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) {

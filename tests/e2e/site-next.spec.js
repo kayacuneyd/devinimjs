@@ -88,13 +88,32 @@ test.describe('site-next responsive shell', () => {
 
 test('English routes share one stable navigation and footer contract', async ({ page }) => {
   const navigation = ['About', 'Docs', 'Tutorials', 'Components', 'Examples', 'Contact', 'Start building'];
-  const footer = ['About', 'Docs', 'Tutorials', 'Components', 'Examples', 'Contact', 'Security', 'Privacy', 'Terms', 'License'];
+  const footer = ['Privacy', 'Terms', 'License'];
 
   for (const route of englishRoutes) {
     await page.goto(route, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('header .dv-nav a')).toHaveText(navigation);
     await expect(page.locator('footer nav a')).toHaveText(footer);
   }
+});
+
+test('responsive navigation opens and closes as an accessible mobile menu', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/site-next/components/', { waitUntil: 'networkidle' });
+
+  const toggle = page.getByRole('button', { name: 'Menu' });
+  const nav = page.locator('header .dv-nav');
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(nav).not.toBeVisible();
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(nav).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(nav).not.toBeVisible();
 });
 
 test('homepage exposes working DevinimJS interactions', async ({ page }) => {

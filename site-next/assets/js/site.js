@@ -1,7 +1,19 @@
 /* global document, window */
 
-const navToggle = document.querySelector('.dv-nav-toggle');
-const nav = document.querySelector('.dv-nav:not(.dv-nav--static)');
+const nav = document.querySelector('.dv-nav');
+let navToggle = document.querySelector('.dv-nav-toggle');
+
+if (nav && !navToggle) {
+  navToggle = document.createElement('button');
+  navToggle.className = 'ck-button ck-button--secondary dv-nav-toggle';
+  navToggle.type = 'button';
+  navToggle.setAttribute('aria-expanded', 'false');
+  navToggle.setAttribute('aria-controls', nav.id || 'primary-nav');
+  navToggle.textContent = document.documentElement.lang === 'tr' ? 'Menü' : 'Menu';
+  nav.parentElement.insertBefore(navToggle, nav);
+}
+
+nav?.classList.remove('dv-nav--static');
 
 if (navToggle && nav) {
   const navLinks = [...nav.querySelectorAll('a')];
