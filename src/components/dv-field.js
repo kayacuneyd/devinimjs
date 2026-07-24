@@ -1,5 +1,9 @@
 /** @module components/dv-field - Configurable form field with native validation. */
 import { BaseComponent, html, define } from '../core/core.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-field.locale.js';
+
+registerLocales('dv-field', locales);
 
 /** A labelled native control that reports its value and validity without owning submission. */
 export class DvField extends BaseComponent {
@@ -8,6 +12,11 @@ export class DvField extends BaseComponent {
 
   /** @returns {{ value: string, invalid: boolean }} Initial state. */
   initialState() { return { value: this.str('value'), invalid: false }; }
+
+  /** Subscribes to active-locale changes (ADR-0019). */
+  connected() {
+    this.onCleanup(onLocaleChange(() => this.requestUpdate()));
+  }
 
   /**
    * @param {string} name - Attribute.
@@ -46,7 +55,7 @@ export class DvField extends BaseComponent {
       : control === 'select'
         ? html`<select id="${id}" name="${this.str('name')}" required="${this.bool('required', false)}" disabled="${this.bool('disabled', false)}" aria-invalid="${String(this.state.invalid)}" data-on:input="onInput" data-on:change="onChange">${options.map((option) => html`<option value="${option.value}" selected="${option.value === this.state.value}">${option.label}</option>`)}</select>`
         : html`<input id="${id}" name="${this.str('name')}" required="${this.bool('required', false)}" disabled="${this.bool('disabled', false)}" aria-invalid="${String(this.state.invalid)}" data-on:input="onInput" data-on:change="onChange" type="${this.str('type', 'text')}" value="${this.state.value}" placeholder="${this.str('placeholder')}">`;
-    return html`<div class="dv-field"><label for="${id}">${this.str('label', 'Field')}</label>${input}<p hidden="${!this.state.invalid}" role="alert">${this.str('error', 'Please enter a valid value.')}</p></div>`;
+    return html`<div class="dv-field"><label for="${id}">${t(this, 'label', 'Field')}</label>${input}<p hidden="${!this.state.invalid}" role="alert">${t(this, 'error', 'Please enter a valid value.')}</p></div>`;
   }
 
   /** @returns {Array<{ value: string, label: string }>} Parsed select options. */

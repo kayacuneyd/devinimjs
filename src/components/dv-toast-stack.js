@@ -1,6 +1,10 @@
 /** @module components/dv-toast-stack - Page-level queue of status messages. */
 import { BaseComponent, html, define } from '../core/core.js';
 import { awaitTransition } from '../core/transition.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-toast-stack.locale.js';
+
+registerLocales('dv-toast-stack', locales);
 
 /** A multi-message live region with explicit and timed dismissal. */
 export class DvToastStack extends BaseComponent {
@@ -13,6 +17,11 @@ export class DvToastStack extends BaseComponent {
    * instead of the array-splice removing it from the DOM the instant `dismiss()` runs.
    */
   initialState() { return { items: [] }; }
+
+  /** Subscribes to active-locale changes (ADR-0019). */
+  connected() {
+    this.onCleanup(onLocaleChange(() => this.requestUpdate()));
+  }
 
   /**
    * @param {string} message - Message text.
@@ -67,7 +76,7 @@ export class DvToastStack extends BaseComponent {
 
   /** @returns {import('../core/html.js').HtmlString} Stack markup. */
   template() {
-    return html`<section class="dv-toast-stack" aria-live="polite" aria-label="${this.str('label', 'Notifications')}">${this.state.items.map((item) => html`<output role="status" data-key="${item.id}" data-leaving="${item.leaving}">${item.message}<button type="button" aria-label="Dismiss" data-id="${item.id}" data-on:click="dismissButton">×</button></output>`)}</section>`;
+    return html`<section class="dv-toast-stack" aria-live="polite" aria-label="${t(this, 'label', 'Notifications')}">${this.state.items.map((item) => html`<output role="status" data-key="${item.id}" data-leaving="${item.leaving}">${item.message}<button type="button" aria-label="${t(this, 'dismiss', 'Dismiss')}" data-id="${item.id}" data-on:click="dismissButton">×</button></output>`)}</section>`;
   }
 }
 

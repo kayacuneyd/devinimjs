@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- i18n/locale primitive wiring for `dv-field`, `dv-state`, `dv-toast-stack` (ADR-0019, TASK-010,
+  follow-up to TASK-008): `dv-field`'s `label`/`error`; `dv-state`'s `loading`, `error`,
+  `retryLabel`, `empty`; `dv-toast-stack`'s `label` (already routed through `str()`) and a
+  previously-hardcoded `aria-label="Dismiss"` dismiss button, each now resolved through
+  `t(el, key, fallback)` with its own co-located `*.locale.js` bundle (`en`/`tr`). Deliberately
+  **not** wired: `dv-field`'s `id`/`name` (element identity), `control` (selects
+  `input`/`textarea`/`select`), `type` (a literal `input[type]` value), `placeholder` (no
+  fallback text to wire); `dv-state`'s `state` (selects a render branch) — all configuration, not
+  translatable copy, per `docs/guides/i18n.md` §1. Also fixes a pre-existing, never-tested
+  `data-retry-label` override bug in `dv-state` (the component called
+  `this.str('retry-label', 'Try again')`, a literal kebab-case string passed as a dataset key,
+  which `HTMLElement.dataset` never exposes per spec — same class of bug fixed in `dv-confirm`/
+  `dv-cart` by TASK-008). `npm run size`: unchanged at `3352 B min+gzip` (both primitives stay
+  outside the size-gated core budget). `dv-pagination`/`dv-data-table` (TASK-009) and
+  `dv-autocomplete`/`dv-dropdown`/`dv-tabs`/`dv-product-card`/`dv-toast` (TASK-011) were wired in
+  parallel by sibling tasks the same round — see `docs/guides/i18n.md` and ADR-0019 for the
+  remaining components.
 - i18n/locale primitive (ADR-0019, TASK-008, closes a P1 roadmap gap): a new
   `t(el, key, fallback, params)` helper (`src/core/i18n.js`) resolves translatable copy through
   three tiers — an explicit `data-*` override (ADR-0005, unchanged) > the active locale's
