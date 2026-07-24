@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Transition/animation primitive (ADR-0018, TASK-007, closes a P1 roadmap gap): a new
+  `awaitTransition(el, { timeout })` helper (`src/core/transition.js`) resolves on a real
+  `transitionend`/`animationend`, or a 200ms timeout fallback for consumers with no CSS defined
+  — so nothing ever hangs. Wired into `dv-modal` (backdrop/dialog exit), `dv-toast` (hide),
+  `dv-toast-stack` (per-item dismissal), and `dv-disclosure` (collapse); opening/expanding/
+  showing stays instant and unchanged in every case. All existing attributes, `dv:*` event
+  names and timing, and `state` shape are unchanged — only the DOM-presence teardown (the
+  `hidden` attribute reapplying, or a toast-stack item leaving the list) is deferred behind the
+  primitive. `themes/ckcss.css` ships real `opacity`/`transform` exit transitions (keyed off a
+  new `data-leaving` attribute) as the reference implementation, plus a
+  `prefers-reduced-motion: reduce` override. Deliberately **not** re-exported from
+  `src/core/core.js` — components import it directly, so it stays entirely outside the
+  size-gated core budget (`npm run size`: unchanged at `3352 B min+gzip`, confirmed
+  before/after). `dv-tabs`' panel crossfade is a different problem shape (two always-mounted
+  panels, not an open/close pair) and is explicitly deferred to a follow-up task — see
+  ADR-0018. See `design/component-library.md`.
 - `dv-data-table` gains client-side pagination and filtering (TASK-004, closes a P1 roadmap gap):
   a built-in text filter narrows rows by case-insensitive substring match across every visible
   column and emits `dv:filter` with `{ query }`; a new `data-page-size` attribute (absent or `0`,

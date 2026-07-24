@@ -72,6 +72,11 @@ per the ARIA Authoring Practices Guide. Unique ids across multiple instances.
 Accessible show/hide content. `data-summary` labels its native button; `data-open` controls the
 initial/live visibility. It emits `dv:toggle` with `{ open }` and preserves its light-DOM children.
 
+Collapsing is transition-aware (ADR-0018): the panel (`.dv-disclosure-panel`) stays mounted and
+gains `data-leaving` while its CSS exit transition (or a 200ms timeout fallback, for consumers
+with no CSS) plays, then `hidden` is reapplied. Expanding is unchanged/instant. `state.open` and
+`dv:toggle`'s timing are unaffected either way — only the panel's DOM-presence teardown defers.
+
 ---
 
 ## `<dv-modal>` — shipped (unreleased)
@@ -80,6 +85,12 @@ Light-DOM dialog with `data-label` and `data-open`. It emits `dv:open`/`dv:close
 dialog when opening, restores its recorded opener when closing, and closes on Escape. Consumers
 style `.dv-modal-backdrop`, `.dv-modal` and `.dv-modal-content` with their own global CSS.
 
+Closing is transition-aware (ADR-0018): `dv:close` fires and focus returns to the opener
+immediately as before, but the backdrop stays mounted and visible (gaining `data-leaving`) until
+its CSS exit transition — or a 200ms timeout fallback for consumers with no CSS — completes,
+then `hidden` is reapplied. Opening remains instant/unchanged. `themes/ckcss.css` ships a real
+`opacity` transition on `.dv-modal-backdrop[data-leaving]` as the reference implementation.
+
 ---
 
 ## `<dv-toast>` — shipped (unreleased)
@@ -87,6 +98,11 @@ style `.dv-modal-backdrop`, `.dv-modal` and `.dv-modal-content` with their own g
 Live status message. Configure `data-duration` in milliseconds (`0` disables auto-dismiss) and
 call `element.show('Saved')` or `element.hide()`. It emits `dv:show`/`dv:hide` and uses
 `role="status"` with polite announcements.
+
+Hiding is transition-aware (ADR-0018): `dv:hide` fires immediately as before, but the toast
+stays mounted (gaining `data-leaving`) until its CSS exit transition — or a 200ms timeout
+fallback for consumers with no CSS — completes, then `hidden` is reapplied. Showing remains
+instant/unchanged.
 
 ---
 
@@ -154,6 +170,11 @@ it emits `dv:change` with current items/total and `dv:remove` with `{ id }`.
 
 Page-level notification queue. Call `show(message)` and optionally `dismiss(id)`; each message
 uses a polite live region and emits `dv:show`/`dv:hide`.
+
+Dismissal is transition-aware (ADR-0018): `dv:hide` fires immediately as before, but the
+dismissed item stays mounted (gaining `data-leaving` and keeping its `data-key`) until its CSS
+exit transition — or a 200ms timeout fallback for consumers with no CSS — completes, then it is
+actually removed from the list. Adding a message remains instant/unchanged.
 
 ---
 

@@ -31,8 +31,34 @@ test('modal opens, closes with Escape and preserves its light-DOM children', asy
 
   el.querySelector('[role="dialog"]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   await settle();
+  assert.deepEqual(events, ['open', 'close'], 'dv:close fires immediately, not deferred to the exit transition');
+  assert.equal(backdrop.hidden, false, 'still mounted/visible mid-exit-transition (ADR-0018)');
+  assert.equal(backdrop.hasAttribute('data-leaving'), true);
+
+  // happy-dom never runs real CSS, so a genuine transitionend never fires — simulate the
+  // browser having finished the exit transition (see tests/unit/transition.test.js for the
+  // primitive's own timeout-fallback coverage, exercised when nothing dispatches this at all).
+  backdrop.dispatchEvent(new window.Event('transitionend', { bubbles: true }));
+  await settle();
   assert.equal(backdrop.hidden, true);
-  assert.deepEqual(events, ['open', 'close']);
+});
+
+test('a consumer with no CSS transition still reaches hidden, via the primitive\'s timeout fallback (ADR-0018)', async () => {
+  const el = document.createElement('dv-modal');
+  document.body.appendChild(el);
+  el.open();
+  await settle();
+  const backdrop = el.querySelector('.dv-modal-backdrop');
+  assert.equal(backdrop.hidden, false);
+
+  el.close();
+  await settle();
+  assert.equal(backdrop.hidden, false, 'not yet — nothing dispatched a transitionend and the fallback has not elapsed');
+
+  // No transitionend is ever dispatched here (unlike the other close tests) — this exercises
+  // the primitive's own 200ms default timeout fallback end to end through the component.
+  await new Promise((resolve) => setTimeout(resolve, 260));
+  assert.equal(backdrop.hidden, true, 'the timeout fallback must still hide it — never a stuck/broken UI (ADR-0018)');
 });
 
 test('an initially-open modal (data-open) focuses the dialog on connect', async () => {
@@ -75,8 +101,11 @@ test('the close (×) button also closes the dialog and returns focus to the open
   await settle();
   el.querySelector('[aria-label="Close"]').click();
   await settle();
-  assert.equal(el.querySelector('.dv-modal-backdrop').hidden, true);
-  assert.equal(document.activeElement, opener);
+  assert.equal(document.activeElement, opener, 'focus returns to the opener immediately, independent of the exit transition');
+  const backdrop = el.querySelector('.dv-modal-backdrop');
+  backdrop.dispatchEvent(new window.Event('transitionend', { bubbles: true }));
+  await settle();
+  assert.equal(backdrop.hidden, true);
   opener.remove();
 });
 
@@ -85,10 +114,14 @@ test('a live data-open attribute change opens/closes the dialog (ADR-0005 sync)'
   document.body.appendChild(el);
   el.setAttribute('data-open', 'true');
   await settle();
-  assert.equal(el.querySelector('.dv-modal-backdrop').hidden, false);
+  const backdrop = el.querySelector('.dv-modal-backdrop');
+  assert.equal(backdrop.hidden, false);
   el.setAttribute('data-open', 'false');
   await settle();
-  assert.equal(el.querySelector('.dv-modal-backdrop').hidden, true);
+  assert.equal(backdrop.hidden, false, 'still visible mid-exit-transition (ADR-0018)');
+  backdrop.dispatchEvent(new window.Event('transitionend', { bubbles: true }));
+  await settle();
+  assert.equal(backdrop.hidden, true);
 });
 
 // WAI-ARIA APG focus trap (docs/roadmap.md P1, closed by TASK-006). Focusable order inside the

@@ -4,6 +4,7 @@
  */
 
 import { BaseComponent, html, define } from '../core/core.js';
+import { awaitTransition } from '../core/transition.js';
 
 let instanceSeq = 0;
 
@@ -59,9 +60,24 @@ export class DvModal extends BaseComponent {
   #instanceId = ++instanceSeq;
   #opener = null;
 
+  /**
+   * @type {boolean} DOM-presence flag (ADR-0018) driving the `hidden` attribute — decoupled
+   * from the public `state.open` so the backdrop can stay mounted and visible through its exit
+   * transition after `state.open` has already flipped to `false`.
+   */
+  #visible = false;
+
+  /**
+   * @type {number} Bumped on every open/close so a stale close (superseded by a re-open
+   * before its exit transition finished) never applies its now-outdated `#visible = false`.
+   */
+  #closeToken = 0;
+
   /** @returns {{ open: boolean }} Initial modal state. */
   initialState() {
-    return { open: this.bool('open', false) };
+    const open = this.bool('open', false);
+    this.#visible = open;
+    return { open };
   }
 
   /** Focuses an initially open dialog and registers it atop the open-modal stack. */
@@ -94,7 +110,11 @@ export class DvModal extends BaseComponent {
    * @param {string | null} newValue - New value.
    */
   onAttribute(name, newValue) {
-    if (name === 'data-open') this.state.open = newValue !== null && newValue !== 'false' && newValue !== '0';
+    if (name !== 'data-open') return;
+    const open = newValue !== null && newValue !== 'false' && newValue !== '0';
+    if (open === this.state.open) return;
+    this.state.open = open;
+    this.#applyVisibility(open);
   }
 
   /**
@@ -130,6 +150,38 @@ export class DvModal extends BaseComponent {
     if (open === this.state.open) return;
     this.state.open = open;
     this.emit(open ? 'open' : 'close');
+    this.#applyVisibility(open);
+  }
+
+  /**
+   * Applies the DOM-presence side of an open/close change (ADR-0018). Opening is immediate —
+   * `hidden` comes off in the same render as `state.open` flips, exactly as before this
+   * primitive existed. Closing keeps the backdrop mounted and visible until its exit
+   * transition (or the primitive's timeout fallback) resolves, then removes it.
+   *
+   * @param {boolean} open - The new `state.open` value this call is reacting to.
+   */
+  #applyVisibility(open) {
+    this.#closeToken += 1;
+    if (open) {
+      this.#visible = true;
+      this.requestUpdate();
+      return;
+    }
+    const token = this.#closeToken;
+    const backdrop = this.querySelector('.dv-modal-backdrop');
+    if (!backdrop) {
+      this.#visible = false;
+      this.requestUpdate();
+      return;
+    }
+    awaitTransition(backdrop).then(() => {
+      // A re-open before the exit transition finished bumped #closeToken — this resolution is
+      // for a close that no longer applies, so it must not hide the now-reopened dialog.
+      if (token !== this.#closeToken) return;
+      this.#visible = false;
+      this.requestUpdate();
+    });
   }
 
   /** Queues focus until the dialog is visible in the patched DOM. */
@@ -173,7 +225,8 @@ export class DvModal extends BaseComponent {
   template() {
     const titleId = `dv-modal-${this.#instanceId}-title`;
     return html`
-      <div class="dv-modal-backdrop" hidden="${!this.state.open}">
+      <div class="dv-modal-backdrop" hidden="${!this.#visible}"
+        data-leaving="${this.#visible && !this.state.open}">
         <section class="dv-modal" role="dialog" aria-modal="true" aria-labelledby="${titleId}"
           tabindex="-1" data-on:keydown="onKeydown">
           <header>

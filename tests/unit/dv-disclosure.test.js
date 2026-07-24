@@ -45,5 +45,29 @@ test('a live data-open attribute change opens/closes the panel (ADR-0005 sync)',
 
   el.setAttribute('data-open', 'false');
   await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(panel.hidden, false, 'still mounted/visible mid-collapse-transition (ADR-0018)');
+  assert.equal(panel.hasAttribute('data-leaving'), true);
+
+  // happy-dom never runs real CSS — simulate the browser having finished the collapse
+  // transition (tests/unit/transition.test.js covers the primitive's own timeout fallback).
+  panel.dispatchEvent(new window.Event('transitionend', { bubbles: true }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
   assert.equal(panel.hidden, true);
+});
+
+test('a consumer with no CSS transition still reaches hidden, via the primitive\'s timeout fallback (ADR-0018)', async () => {
+  const el = document.createElement('dv-disclosure');
+  el.setAttribute('data-open', 'true');
+  document.body.appendChild(el);
+  const panel = el.querySelector('[id$="-panel"]');
+  assert.equal(panel.hidden, false);
+
+  el.querySelector('button').click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(panel.hidden, false, 'not yet — nothing dispatched a transitionend and the fallback has not elapsed');
+
+  // No transitionend is ever dispatched here — this exercises the primitive's own 200ms
+  // default timeout fallback end to end through the component.
+  await new Promise((resolve) => setTimeout(resolve, 260));
+  assert.equal(panel.hidden, true, 'the timeout fallback must still hide it — never a stuck/broken UI (ADR-0018)');
 });
