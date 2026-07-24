@@ -16,6 +16,9 @@ await import('../../src/components/dv-toast-stack.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+/** happy-dom never runs real CSS — simulate the browser having finished an item's exit transition. */
+const finishExit = (el) => el.dispatchEvent(new window.Event('transitionend', { bubbles: true }));
+
 test('multiple concurrent toasts render independently and keep insertion order', async () => {
   const el = document.createElement('dv-toast-stack');
   el.setAttribute('data-duration', '0');
@@ -32,6 +35,14 @@ test('multiple concurrent toasts render independently and keep insertion order',
   );
 
   el.dismiss(second);
+  await settle();
+  // The dismissed item stays mounted (ADR-0018) through its exit transition — still 3 items,
+  // the middle one now marked leaving — instead of vanishing from the array instantly.
+  const midLeave = [...el.querySelectorAll('output')];
+  assert.deepEqual(midLeave.map((o) => o.textContent), ['Saved×', 'Uploading…×', 'Synced×']);
+  assert.equal(midLeave[1].hasAttribute('data-leaving'), true);
+
+  finishExit(midLeave[1]);
   await settle();
   assert.deepEqual(
     [...el.querySelectorAll('output')].map((o) => o.textContent),
@@ -52,6 +63,11 @@ test('dismissing one toast auto-dismisses independently of the others\' timers',
   assert.equal(el.querySelectorAll('output').length, 2);
 
   await new Promise((resolve) => setTimeout(resolve, 25)); // past the first toast's 15ms duration
+  assert.equal(el.querySelectorAll('output').length, 2, 'the auto-dismissed item lingers mid-exit-transition (ADR-0018)');
+  const leaving = el.querySelector('output[data-leaving]');
+  assert.ok(leaving, 'the short-lived toast is the one mid-leave');
+  finishExit(leaving);
+  await settle();
   const remaining = [...el.querySelectorAll('output')].map((o) => o.textContent);
   assert.deepEqual(remaining, ['long-lived×']);
 });
@@ -68,12 +84,51 @@ test('dismiss-before-timeout is idempotent-safe and does not re-fire dv:hide whe
   el.dismiss(id); // well before the 20ms auto-dismiss would fire
   await settle();
   assert.deepEqual(hides, [id]);
+  finishExit(el.querySelector(`[data-key="${id}"]`));
+  await settle();
+  assert.equal(el.querySelectorAll('output').length, 0, 'removed once its (simulated) exit transition completes');
 
   // Wait past the original duration: if the pending setTimeout/onCleanup pairing were not
   // cleared correctly, a stale timer could still invoke dismiss(id) again.
   await new Promise((resolve) => setTimeout(resolve, 30));
   assert.deepEqual(hides, [id], 'no duplicate/stale dv:hide from the already-cleared timer');
   assert.equal(el.querySelectorAll('output').length, 0);
+});
+
+test('a leaving item is never re-dismissed (no duplicate dv:hide, no duplicate exit wait)', async () => {
+  const el = document.createElement('dv-toast-stack');
+  el.setAttribute('data-duration', '0');
+  document.body.appendChild(el);
+  const id = el.show('Saved');
+  await settle();
+
+  const hides = [];
+  el.addEventListener('dv:hide', (e) => hides.push(e.detail.id));
+  el.dismiss(id);
+  el.dismiss(id); // already leaving — must be a no-op, not a second dv:hide/exit-transition wait
+  await settle();
+  assert.deepEqual(hides, [id]);
+
+  finishExit(el.querySelector(`[data-key="${id}"]`));
+  await settle();
+  assert.equal(el.querySelectorAll('output').length, 0);
+});
+
+test('a consumer with no CSS transition still removes the item, via the primitive\'s timeout fallback (ADR-0018)', async () => {
+  const el = document.createElement('dv-toast-stack');
+  el.setAttribute('data-duration', '0');
+  document.body.appendChild(el);
+  const id = el.show('Saved');
+  await settle();
+
+  el.dismiss(id);
+  await settle();
+  assert.equal(el.querySelectorAll('output').length, 1, 'not yet — no transitionend dispatched and the fallback has not elapsed');
+
+  // No transitionend is ever dispatched here — this exercises the primitive's own 200ms
+  // default timeout fallback end to end through the component.
+  await new Promise((resolve) => setTimeout(resolve, 260));
+  assert.equal(el.querySelectorAll('output').length, 0, 'the timeout fallback must still remove it — never a stuck/broken UI (ADR-0018)');
 });
 
 test('duration=0 disables the auto-dismiss timer entirely', async () => {
@@ -95,6 +150,8 @@ test('the × button dismisses only the toast it belongs to', async () => {
 
   const buttons = el.querySelectorAll('button[aria-label="Dismiss"]');
   buttons[0].click();
+  await settle();
+  finishExit(el.querySelector('output[data-leaving]'));
   await settle();
   assert.deepEqual([...el.querySelectorAll('output')].map((o) => o.textContent), ['Second×']);
 });

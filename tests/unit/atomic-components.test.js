@@ -127,6 +127,12 @@ test('toast stack queues and dismisses messages', async () => {
   assert.equal(el.querySelector('output').textContent, 'Saved×');
   el.dismiss(id);
   await settle();
+  // Dismissed items stay mounted through their exit transition (ADR-0018) instead of vanishing
+  // instantly — happy-dom never runs real CSS, so simulate the browser finishing it (full
+  // primitive/timeout-fallback coverage lives in tests/unit/transition.test.js and
+  // tests/unit/dv-toast-stack.test.js).
+  el.querySelector('output').dispatchEvent(new window.Event('transitionend', { bubbles: true }));
+  await settle();
   assert.equal(el.querySelector('output'), null);
 });
 

@@ -22,6 +22,7 @@ sequential number, register here.
 | [0015](0015-error-boundary.md) | Component error boundary (`onError`) | Accepted | 2026-07-23 |
 | [0016](0016-starter-kit-cli.md) | Starter-kit scaffolding CLI | Accepted | 2026-07-23 |
 | [0017](0017-generated-type-declarations.md) | Generated `.d.ts` type declarations | Accepted | 2026-07-23 |
+| [0018](0018-transition-primitives.md) | Transition primitives (`awaitTransition`) | Accepted | 2026-07-24 |
 
 ## Dependency graph
 
@@ -41,4 +42,6 @@ sequential number, register here.
 0016 starter-kit CLI — depends on 0007 distribution, 0010 MVP scope
 0013 proposed (named outlets) — parked, see its file
 0010 MVP scope ── 0017 generated type declarations (deferred post-MVP candidate, now delivered)
+0004 event model ── 0014 keyed morph ── 0018 transition primitives (dv-modal, dv-toast,
+  dv-toast-stack, dv-disclosure)
 ```
