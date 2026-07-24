@@ -13,6 +13,7 @@ await import('../../src/components/dv-data-table.js');
 await import('../../src/components/dv-cart.js');
 await import('../../src/components/dv-toast-stack.js');
 await import('../../src/components/dv-state.js');
+const { setLocale } = await import('../../src/core/i18n.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -116,6 +117,62 @@ test('cart changes quantities and emits current total', async () => {
   await settle();
   assert.equal(el.querySelector('output').textContent, '2');
   assert.deepEqual(seen, [198]);
+});
+
+// i18n primitive reference wiring (ADR-0019). Two distinct rows prove the parameterized
+// aria-labels (`decreaseLabel`/`increaseLabel`/`quantityLabel`) substitute each row's own
+// `item.name` independently — not the same interpolated string bleeding across rows.
+test('cart parameterized per-row aria-labels substitute each row\'s own name under the active locale, without cross-contamination', async () => {
+  const el = document.createElement('dv-cart');
+  el.setAttribute('data-items', '[{"id":"kb","name":"Keyboard","price":99},{"id":"ms","name":"Mouse","price":25}]');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    const [kbDecrease, msDecrease] = el.querySelectorAll('[data-amount="-1"]');
+    const [kbIncrease, msIncrease] = el.querySelectorAll('[data-amount="1"]');
+    const [kbQty, msQty] = el.querySelectorAll('output');
+    assert.equal(kbDecrease.getAttribute('aria-label'), 'Keyboard azalt');
+    assert.equal(msDecrease.getAttribute('aria-label'), 'Mouse azalt');
+    assert.equal(kbIncrease.getAttribute('aria-label'), 'Keyboard artır');
+    assert.equal(msIncrease.getAttribute('aria-label'), 'Mouse artır');
+    assert.equal(kbQty.getAttribute('aria-label'), 'Keyboard adedi');
+    assert.equal(msQty.getAttribute('aria-label'), 'Mouse adedi');
+    assert.equal(el.querySelector('.dv-cart').getAttribute('aria-label'), 'Sepet');
+    assert.equal(el.querySelector('p strong').textContent, 'Toplam: 124');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('a data-remove-label override still wins over the active locale bundle (ADR-0005 regression)', async () => {
+  const el = document.createElement('dv-cart');
+  el.setAttribute('data-items', '[{"id":"kb","name":"Keyboard","price":99}]');
+  el.setAttribute('data-remove-label', 'Sepetten çıkar');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    const removeButton = [...el.querySelectorAll('button')].find((b) => !b.hasAttribute('aria-label') && !b.hasAttribute('data-amount'));
+    assert.equal(removeButton.textContent, 'Sepetten çıkar', 'the explicit override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('the cart empty-state string resolves through the active locale bundle', async () => {
+  const el = document.createElement('dv-cart');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('p').textContent, 'Sepetiniz boş.');
+  } finally {
+    setLocale(null);
+  }
 });
 
 test('toast stack queues and dismisses messages', async () => {
