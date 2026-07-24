@@ -1,4 +1,4 @@
-/** Accessible modal dialog with Escape and close-button support. */
+/** Accessible modal dialog: Escape to close, close-button, and a WAI-ARIA APG Tab focus trap. */
 export class DvModal extends BaseComponent {
     /** @returns {string[]} Live-synced attributes. */
     static observedAttributes: string[];
