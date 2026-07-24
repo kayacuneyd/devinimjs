@@ -32,6 +32,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ADR-0017. `package.json`'s `types` field and every `exports` entry now resolve to real types —
   `import { BaseComponent } from 'devinimjs'` gets editor/AI-agent autocomplete without any
   runtime dependency or compile step for consumers.
+- `dv-pagination`: a page-number list and a jump-to-page control, closing the roadmap P1 gap
+  ("Prev/Next only, no page-number list or jump-to-page"). The page list renders every page up
+  to 7, then truncates to the first page, the last page, and up to two pages either side of the
+  current page with `…` ellipsis markers for gaps (e.g. `1 … 8 9 10 11 12 … 20`). Jump-to-page is
+  a `<form>` with a numeric input; submitting it calls the existing `goTo()`, so invalid or
+  out-of-range input is clamped exactly like any other navigation and can never crash or emit an
+  out-of-range page. `aria-current="page"` now marks the active page-number button (moved off the
+  plain status text), and the Previous/Next/jump controls carry explicit `aria-label`s so they're
+  distinguishable without relying on visual position. The `data-page`/`data-total`/`data-size`
+  attributes and the `dv:page` event contract — which `dv-data-table` composes against — are
+  unchanged and additive-only; no new event type was introduced.
 
 ### Fixed
 

@@ -2,6 +2,9 @@
 
 import { BaseComponent, html, define } from '../core/core.js';
 
+/** Sentinel marking a truncation gap in the rendered page-number list. */
+const ELLIPSIS = Symbol('ellipsis');
+
 /** Pagination component using one-based pages and a bubbling `dv:page` event. */
 export class DvPagination extends BaseComponent {
   /** @returns {string[]} Live-synced attributes. */
@@ -33,6 +36,22 @@ export class DvPagination extends BaseComponent {
     this.goTo(Number(el.getAttribute('data-page')));
   }
 
+  /**
+   * Reads the jump-to-page input and navigates there. Invalid text (e.g. `"abc"`) and
+   * out-of-range numbers are clamped by `goTo`/`#clamp` exactly like any other `goTo` call — no
+   * separate validation is needed here, and a bad value can never crash or emit an out-of-range
+   * page.
+   *
+   * @param {Event} event - Form submit event (from the jump-to-page control).
+   * @param {Element} el - The `<form>` carrying the jump input.
+   */
+  jumpToPage(event, el) {
+    event.preventDefault();
+    const input = el.querySelector('[data-pagination-jump-input]');
+    if (!input) return;
+    this.goTo(Number(input.value));
+  }
+
   /** @param {number} page - Requested one-based page. */
   goTo(page) {
     const next = this.#clamp(page, this.state.total, this.state.size);
@@ -44,15 +63,62 @@ export class DvPagination extends BaseComponent {
   /** @returns {import('../core/html.js').HtmlString} Pagination markup. */
   template() {
     const pages = Math.max(1, Math.ceil(this.state.total / this.state.size));
+    const current = this.state.page;
     return html`
       <nav aria-label="${this.str('label', 'Pagination')}">
-        <button type="button" data-page="${this.state.page - 1}" data-on:click="goToButton"
-          disabled="${this.state.page <= 1}">Previous</button>
-        <span aria-current="page">Page ${this.state.page} of ${pages}</span>
-        <button type="button" data-page="${this.state.page + 1}" data-on:click="goToButton"
-          disabled="${this.state.page >= pages}">Next</button>
+        <button type="button" data-page="${current - 1}" data-on:click="goToButton"
+          aria-label="Previous page" disabled="${current <= 1}">Previous</button>
+        <ul class="dv-pagination-list">
+          ${this.#pageWindow(current, pages).map((entry) => (entry === ELLIPSIS
+            ? html`<li class="dv-pagination-ellipsis" aria-hidden="true">&hellip;</li>`
+            : html`
+              <li>
+                <button type="button" data-page="${entry}" data-on:click="goToButton"
+                  aria-current="${entry === current ? 'page' : null}"
+                  aria-label="Page ${entry}">${entry}</button>
+              </li>
+            `))}
+        </ul>
+        <span class="dv-pagination-status">Page ${current} of ${pages}</span>
+        <button type="button" data-page="${current + 1}" data-on:click="goToButton"
+          aria-label="Next page" disabled="${current >= pages}">Next</button>
+        <form class="dv-pagination-jump" data-on:submit="jumpToPage">
+          <label>
+            ${this.str('jumpLabel', 'Jump to page')}
+            <input type="number" inputmode="numeric" step="1" min="1" max="${pages}" value="${current}"
+              data-pagination-jump-input aria-label="Jump to page, 1 to ${pages}">
+          </label>
+          <button type="submit">Go</button>
+        </form>
       </nav>
     `;
+  }
+
+  /**
+   * Builds the truncated page-number window: every page when the count is small (≤ 7), otherwise
+   * the first page, the last page, and up to two pages either side of the current page (7 slots
+   * total once they stop overlapping), with an `ELLIPSIS` marker inserted for any gap larger than
+   * one page — e.g. `1 … 8 9 10 11 12 … 20`.
+   *
+   * @param {number} current - Current one-based page.
+   * @param {number} pages - Total page count.
+   * @returns {Array<number | symbol>} Ordered entries: page numbers or `ELLIPSIS`.
+   */
+  #pageWindow(current, pages) {
+    if (pages <= 7) return Array.from({ length: pages }, (_, index) => index + 1);
+
+    const kept = [...new Set([1, pages, current - 2, current - 1, current, current + 1, current + 2])]
+      .filter((page) => page >= 1 && page <= pages)
+      .sort((a, b) => a - b);
+
+    const entries = [];
+    let previous = null;
+    for (const page of kept) {
+      if (previous !== null && page - previous > 1) entries.push(ELLIPSIS);
+      entries.push(page);
+      previous = page;
+    }
+    return entries;
   }
 
   /**
