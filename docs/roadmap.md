@@ -101,6 +101,27 @@ All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent
   `docs/component-manifest.json` refresh (found stale since TASK-004, unrelated to i18n
   specifically).
 
+### Closed outside the original P0/P1/P2 list — a fresh gap, not previously tracked
+
+- ~~No connection between CKCSS's UI Kit Patterns library and DevinimJS's component catalog —
+  every real page still had to be generated from scratch (by hand or by an AI agent) instead of
+  assembled from proven parts.~~ Closed 2026-07-24 via TASK-020: `adr/0020-starter-kits.md` +
+  `kits/admin-dashboard/` + `create:project --kit=<name>`. One pilot kit
+  (`admin-dashboard`: search/sort/paginate + create-via-modal + delete-via-confirm + toast
+  feedback, composing CKCSS's `data-management.html` pattern with `dv-data-table`, `dv-modal`,
+  `dv-field`, `dv-confirm`, `dv-toast-stack`), deliberately not a multi-kit library yet (§2
+  YAGNI) — see `kits/README.md`. Found and fixed a real prerequisite bug as a side effect:
+  `dist/modules/<name>.js` left `../core/i18n.js`/`../core/transition.js`/`./<name>.locale.js` as
+  unresolved relative imports, 404ing for 14 of 16 components the moment the file was copied
+  outside this repo's own `dist/` tree — silently broken since i18n/transition landed
+  (2026-07-24, this same day), never caught because `npm run verify` doesn't run `npm run build`.
+  Fixed in `scripts/build-dist.mjs` (bundle those imports per-module instead of leaving them
+  unresolved); regression-tested in `tests/unit/dist-modules-self-contained.test.js`.
+- **Follow-ups, deferred on purpose (not silently forgotten):** an `auth` kit and a
+  `marketing-landing` kit (same mechanism, different source CKCSS pattern) — open once the
+  admin-dashboard pilot has been used for real and the mechanism is validated, not before.
+  `--format=php` kit support has no driving use case yet either.
+
 ### P2 — already YAGNI-tagged and correctly parked; don't reopen without a real use case
 
 - Named multi-slot outlets (ADR-0013, explicitly "sketch, not a decision").

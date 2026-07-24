@@ -56,10 +56,30 @@ component with increment/decrement buttons and a live count, wired end-to-end wi
 
 - Add more components by copying further `dist/modules/*.js` files into
   `assets/devinim/components/` (each imports `../authoring.min.js` or `../core.min.js` relatively
-  — keep the two-level folder layout).
+  — keep the two-level folder layout). Every `dist/modules/*.js` file is self-contained as of
+  ADR-0020 — no other file needs to come with it, **except** `dv-data-table.js`, which also needs
+  `dv-pagination.js` copied alongside it (it composes `<dv-pagination>` internally as a real
+  sibling file, not a bundled copy — see ADR-0020's consequences for why).
 - Read [`docs/guides/php-integration.md`](php-integration.md) for the full `data-*` contract,
   JSON attributes, events and the security checklist.
 - Read [`docs/guides/authoring-api.md`](authoring-api.md) to write your own `.dv.js` components.
+
+## Kits — a working page, not just one component
+
+`--format` scaffolds a blank page with one component. `--kit=<name>` scaffolds a **working page**
+composing several real components with a CKCSS pattern — the fastest way to get a real screen
+without writing one from scratch:
+
+```bash
+npm run create:project -- <target-dir> --kit=admin-dashboard
+```
+
+`--kit` and `--format` are mutually exclusive — a kit is always a static, build-free page. See
+[`kits/README.md`](../../kits/README.md) for the kit list and rules, and
+[`kits/admin-dashboard/README.md`](../../kits/admin-dashboard/README.md) for what that one
+demonstrates (search/sort/paginate, a create-via-modal flow, a delete-via-confirm flow, toast
+feedback — all through each component's existing documented `data-*`/event contract, no new
+framework feature). Design decision: [`adr/0020-starter-kits.md`](../../adr/0020-starter-kits.md).
 
 ## Not yet included
 

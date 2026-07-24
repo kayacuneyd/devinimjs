@@ -7,8 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0-beta.0] - 2026-07-24
+
+### Changed
+
+- `constitution.md` adopted **KayaEOS Engineering & Design Constitution v2.0.0** (was 1.0.0):
+  deepened the local Product/Design principles into enforceable clauses grounded in the actual
+  CKCSS `tokens.css` values (4px-base spacing scale, WCAG contrast test obligations, closed
+  radius/shadow/duration/easing sets), added a Fluid Design & Responsive Contract section
+  (clamp()-first typography, container-queries-over-media-queries, the existing 640/768/1024px
+  breakpoints as the only sanctioned thresholds), and added an AI & Developer Contract section
+  (no invented tokens/architecture, self-verification before "done", constitutional-tier files
+  require human merge approval). §1–§10 canonical key bindings are unchanged; no prior rule was
+  weakened, only made concrete and testable.
+
+### Added
+
+- **Starter kits** (ADR-0020, TASK-020): `create:project --kit=<name>` scaffolds a working
+  *page* — several real components composed together — instead of one blank component.
+  Pilot kit: `admin-dashboard` (`kits/admin-dashboard/`), a CRUD project list structurally based
+  on CKCSS's `data-management.html` pattern, combining `<dv-data-table>` (search/sort/pagination),
+  `<dv-modal>` + `<dv-field>` (create flow), `<dv-confirm>` (delete flow) and `<dv-toast-stack>`
+  (feedback) through each component's existing documented `data-*`/event contract — no new
+  component API. `--kit` and `--format` are mutually exclusive. Verified end-to-end with a real
+  Chromium/Playwright pass against the generated output: search/sort/pagination, create→toast,
+  delete→toast, Escape-closes-modal, zero console errors, zero axe WCAG A/AA violations, no
+  horizontal overflow at 390px/1440px. Auth and marketing-landing kits are deferred follow-ups —
+  see `adr/0020-starter-kits.md`.
+
 ### Fixed
 
+- **`dist/modules/<name>.js` self-containment** (found while building the kit above, TASK-020):
+  14 of 16 components (every one using the i18n or transition primitives, i.e. everything except
+  `dv-counter`/`dv-search`) left `../core/i18n.js`, `../core/transition.js` and their own
+  `./<name>.locale.js` as unresolved relative imports in `dist/modules/<name>.js` — harmless
+  inside this repo's own `dist/` tree, but a 404 the moment the file is copied elsewhere, exactly
+  what `create:project` and `docs/guides/starter-kit.md`'s own "copy further `dist/modules/*.js`
+  files" guidance both do. Never caught because `npm run verify` doesn't run `npm run build`.
+  Fixed in `scripts/build-dist.mjs`: each component's per-module build now bundles those
+  relative imports in (esbuild `stdin`/`resolveDir`/`bundle: true`) instead of leaving them
+  unresolved, while `dv-data-table`'s one cross-component import (`./dv-pagination.js`) stays
+  external/unbundled on purpose — inlining it would make two independently-loaded modules each
+  call `define('dv-pagination', …)`, which throws on the second registration. Regression-tested
+  in `tests/unit/dist-modules-self-contained.test.js`. `dist/` regenerated; core size gate
+  unaffected (`npm run size`: unchanged at 3352 B/4096 B — this only touches per-component
+  module files, not `src/core/core.js`).
 - `docs/component-manifest.json` (the AI-authoring contract manifest) refreshed against current
   component source — stale since TASK-004 (2026-07-23), never in any single task's file
   ownership so it drifted silently across five rounds. Added: `dv-modal`'s `data-close`;

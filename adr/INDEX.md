@@ -24,6 +24,7 @@ sequential number, register here.
 | [0017](0017-generated-type-declarations.md) | Generated `.d.ts` type declarations | Accepted | 2026-07-23 |
 | [0018](0018-transition-primitives.md) | Transition primitives (`awaitTransition`) | Accepted | 2026-07-24 |
 | [0019](0019-i18n-locale-primitive.md) | i18n/locale primitive (`t`, `registerLocales`, `setLocale`) | Accepted | 2026-07-24 |
+| [0020](0020-starter-kits.md) | Starter kits (CKCSS pattern + DevinimJS component compositions) | Accepted | 2026-07-24 |
 
 ## Dependency graph
 
@@ -46,4 +47,5 @@ sequential number, register here.
 0004 event model ── 0014 keyed morph ── 0018 transition primitives (dv-modal, dv-toast,
   dv-toast-stack, dv-disclosure)
 0005 attribute↔state ── 0019 i18n/locale primitive (dv-modal, dv-confirm, dv-cart)
+0016 starter-kit CLI ── 0020 starter kits (--kit=admin-dashboard)
 ```

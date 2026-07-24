@@ -8,6 +8,7 @@ const englishRoutes = [
   '/site-next/tutorials/',
   '/site-next/components/',
   '/site-next/examples/',
+  '/site-next/kits/',
   '/site-next/contact/',
   '/site-next/security/',
   '/site-next/privacy/',
@@ -87,7 +88,7 @@ test.describe('site-next responsive shell', () => {
 });
 
 test('English routes share one stable navigation and footer contract', async ({ page }) => {
-  const navigation = ['About', 'Docs', 'Tutorials', 'Components', 'Examples', 'Contact', 'Start building'];
+  const navigation = ['About', 'Docs', 'Tutorials', 'Components', 'Examples', 'Kits', 'Contact', 'Start building'];
   const footer = ['Privacy', 'Terms', 'License'];
 
   for (const route of englishRoutes) {
@@ -176,9 +177,32 @@ test('component catalog filters its real component cards', async ({ page }) => {
   await expect(page.locator('[data-component-item]:not([hidden])'), `${route}: cards after clearing filter`).toHaveCount(9);
 });
 
+test('kits page: the live admin-dashboard demo searches, creates and deletes a project', async ({ page }) => {
+  const route = '/site-next/kits/';
+  await assertNoBrowserErrors(page, route);
+
+  const rows = page.locator('#kit-projects-table tbody tr');
+  await expect(rows, `${route}: seeded rows (page size 5 of 6)`).toHaveCount(5);
+
+  await page.locator('#kit-new-project-open').click();
+  await expect(page.getByRole('dialog', { name: 'New project' }), `${route}: create modal`).toBeVisible();
+  await page.locator('#kit-field-name input').fill('E2E Test Project');
+  await page.locator('#kit-field-owner input').fill('E2E Runner');
+  await page.locator('#kit-new-project-form button[type="submit"]').click();
+  await expect(page.locator('dv-toast-stack output'), `${route}: create toast`).toContainText('Project created.');
+  await expect(page.locator('#kit-projects-table')).toHaveAttribute('data-rows', /E2E Test Project/);
+
+  await page.selectOption('#kit-delete-select', 'E2E Test Project');
+  await page.locator('#kit-delete-confirm button').first().click();
+  await page.locator('#kit-delete-confirm button').first().click();
+  await expect(page.locator('dv-toast-stack output').last(), `${route}: delete toast`).toContainText('removed.');
+  await expect(page.locator('#kit-projects-table')).not.toHaveAttribute('data-rows', /E2E Test Project/);
+});
+
 for (const [route, label] of [
   ['/site-next/', 'homepage'],
   ['/site-next/components/', 'component catalog'],
+  ['/site-next/kits/', 'kits'],
 ]) {
   test(`${label} has no detectable WCAG A/AA violations`, async ({ page }) => {
     await assertNoBrowserErrors(page, route);

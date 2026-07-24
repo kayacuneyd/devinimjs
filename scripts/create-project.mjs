@@ -7,17 +7,36 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
+/** @type {Record<string, string[]>} Kit name -> extra dist/modules/*.js files a <script> tag in
+ *  its index.html doesn't reference directly but are still required at runtime — e.g.
+ *  dv-data-table.js imports dv-pagination.js as an external sibling file (ADR-0020/#0020). */
+const KIT_HIDDEN_MODULE_DEPS = { 'admin-dashboard': ['dv-pagination'] };
+/** @type {Record<string, string[]>} Kit name -> dist/modules/*.js files its index.html loads
+ *  directly via a <script type="module"> tag. */
+const KIT_MODULES = { 'admin-dashboard': ['dv-data-table', 'dv-modal', 'dv-field', 'dv-confirm', 'dv-toast-stack', 'dv-state'] };
+
 const args = process.argv.slice(2);
 const target = args.find((arg) => !arg.startsWith('--'));
 const dryRun = args.includes('--dry-run');
 const force = args.includes('--force');
-const format = args.find((arg) => arg.startsWith('--format='))?.slice('--format='.length) ?? 'static';
+const formatArg = args.find((arg) => arg.startsWith('--format='))?.slice('--format='.length);
+const kit = args.find((arg) => arg.startsWith('--kit='))?.slice('--kit='.length);
 
 if (!target) {
   console.error('Usage: npm run create:project -- <target-dir> [--format=static|php] [--dry-run] [--force]');
+  console.error('   or: npm run create:project -- <target-dir> --kit=<name> [--dry-run] [--force]');
   process.exit(1);
 }
-if (!['static', 'php'].includes(format)) {
+if (kit && formatArg) {
+  console.error('Pass either --kit or --format, not both — a kit is always a static, build-free page.');
+  process.exit(1);
+}
+if (kit && !(kit in KIT_MODULES)) {
+  console.error(`Unknown kit "${kit}". Available kits: ${Object.keys(KIT_MODULES).join(', ')}.`);
+  process.exit(1);
+}
+const format = formatArg ?? 'static';
+if (!kit && !['static', 'php'].includes(format)) {
   console.error('The project format must be "static" or "php".');
   process.exit(1);
 }
@@ -119,7 +138,27 @@ function starterFiles(projectFormat) {
   ];
 }
 
-for (const [content, relativePath] of starterFiles(format)) {
+/**
+ * Builds the [content, targetRelativePath] pairs for one starter kit (ADR-0020). Like
+ * starterFiles(), everything is read from this repo's own committed dist/ artifacts and the
+ * kit's own committed HTML — nothing is rebuilt or bundled at generation time.
+ *
+ * @param {string} kitName - A key of KIT_MODULES.
+ * @returns {[() => string, string][]} Lazy content producers paired with their target path.
+ */
+function kitFiles(kitName) {
+  const moduleNames = new Set([...KIT_MODULES[kitName], ...(KIT_HIDDEN_MODULE_DEPS[kitName] ?? [])]);
+  return [
+    [() => readFileSync(resolve(`kits/${kitName}/index.html`), 'utf8'), 'index.html'],
+    [() => readFileSync(resolve('dist/core.min.js'), 'utf8'), 'assets/devinim/core.min.js'],
+    [() => readFileSync(resolve('dist/devinim-ckcss.css'), 'utf8'), 'assets/devinim/devinim-ckcss.css'],
+    ...[...moduleNames].map((name) => (
+      /** @type {[() => string, string]} */ ([() => readFileSync(resolve(`dist/modules/${name}.js`), 'utf8'), `assets/devinim/components/${name}.js`])
+    )),
+  ];
+}
+
+for (const [content, relativePath] of (kit ? kitFiles(kit) : starterFiles(format))) {
   const destination = join(targetDir, relativePath);
   if (existsSync(destination) && !force) {
     console.error(`Refusing to overwrite ${relativePath}; use --force only when intentional.`);

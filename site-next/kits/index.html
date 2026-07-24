@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Starter kits: a real, working page composing a CKCSS pattern with DevinimJS components, generated in one command.">
+  <title>Kits — DevinimJS</title>
+  <link rel="canonical" href="https://devinimjs.digitaltamam.com/kits/">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css"><link rel="stylesheet" href="../assets/css/site.css">
+</head>
+<body class="dv-site">
+  <a class="ck-skip-link" href="#main">Skip to content</a>
+  <header class="dv-header"><a class="dv-brand" href="../">DevinimJS <span>× CKCSS</span></a><nav class="dv-nav dv-nav--static" aria-label="Primary navigation"><a href="../about/">About</a><a href="../docs/">Docs</a><a href="../tutorials/">Tutorials</a><a href="../components/">Components</a><a href="../examples/">Examples</a><a aria-current="page" href="./">Kits</a><a href="../contact/">Contact</a><a class="ck-button" href="../tutorials/">Start building</a></nav></header>
+  <main id="main" class="ck-container ck-container--wide dv-page dv-page--catalog ck-stack">
+    <p class="ck-badge">Starter kits</p><h1>A working page, not just one component.</h1><p class="ck-text-lead">A kit composes a real CKCSS pattern with several DevinimJS components into one working screen — the fastest way to get a real application surface without generating one from scratch.</p>
+    <section class="ck-card ck-stack" aria-labelledby="kits-cli-title"><h2 id="kits-cli-title">Generate it</h2><p>One command, no build step, copies the exact files below into your own project:</p><div class="dv-code-block"><pre><code>node scripts/create-project.mjs my-app --kit=admin-dashboard</code></pre></div><p class="ck-text-muted">Every component below stays on its documented <code>data-*</code>/event contract — nothing here is a hidden framework feature.</p></section>
+
+    <section class="ck-stack" aria-labelledby="kits-admin-dashboard-title">
+      <h2 id="kits-admin-dashboard-title">Admin dashboard</h2>
+      <p>A CRUD project list, structurally based on CKCSS's <code>data-management.html</code> pattern: search, sort and paginate through <code>&lt;dv-data-table&gt;</code>, create through <code>&lt;dv-modal&gt;</code> + <code>&lt;dv-field&gt;</code>, delete through <code>&lt;dv-confirm&gt;</code>, with <code>&lt;dv-toast-stack&gt;</code> feedback on both. Try it live below — this is the real generated output, not a screenshot.</p>
+
+      <div class="ck-card">
+        <div class="ck-card__body ck-stack">
+          <div class="ck-cluster ck-cluster--spread"><h3 id="kits-projects-heading">Projects</h3><button type="button" class="ck-button" id="kit-new-project-open">New project</button></div>
+          <dv-data-table
+            id="kit-projects-table"
+            data-label="Projects"
+            data-filter-label="Search projects"
+            data-pagination-label="Projects pagination"
+            data-page-size="5"
+            data-columns='[{"key":"name","label":"Project"},{"key":"owner","label":"Owner"},{"key":"updated","label":"Updated"},{"key":"status","label":"Status"}]'
+            data-rows='[{"name":"CKCSS UI Kit","owner":"Ada Yilmaz","updated":"Today","status":"Active"},{"name":"Atlas Website","owner":"Emre Kaya","updated":"Yesterday","status":"Draft"},{"name":"Rota Content","owner":"Selin Demir","updated":"Jun 12","status":"Review"},{"name":"Field Ops App","owner":"Mert Aydin","updated":"Jun 3","status":"Active"},{"name":"Partner Portal","owner":"Ada Yilmaz","updated":"May 28","status":"Draft"},{"name":"Support Desk","owner":"Emre Kaya","updated":"May 14","status":"Active"}]'
+          ></dv-data-table>
+          <dv-state id="kit-empty-state" data-state="empty" data-empty="No projects yet — create one to get started." hidden></dv-state>
+        </div>
+      </div>
+
+      <div class="ck-card">
+        <div class="ck-card__body ck-cluster ck-cluster--spread">
+          <div class="ck-field"><label class="ck-field__label" for="kit-delete-select">Remove a project</label><select class="ck-select" id="kit-delete-select"></select></div>
+          <dv-confirm id="kit-delete-confirm" data-message="Delete the selected project? This cannot be undone." data-confirm-label="Delete" data-cancel-label="Keep it"></dv-confirm>
+        </div>
+      </div>
+
+      <dv-modal data-label="New project" id="kit-new-project-modal">
+        <form id="kit-new-project-form" class="ck-stack" novalidate>
+          <dv-field id="kit-field-name" data-name="name" data-label="Project name" data-required="true"></dv-field>
+          <dv-field id="kit-field-owner" data-name="owner" data-label="Owner" data-required="true"></dv-field>
+          <dv-field id="kit-field-status" data-control="select" data-name="status" data-label="Status" data-options='["Active","Draft","Review"]' data-value="Active"></dv-field>
+          <div class="ck-cluster"><button type="submit" class="ck-button">Save</button><button type="button" class="ck-button ck-button--secondary" id="kit-new-project-cancel">Cancel</button></div>
+        </form>
+      </dv-modal>
+
+      <dv-toast-stack id="kit-toasts" data-label="Notifications"></dv-toast-stack>
+
+      <p class="ck-text-muted">Known limitation, by design: <code>&lt;dv-data-table&gt;</code> renders plain-text cells only, no per-row action slot — that's why delete lives in its own small panel instead of a button inside each row. See <code>kits/admin-dashboard/README.md</code> in the repository for the full component list and customization notes.</p>
+    </section>
+  </main>
+  <footer class="dv-footer ck-container ck-container--wide"><div><strong>DevinimJS × CKCSS</strong><p>Build-free foundations for the web you already have.</p></div><nav aria-label="Footer navigation"><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../license/">License</a></nav></footer>
+  <script type="module" src="../assets/js/site.js"></script>
+  <script type="module" src="../assets/js/site-kits-demo.js"></script>
+</body>
+</html>

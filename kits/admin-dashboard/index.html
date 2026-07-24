@@ -1,0 +1,149 @@
+<!doctype html>
+<!--
+  DevinimJS admin/CRUD dashboard kit (ADR-0020). Static, build-free — no bundler, no server
+  required. Structurally based on CKCSS's data-management.html pattern (see
+  ckcss/site/data-management.html and ckcss/docs/product/patterns.md), with its manual
+  search/table/pagination toolbar replaced by <dv-data-table>'s built-in equivalent, plus a real
+  create flow (<dv-modal> + <dv-field>) and delete flow (<dv-confirm>).
+  Run with any static file server, e.g.: npx serve .
+  See docs/guides/starter-kit.md in the DevinimJS repo for the full walkthrough.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projects — admin dashboard kit</title>
+  <!-- CKCSS does the styling; DevinimJS brings the interaction. Swap the pinned version as needed. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kayacuneyd/ckcss@v0.1.0-beta.1/dist/ckcss.min.css">
+  <link rel="stylesheet" href="./assets/devinim/devinim-ckcss.css">
+  <style>
+    body { padding-block: var(--ck-space-5); }
+    header.ck-container { margin-block-end: var(--ck-space-6); }
+  </style>
+</head>
+<body>
+  <header class="ck-container ck-cluster ck-cluster--spread">
+    <h1>Projects</h1>
+    <button type="button" class="ck-button" id="new-project-open">New project</button>
+  </header>
+
+  <main class="ck-container ck-stack ck-stack--relaxed">
+    <div class="ck-card">
+      <div class="ck-card__body ck-stack">
+        <dv-data-table
+          id="projects-table"
+          data-label="Projects"
+          data-filter-label="Search projects"
+          data-pagination-label="Projects pagination"
+          data-page-size="5"
+          data-columns='[{"key":"name","label":"Project"},{"key":"owner","label":"Owner"},{"key":"updated","label":"Updated"},{"key":"status","label":"Status"}]'
+          data-rows='[{"name":"CKCSS UI Kit","owner":"Ada Yilmaz","updated":"Today","status":"Active"},{"name":"Atlas Website","owner":"Emre Kaya","updated":"Yesterday","status":"Draft"},{"name":"Rota Content","owner":"Selin Demir","updated":"Jun 12","status":"Review"},{"name":"Field Ops App","owner":"Mert Aydin","updated":"Jun 3","status":"Active"},{"name":"Partner Portal","owner":"Ada Yilmaz","updated":"May 28","status":"Draft"},{"name":"Support Desk","owner":"Emre Kaya","updated":"May 14","status":"Active"}]'
+        ></dv-data-table>
+
+        <dv-state id="empty-state" data-state="empty" data-empty="No projects yet — create one to get started." hidden></dv-state>
+      </div>
+    </div>
+
+    <div class="ck-card">
+      <div class="ck-card__body ck-cluster ck-cluster--spread">
+        <div class="ck-field">
+          <label class="ck-field__label" for="delete-select">Remove a project</label>
+          <select class="ck-select" id="delete-select"></select>
+        </div>
+        <dv-confirm id="delete-confirm"
+          data-message="Delete the selected project? This cannot be undone."
+          data-confirm-label="Delete" data-cancel-label="Keep it"></dv-confirm>
+      </div>
+    </div>
+  </main>
+
+  <dv-modal data-label="New project" id="new-project-modal">
+    <form id="new-project-form" class="ck-stack" novalidate>
+      <dv-field id="field-name" data-name="name" data-label="Project name" data-required="true"></dv-field>
+      <dv-field id="field-owner" data-name="owner" data-label="Owner" data-required="true"></dv-field>
+      <dv-field id="field-status" data-control="select" data-name="status" data-label="Status"
+        data-options='["Active","Draft","Review"]' data-value="Active"></dv-field>
+      <div class="ck-cluster">
+        <button type="submit" class="ck-button">Save</button>
+        <button type="button" class="ck-button ck-button--secondary" id="new-project-cancel">Cancel</button>
+      </div>
+    </form>
+  </dv-modal>
+
+  <dv-toast-stack id="toasts" data-label="Notifications"></dv-toast-stack>
+
+  <!-- One module script tag per component family — each dist/modules/*.js file is self-contained (ADR-0020). -->
+  <script type="module" src="./assets/devinim/components/dv-data-table.js"></script>
+  <script type="module" src="./assets/devinim/components/dv-modal.js"></script>
+  <script type="module" src="./assets/devinim/components/dv-field.js"></script>
+  <script type="module" src="./assets/devinim/components/dv-confirm.js"></script>
+  <script type="module" src="./assets/devinim/components/dv-toast-stack.js"></script>
+  <script type="module" src="./assets/devinim/components/dv-state.js"></script>
+
+  <!-- Page-owned glue: every dv-* element stays on its documented data-*/event contract only
+       (design/component-library.md) — nothing here is a framework feature. -->
+  <script type="module">
+    const table = document.querySelector('#projects-table');
+    const emptyState = document.querySelector('#empty-state');
+    const toasts = document.querySelector('#toasts');
+    const modal = document.querySelector('#new-project-modal');
+    const form = document.querySelector('#new-project-form');
+    const fieldName = document.querySelector('#field-name');
+    const fieldOwner = document.querySelector('#field-owner');
+    const fieldStatus = document.querySelector('#field-status');
+    const deleteSelect = document.querySelector('#delete-select');
+    const deleteConfirm = document.querySelector('#delete-confirm');
+
+    /** @returns {object[]} The table's current row data, parsed from its data-rows attribute. */
+    function rows() {
+      return JSON.parse(table.getAttribute('data-rows') ?? '[]');
+    }
+
+    /**
+     * Replaces the table's rows and keeps the empty-state indicator and delete dropdown in sync
+     * — dv-data-table has no built-in empty-state or row-action slot, so the page owns both.
+     * @param {object[]} nextRows - Full replacement row set.
+     */
+    function setRows(nextRows) {
+      table.setAttribute('data-rows', JSON.stringify(nextRows));
+      emptyState.hidden = nextRows.length > 0;
+      deleteSelect.innerHTML = nextRows
+        .map((row) => `<option value="${row.name}">${row.name}</option>`)
+        .join('');
+    }
+
+    setRows(rows()); // sync empty-state/delete-select with the seeded data on first paint
+
+    document.querySelector('#new-project-open').addEventListener('click', (event) => {
+      modal.open(event, event.currentTarget);
+    });
+    document.querySelector('#new-project-cancel').addEventListener('click', () => modal.close());
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      setRows([...rows(), {
+        name: fieldName.state.value,
+        owner: fieldOwner.state.value,
+        updated: 'Just now',
+        status: fieldStatus.state.value,
+      }]);
+      // Reset via data-value (not form.reset()): dv-field only re-syncs its internal state from
+      // the data-value attribute, so a native form reset would clear the visible input but leave
+      // stale state.value behind for the next read.
+      fieldName.setAttribute('data-value', '');
+      fieldOwner.setAttribute('data-value', '');
+      fieldStatus.setAttribute('data-value', 'Active');
+      modal.close();
+      toasts.show('Project created.');
+    });
+
+    deleteConfirm.addEventListener('dv:confirm', () => {
+      const name = deleteSelect.value;
+      if (!name) return;
+      setRows(rows().filter((row) => row.name !== name));
+      toasts.show(`"${name}" removed.`);
+    });
+  </script>
+</body>
+</html>

@@ -9,7 +9,7 @@
  *
  * Consumers never run this — it is a maintainer pre-release step. Usage: npm run build
  */
-import { buildSync, transformSync } from 'esbuild';
+import { buildSync } from 'esbuild';
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
@@ -28,12 +28,28 @@ buildSync({ ...shared, entryPoints: ['src/devinim.js'], outfile: 'dist/devinim.m
 
 for (const name of COMPONENTS) {
   // Modules stay per-file and share ../core.min.js via the browser module cache — importing
-  // several modules never duplicates the core (ADR-0007).
+  // several modules never duplicates the core (ADR-0007). i18n/transition helpers and each
+  // component's own locale bundle are inlined (bundle: true, resolved relative to
+  // src/components/) so a copied dist/modules/<name>.js is genuinely self-contained — it used to
+  // leave `../core/i18n.js`/`../core/transition.js`/`./<name>.locale.js` as unresolved relative
+  // imports that 404 once the file is copied outside this repo's own dist/ tree (found while
+  // building the admin-dashboard starter kit, TASK-020). `./dv-pagination.js` (dv-data-table's
+  // one cross-component import) stays external/unbundled on purpose: it's a real sibling file in
+  // dist/modules/, and inlining it would make two independently-loaded modules each call
+  // `define('dv-pagination', …)`, which throws on the second registration.
   const rewritten = readFileSync(`src/components/${name}.js`, 'utf8')
     .replace(`from '../core/core.js'`, `from '../core.min.js'`)
     .replace(`from '../core/authoring.js'`, `from '../authoring.min.js'`);
-  const { code } = transformSync(rewritten, { minify: true, loader: 'js' });
-  writeFileSync(`dist/modules/${name}.js`, code);
+  const result = buildSync({
+    stdin: { contents: rewritten, resolveDir: 'src/components', sourcefile: `${name}.js`, loader: 'js' },
+    bundle: true,
+    format: 'esm',
+    minify: true,
+    external: ['../core.min.js', '../authoring.min.js', './dv-pagination.js'],
+    write: false,
+    logLevel: 'silent',
+  });
+  writeFileSync(`dist/modules/${name}.js`, result.outputFiles[0].contents);
 }
 
 const report = (label, code) => {

@@ -56,6 +56,9 @@ Freelance and agency projects built with **native PHP, CodeIgniter, Laravel, Wor
 
 **Starter kit:** bootstrap a working project in one command instead of assembling files by hand —
 `node scripts/create-project.mjs <target-dir> --format=static|php` (see [`docs/guides/starter-kit.md`](docs/guides/starter-kit.md)).
+For a real, working *page* instead of one component, use `--kit=admin-dashboard` — a CRUD project
+list (search/sort/paginate, create-via-modal, delete-via-confirm, toast feedback) composing CKCSS's
+`data-management.html` pattern with real DevinimJS components (see [`kits/README.md`](kits/README.md)).
 
 AI-first component authoring (experimental v0.6):
 

@@ -116,6 +116,51 @@ test('refuses to overwrite an existing file without --force, and --force allows 
   assert.equal(forced.status, 0);
 });
 
+test('--kit=admin-dashboard scaffolds a working page with every component it uses', () => {
+  const target = tempDir();
+  const output = execFileSync(process.execPath, ['scripts/create-project.mjs', target, '--kit=admin-dashboard'], {
+    cwd: process.cwd(), encoding: 'utf8',
+  });
+  assert.match(output, /created index\.html/);
+  assert.match(output, /created assets\/devinim\/core\.min\.js/);
+  assert.match(output, /created assets\/devinim\/devinim-ckcss\.css/);
+
+  const html = readFileSync(join(target, 'index.html'), 'utf8');
+  assert.match(html, /<dv-data-table/);
+  assert.match(html, /<dv-modal/);
+  assert.match(html, /<dv-confirm/);
+  assert.match(html, /<dv-toast-stack/);
+
+  // dv-data-table composes <dv-pagination> as a real sibling file (ADR-0020), not a bundled
+  // copy — the CLI must ship it even though no <script> tag in index.html names it directly.
+  for (const file of [
+    'assets/devinim/core.min.js',
+    'assets/devinim/devinim-ckcss.css',
+    'assets/devinim/components/dv-data-table.js',
+    'assets/devinim/components/dv-pagination.js',
+    'assets/devinim/components/dv-modal.js',
+    'assets/devinim/components/dv-field.js',
+    'assets/devinim/components/dv-confirm.js',
+    'assets/devinim/components/dv-toast-stack.js',
+    'assets/devinim/components/dv-state.js',
+  ]) {
+    const contents = readFileSync(join(target, file), 'utf8');
+    assert.ok(contents.length > 0, `${file} should be non-empty`);
+  }
+});
+
+test('--kit and --format are mutually exclusive', () => {
+  const result = run(['/tmp/dv-create-project-unused', '--kit=admin-dashboard', '--format=static']);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Pass either --kit or --format, not both/);
+});
+
+test('rejects an unknown --kit', () => {
+  const result = run(['/tmp/dv-create-project-unused', '--kit=bogus']);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Unknown kit "bogus"/);
+});
+
 test('rejects an unknown --format and a missing target directory', () => {
   const badFormat = run(['/tmp/dv-create-project-unused', '--format=bogus']);
   assert.notEqual(badFormat.status, 0);
