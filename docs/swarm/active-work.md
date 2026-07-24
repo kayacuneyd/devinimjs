@@ -10,6 +10,9 @@
 | [TASK-006](tasks/TASK-006-modal-focus-trap.md) — `dv-modal` focus-trap/nested-modal | Merged to `main` | claude (this session) | `swarm/task-006-modal-focus-trap` | Closed |
 | [TASK-007](tasks/TASK-007-transition-primitives.md) — Transition primitives (`dv-modal`/`dv-toast`/`dv-toast-stack`/`dv-disclosure`) | Merged to `main` | claude (this session) | `swarm/task-007-transition-primitives` | Closed |
 | [TASK-008](tasks/TASK-008-i18n-primitive-reference-wiring.md) — i18n/locale primitive design + reference wiring (`dv-modal`/`dv-confirm`/`dv-cart`) | Merged to `main` | claude (this session) | `swarm/task-008-i18n-primitive-reference-wiring` | Closed |
+| [TASK-009](tasks/TASK-009-i18n-wiring-pagination-data-table.md) — i18n wiring: `dv-pagination`, `dv-data-table` | In progress | claude (this session) | `swarm/task-009-i18n-wiring-pagination-data-table` | Implementation |
+| [TASK-010](tasks/TASK-010-i18n-wiring-field-state-toast-stack.md) — i18n wiring: `dv-field`, `dv-state`, `dv-toast-stack` | In progress | claude (this session) | `swarm/task-010-i18n-wiring-field-state-toast-stack` | Implementation |
+| [TASK-011](tasks/TASK-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast.md) — i18n wiring: `dv-autocomplete`, `dv-dropdown`, `dv-tabs`, `dv-product-card`, `dv-toast` | In progress | claude (this session) | `swarm/task-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast` | Implementation |
 
 TASK-001..003 merged 2026-07-23 (human-approved). Post-merge: `.claude/` worktree/lint noise fixed
 (eslint ignores + `.gitignore`), and the two bugs found as a side effect were fixed directly on
@@ -65,11 +68,16 @@ with `en`/`tr` bundles. Fixed two real pre-existing bugs as a disclosed side eff
 `docs/roadmap.md` P1 updated (marked partially closed — the primitive and 3 reference components
 are done, ~10 components remain).
 
-**Recommended next round (not yet opened):** wire the remaining ~10 components
-(`dv-autocomplete`, `dv-data-table`, `dv-dropdown`, `dv-field`, `dv-pagination`,
-`dv-product-card`, `dv-state`, `dv-tabs`, `dv-toast`, `dv-toast-stack`) into the `t()`/
-`registerLocales()` contract per `docs/guides/i18n.md` — this is the first round with true
-zero-file-overlap parallelism available (each component's own file + its own `*.locale.js`,
-nothing shared to reconcile), so it can split across as many parallel tasks as desired. Also
-recommended: a small standalone task to refresh `docs/component-manifest.json` (stale since
-TASK-004, unrelated to i18n specifically).
+TASK-009..011 opened 2026-07-24: the remaining ~10 components split three ways —
+TASK-009 (`dv-pagination`+`dv-data-table`, grouped together because the latter composes and
+forwards a string into the former), TASK-010 (`dv-field`/`dv-state`/`dv-toast-stack`), TASK-011
+(`dv-autocomplete`/`dv-dropdown`/`dv-tabs`/`dv-product-card`/`dv-toast`, the last one audit-only
+since it may have no translatable copy at all). First round with true zero-file-overlap
+parallelism on `src/components/*.js`/`*.locale.js` — the only shared files are
+`tests/unit/atomic-components.test.js` (each task edits only its own components' entries, same
+discipline as `CHANGELOG.md`) and `CHANGELOG.md` itself (routine multi-append reconciliation at
+merge, as in every previous round).
+
+Still recommended after this round merges: a small standalone task to refresh
+`docs/component-manifest.json` (stale since TASK-004, unrelated to i18n specifically) — the user
+has asked for this to start once the i18n wiring is done.
