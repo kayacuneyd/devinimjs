@@ -86,6 +86,17 @@ test.describe('site-next responsive shell', () => {
   }
 });
 
+test('English routes share one stable navigation and footer contract', async ({ page }) => {
+  const navigation = ['About', 'Docs', 'Tutorials', 'Components', 'Examples', 'Contact', 'Start building'];
+  const footer = ['About', 'Docs', 'Tutorials', 'Components', 'Examples', 'Contact', 'Security', 'Privacy', 'Terms', 'License'];
+
+  for (const route of englishRoutes) {
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('header .dv-nav a')).toHaveText(navigation);
+    await expect(page.locator('footer nav a')).toHaveText(footer);
+  }
+});
+
 test('homepage exposes working DevinimJS interactions', async ({ page }) => {
   const route = '/site-next/';
   await assertNoBrowserErrors(page, route);
