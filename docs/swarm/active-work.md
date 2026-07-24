@@ -10,9 +10,9 @@
 | [TASK-006](tasks/TASK-006-modal-focus-trap.md) — `dv-modal` focus-trap/nested-modal | Merged to `main` | claude (this session) | `swarm/task-006-modal-focus-trap` | Closed |
 | [TASK-007](tasks/TASK-007-transition-primitives.md) — Transition primitives (`dv-modal`/`dv-toast`/`dv-toast-stack`/`dv-disclosure`) | Merged to `main` | claude (this session) | `swarm/task-007-transition-primitives` | Closed |
 | [TASK-008](tasks/TASK-008-i18n-primitive-reference-wiring.md) — i18n/locale primitive design + reference wiring (`dv-modal`/`dv-confirm`/`dv-cart`) | Merged to `main` | claude (this session) | `swarm/task-008-i18n-primitive-reference-wiring` | Closed |
-| [TASK-009](tasks/TASK-009-i18n-wiring-pagination-data-table.md) — i18n wiring: `dv-pagination`, `dv-data-table` | In progress | claude (this session) | `swarm/task-009-i18n-wiring-pagination-data-table` | Implementation |
-| [TASK-010](tasks/TASK-010-i18n-wiring-field-state-toast-stack.md) — i18n wiring: `dv-field`, `dv-state`, `dv-toast-stack` | In progress | claude (this session) | `swarm/task-010-i18n-wiring-field-state-toast-stack` | Implementation |
-| [TASK-011](tasks/TASK-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast.md) — i18n wiring: `dv-autocomplete`, `dv-dropdown`, `dv-tabs`, `dv-product-card`, `dv-toast` | In progress | claude (this session) | `swarm/task-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast` | Implementation |
+| [TASK-009](tasks/TASK-009-i18n-wiring-pagination-data-table.md) — i18n wiring: `dv-pagination`, `dv-data-table` | Reviewed, awaiting merge approval | claude (this session) | `swarm/task-009-i18n-wiring-pagination-data-table` | Human merge approval |
+| [TASK-010](tasks/TASK-010-i18n-wiring-field-state-toast-stack.md) — i18n wiring: `dv-field`, `dv-state`, `dv-toast-stack` | Reviewed, awaiting merge approval | claude (this session) | `swarm/task-010-i18n-wiring-field-state-toast-stack` | Human merge approval |
+| [TASK-011](tasks/TASK-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast.md) — i18n wiring: `dv-autocomplete`, `dv-dropdown`, `dv-tabs`, `dv-product-card`, `dv-toast` | Reviewed, awaiting merge approval | claude (this session) | `swarm/task-011-i18n-wiring-autocomplete-dropdown-tabs-product-card-toast` | Human merge approval |
 
 TASK-001..003 merged 2026-07-23 (human-approved). Post-merge: `.claude/` worktree/lint noise fixed
 (eslint ignores + `.gitignore`), and the two bugs found as a side effect were fixed directly on
@@ -77,6 +77,17 @@ parallelism on `src/components/*.js`/`*.locale.js` — the only shared files are
 `tests/unit/atomic-components.test.js` (each task edits only its own components' entries, same
 discipline as `CHANGELOG.md`) and `CHANGELOG.md` itself (routine multi-append reconciliation at
 merge, as in every previous round).
+
+Implemented and independently verified 2026-07-24: 202/202 (TASK-009), 202/202 (TASK-010),
+205/205 (TASK-011) unit tests each, lint clean, size unchanged on every branch. 3-way merge
+(scratch integration branch `swarm/task-009-011-integration`) hit only the expected
+`CHANGELOG.md` conflict — `atomic-components.test.js` needed zero edits from any task, since
+every `en` bundle is byte-identical to the prior hardcoded defaults. Merged result: 223 unit + 23
+e2e tests, lint clean, size gate unchanged (3352 B/4096 B). Two more pre-existing kebab-case
+`dataset[key]` bugs found and fixed (`dv-data-table`, `dv-state`), same class as TASK-008's. See
+[`reviews/TASK-009-011-orchestrator-review.md`](reviews/TASK-009-011-orchestrator-review.md).
+This closes i18n wiring for all originally-affected components. Awaiting human merge approval per
+swarm rule 6.
 
 Still recommended after this round merges: a small standalone task to refresh
 `docs/component-manifest.json` (stale since TASK-004, unrelated to i18n specifically) — the user
