@@ -17,7 +17,7 @@
   <header class="dv-header">
     <a class="dv-brand" href="../">DevinimJS <span>× CKCSS</span></a>
     <nav class="dv-nav dv-nav--static" aria-label="Primary navigation">
-      <a href="../docs/">Docs</a><a aria-current="page" href="./">Tutorials</a><a href="../components/">Components</a><a class="ck-button" href="../">Home</a>
+      <a href="../about/">About</a><a href="../docs/">Docs</a><a aria-current="page" href="./">Tutorials</a><a href="../components/">Components</a><a href="../examples/">Examples</a><a href="../contact/">Contact</a><a class="ck-button" href="../tutorials/">Start building</a>
     </nav>
   </header>
 
@@ -31,7 +31,7 @@
 
     <section id="path" class="ck-stack">
       <h2>Project path</h2>
-      <ol class="ck-stack">
+      <ol class="ck-stack dv-tutorial-path">
         <li class="ck-card ck-stack"><span class="dv-layer-number">01</span><h3>Counter: the smallest component</h3><p>Write a <code>.dv.js</code> file with <code>component()</code>, typed <code>props</code>, reactive <code>state</code>, an action and an escaped <code>html``</code> view.</p><p><strong>Outcome:</strong> a working counter custom element.</p><a href="../docs/#authoring">Use the authoring contract</a></li>
         <li class="ck-card ck-stack"><span class="dv-layer-number">02</span><h3>Task list: state and events</h3><p>Model task creation, completion and removal in component state. Emit a bubbling <code>dv:change</code> event when the component’s public result changes.</p><p><strong>Outcome:</strong> an interactive task list with no server.</p></li>
         <li class="ck-card ck-stack"><span class="dv-layer-number">03</span><h3>Notes: persistence at the page boundary</h3><p>Keep the component focused on UI behavior. Let page code connect its emitted data to browser <code>localStorage</code>; this is a client-only prototype, not shared persistence.</p><p><strong>Outcome:</strong> notes survive a refresh in one browser.</p></li>
