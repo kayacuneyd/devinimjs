@@ -69,8 +69,11 @@ All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent
   admin-panel use case DizgePHP already ships, this is probably the highest-leverage component to
   invest in next.
 - `dv-pagination` is Prev/Next only — no page-number list or jump-to-page; same admin-panel gap.
-- No selector-based store subscriptions (`src/core/store.js` re-renders all subscribers on any
-  change; flagged as a future candidate in ADR-0011) — will cost more as apps grow past toy size.
+- ~~No selector-based store subscriptions.~~ Stale claim, corrected 2026-07-24: `BaseComponent
+  #useStore(store, paths)` (`src/core/base-component.js`) already accepts a path/predicate filter
+  and only re-renders on matching changes, with test coverage
+  (`tests/unit/store.test.js`: "useStore filters unrelated state paths…"). ADR-0011 §4 was written
+  before this shipped; no gap here, no follow-up task needed.
 - No animation/transition primitives anywhere (modal, toast, disclosure, tabs) — Alpine ships
   `x-transition` out of the box; a visible polish gap.
 - `dv-modal` has no real focus-trap cycling or nested-modal handling — an a11y/robustness gap in
