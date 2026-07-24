@@ -101,7 +101,7 @@ test('responsive navigation opens and closes as an accessible mobile menu', asyn
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/site-next/components/', { waitUntil: 'networkidle' });
 
-  const toggle = page.getByRole('button', { name: 'Menu' });
+  const toggle = page.locator('.dv-nav-toggle');
   const nav = page.locator('header .dv-nav');
   await expect(toggle).toBeVisible();
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -114,6 +114,33 @@ test('responsive navigation opens and closes as an accessible mobile menu', asyn
   await page.keyboard.press('Escape');
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect(nav).not.toBeVisible();
+});
+
+test('component cards disclose paste-ready usage code without losing the source', async ({ page }) => {
+  await page.goto('/site-next/components/', { waitUntil: 'networkidle' });
+
+  const counterCard = page.locator('[data-component-item]').filter({ has: page.getByRole('heading', { name: 'Counter' }) });
+  const toggle = counterCard.locator('.dv-code-toggle');
+  const source = counterCard.locator('.dv-code-block pre');
+  await expect(toggle).toBeVisible();
+  await expect(source).toBeHidden();
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(source).toBeVisible();
+  await expect(source).toContainText('<dv-counter data-start="2" data-step="2">');
+  await expect(counterCard.getByRole('button', { name: 'Copy' })).toBeVisible();
+});
+
+test('catalog modal opens as an overlay and closes through its labelled icon control', async ({ page }) => {
+  await page.goto('/site-next/components/', { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: 'Open modal' }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Component details' });
+  await expect(dialog).toBeVisible();
+  await expect(page.locator('.dv-modal-backdrop')).toHaveCSS('position', 'fixed');
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(dialog).not.toBeVisible();
 });
 
 test('homepage exposes working DevinimJS interactions', async ({ page }) => {

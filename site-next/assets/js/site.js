@@ -2,6 +2,7 @@
 
 const nav = document.querySelector('.dv-nav');
 let navToggle = document.querySelector('.dv-nav-toggle');
+const menuIcon = '<svg class="dv-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
 
 if (nav && !navToggle) {
   navToggle = document.createElement('button');
@@ -9,7 +10,6 @@ if (nav && !navToggle) {
   navToggle.type = 'button';
   navToggle.setAttribute('aria-expanded', 'false');
   navToggle.setAttribute('aria-controls', nav.id || 'primary-nav');
-  navToggle.textContent = document.documentElement.lang === 'tr' ? 'Menü' : 'Menu';
   nav.parentElement.insertBefore(navToggle, nav);
 }
 
@@ -17,16 +17,27 @@ nav?.classList.remove('dv-nav--static');
 
 if (navToggle && nav) {
   const navLinks = [...nav.querySelectorAll('a')];
+  const language = document.documentElement.lang;
+  navToggle.innerHTML = menuIcon;
+  const setToggleLabel = (open) => {
+    navToggle.setAttribute('aria-label', language === 'tr'
+      ? (open ? 'Menüyü kapat' : 'Menüyü aç')
+      : (open ? 'Close navigation' : 'Open navigation'));
+  };
+
+  setToggleLabel(false);
 
   const closeNav = ({ returnFocus = false } = {}) => {
     navToggle.setAttribute('aria-expanded', 'false');
     nav.setAttribute('data-open', 'false');
+    setToggleLabel(false);
     if (returnFocus) navToggle.focus();
   };
 
   const openNav = () => {
     navToggle.setAttribute('aria-expanded', 'true');
     nav.setAttribute('data-open', 'true');
+    setToggleLabel(true);
     navLinks[0]?.focus();
   };
 
