@@ -66,18 +66,17 @@ test('switching to a different column resets direction to ascending', async () =
   assert.equal(el.querySelectorAll('th')[0].getAttribute('aria-sort'), 'none');
 });
 
-// KNOWN GAP (report in handoff, not fixed here — this task does not modify src/): sorting
-// compares every column's values with `String(value).localeCompare(...)`, i.e. always
-// lexicographic. A numeric-looking column sorts as text, not by numeric value — "10" sorts
-// before "2" ascending. This test documents the actual current behavior rather than asserting
-// around it silently.
-test('a numeric-looking column sorts lexicographically, not numerically (documents a real gap)', async () => {
+// TASK-004: sorting used to compare every column's values with
+// `String(value).localeCompare(...)`, i.e. always lexicographic — a numeric-looking column
+// sorted as text ("10" before "2" ascending). Sorting is now numeric-aware when both sides of a
+// comparison parse as finite numbers, falling back to locale-aware text compare otherwise (the
+// header-toggle test above covers the still-lexicographic string-column case).
+test('a numeric-looking column sorts numerically, not lexicographically', async () => {
   const el = makeTable(['qty'], [{ qty: 2 }, { qty: 10 }, { qty: 3 }]);
   el.querySelector('button[data-key="qty"]').click();
   await settle();
   const values = [...el.querySelectorAll('tbody td')].map((td) => td.textContent);
-  // Numeric ascending would be ['2', '3', '10']; string/localeCompare ascending is not that.
-  assert.deepEqual(values, ['10', '2', '3']);
+  assert.deepEqual(values, ['2', '3', '10']);
 });
 
 test('empty rows render a header with zero body rows and no error', () => {
@@ -98,4 +97,134 @@ test('a live data-rows change re-renders the body without a sort applied yet', a
   el.setAttribute('data-rows', JSON.stringify([{ name: 'Zoe' }, { name: 'Mo' }]));
   await settle();
   assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['Zoe', 'Mo']);
+});
+
+// --- TASK-004: filtering ---------------------------------------------------------------------
+
+test('the filter input narrows visible rows by case-insensitive substring match across all columns', async () => {
+  const el = makeTable(['name', 'city'], [
+    { name: 'Ada Lovelace', city: 'London' },
+    { name: 'Grace Hopper', city: 'New York' },
+    { name: 'Mo Farah', city: 'London' },
+  ]);
+  const input = el.querySelector('input[type="search"]');
+
+  input.value = 'lon'; // lowercase, matches "London" case-insensitively, and only the city column
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  await settle();
+
+  assert.deepEqual(
+    [...el.querySelectorAll('tbody tr')].map((tr) => tr.children[0].textContent),
+    ['Ada Lovelace', 'Mo Farah'],
+  );
+});
+
+test('an empty-filtered-result state renders zero body rows without throwing', async () => {
+  const el = makeTable(['name'], [{ name: 'Ada' }, { name: 'Grace' }]);
+  const input = el.querySelector('input[type="search"]');
+
+  input.value = 'zzz-no-match';
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  await settle();
+
+  assert.equal(el.querySelectorAll('tbody tr').length, 0);
+  assert.equal(el.querySelectorAll('thead th').length, 1); // header stays put
+});
+
+test('filter and sort compose: sorting only reorders the currently filtered set', async () => {
+  const el = makeTable(['name'], [{ name: 'Zoe' }, { name: 'Ada' }, { name: 'Zack' }]);
+  const input = el.querySelector('input[type="search"]');
+
+  input.value = 'z'; // matches "Zoe" and "Zack" only
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  await settle();
+
+  el.querySelector('button[data-key="name"]').click();
+  await settle();
+
+  assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['Zack', 'Zoe']);
+});
+
+// --- TASK-004: pagination (composes <dv-pagination>, black-box) ------------------------------
+
+test('data-page-size absent preserves current no-pagination behavior (regression)', async () => {
+  const el = makeTable(['name'], [{ name: 'A' }, { name: 'B' }, { name: 'C' }]);
+  assert.equal(el.querySelectorAll('tbody tr').length, 3);
+  assert.equal(el.querySelector('dv-pagination'), null);
+});
+
+test('data-page-size="0" preserves current no-pagination behavior (regression)', async () => {
+  const el = document.createElement('dv-data-table');
+  el.setAttribute('data-columns', JSON.stringify(['name']));
+  el.setAttribute('data-rows', JSON.stringify([{ name: 'A' }, { name: 'B' }, { name: 'C' }]));
+  el.setAttribute('data-page-size', '0');
+  document.body.appendChild(el);
+  assert.equal(el.querySelectorAll('tbody tr').length, 3);
+  assert.equal(el.querySelector('dv-pagination'), null);
+});
+
+test('a positive data-page-size slices the filtered/sorted rows and composes <dv-pagination>', async () => {
+  const el = document.createElement('dv-data-table');
+  el.setAttribute('data-columns', JSON.stringify(['name']));
+  el.setAttribute('data-rows', JSON.stringify([{ name: 'A' }, { name: 'B' }, { name: 'C' }, { name: 'D' }, { name: 'E' }]));
+  el.setAttribute('data-page-size', '2');
+  document.body.appendChild(el);
+  await settle();
+
+  assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['A', 'B']);
+  const pagination = el.querySelector('dv-pagination');
+  assert.ok(pagination, '<dv-pagination> is composed for page controls');
+  assert.equal(pagination.getAttribute('data-total'), '5');
+  assert.equal(pagination.getAttribute('data-size'), '2');
+  assert.equal(pagination.querySelector('.dv-pagination-status').textContent.trim(), 'Page 1 of 3');
+
+  pagination.querySelector('[aria-label="Next page"]').click(); // dispatched by dv-pagination itself
+  await settle();
+  assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['C', 'D']);
+  // Regression guard: a naive `<dv-pagination>` written directly in template() gets its own
+  // self-rendered <nav>/buttons wiped out by this component's *next* re-render (morph() only
+  // exempts <dv-outlet> from recursive diffing) — the very re-render that dv:page just caused.
+  // If dv-pagination's DOM survives this second settle, the private-outlet mount is doing its job.
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 2 of 3');
+  assert.ok(el.querySelector('[aria-label="Previous page"]'), 'Previous/Next controls are still in the DOM');
+});
+
+test('changing the sort while on page 2+ resets to page 1 so it never strands on an empty page', async () => {
+  const el = document.createElement('dv-data-table');
+  el.setAttribute('data-columns', JSON.stringify(['name']));
+  el.setAttribute('data-rows', JSON.stringify([{ name: 'C' }, { name: 'A' }, { name: 'E' }, { name: 'B' }, { name: 'D' }]));
+  el.setAttribute('data-page-size', '2');
+  document.body.appendChild(el);
+  await settle();
+
+  el.querySelector('[aria-label="Next page"]').click(); // -> page 2
+  await settle();
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 2 of 3');
+
+  el.querySelector('button[data-key="name"]').click(); // sort ascending, must reset to page 1
+  await settle();
+
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 1 of 3');
+  assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['A', 'B']);
+});
+
+test('changing the filter while on page 2+ resets to page 1 so it never strands on an empty page', async () => {
+  const el = document.createElement('dv-data-table');
+  el.setAttribute('data-columns', JSON.stringify(['name']));
+  el.setAttribute('data-rows', JSON.stringify([{ name: 'A1' }, { name: 'A2' }, { name: 'A3' }, { name: 'A4' }, { name: 'A5' }]));
+  el.setAttribute('data-page-size', '2');
+  document.body.appendChild(el);
+  await settle();
+
+  el.querySelector('[aria-label="Next page"]').click(); // -> page 2
+  await settle();
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 2 of 3');
+
+  const input = el.querySelector('input[type="search"]');
+  input.value = 'A4'; // narrows to a single row; staying on page 2 would strand on an empty page
+  input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  await settle();
+
+  assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 1 of 1');
+  assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['A4']);
 });

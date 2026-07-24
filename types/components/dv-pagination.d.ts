@@ -18,6 +18,16 @@ export class DvPagination extends BaseComponent {
      * @param {Element} el - Button carrying page index.
      */
     goToButton(_event: Event, el: Element): void;
+    /**
+     * Reads the jump-to-page input and navigates there. Invalid text (e.g. `"abc"`) and
+     * out-of-range numbers are clamped by `goTo`/`#clamp` exactly like any other `goTo` call — no
+     * separate validation is needed here, and a bad value can never crash or emit an out-of-range
+     * page.
+     *
+     * @param {Event} event - Form submit event (from the jump-to-page control).
+     * @param {Element} el - The `<form>` carrying the jump input.
+     */
+    jumpToPage(event: Event, el: Element): void;
     /** @param {number} page - Requested one-based page. */
     goTo(page: number): void;
     #private;

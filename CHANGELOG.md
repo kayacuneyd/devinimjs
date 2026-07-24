@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `dv-data-table` gains client-side pagination and filtering (TASK-004, closes a P1 roadmap gap):
+  a built-in text filter narrows rows by case-insensitive substring match across every visible
+  column and emits `dv:filter` with `{ query }`; a new `data-page-size` attribute (absent or `0`,
+  the default, means no pagination — unchanged behavior for existing callers) slices the
+  filtered-then-sorted result set and composes the existing `<dv-pagination>` for page controls.
+  Changing the sort, the filter, or `data-rows` resets to page 1 so the view never strands past
+  the end of a shrunk result set. Sorting is also now numeric-aware when both compared values
+  parse as finite numbers (previously always lexicographic — `"10"` sorted before `"2"`
+  ascending), falling back to locale-aware text compare otherwise. See
+  `design/component-library.md`.
 - Starter-kit scaffolding CLI (ADR-0016): `npm run create:project -- <target-dir> [--format=static|php]`
   generates a build-free `dv-counter` starter (static `index.html` or PHP-fed `index.php`) from
   the committed `dist/` artifacts — see `docs/guides/starter-kit.md`.
@@ -22,6 +32,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ADR-0017. `package.json`'s `types` field and every `exports` entry now resolve to real types —
   `import { BaseComponent } from 'devinimjs'` gets editor/AI-agent autocomplete without any
   runtime dependency or compile step for consumers.
+- `dv-pagination`: a page-number list and a jump-to-page control, closing the roadmap P1 gap
+  ("Prev/Next only, no page-number list or jump-to-page"). The page list renders every page up
+  to 7, then truncates to the first page, the last page, and up to two pages either side of the
+  current page with `…` ellipsis markers for gaps (e.g. `1 … 8 9 10 11 12 … 20`). Jump-to-page is
+  a `<form>` with a numeric input; submitting it calls the existing `goTo()`, so invalid or
+  out-of-range input is clamped exactly like any other navigation and can never crash or emit an
+  out-of-range page. `aria-current="page"` now marks the active page-number button (moved off the
+  plain status text), and the Previous/Next/jump controls carry explicit `aria-label`s so they're
+  distinguishable without relying on visual position. The `data-page`/`data-total`/`data-size`
+  attributes and the `dv:page` event contract — which `dv-data-table` composes against — are
+  unchanged and additive-only; no new event type was introduced.
+- `dv-modal` now implements a real WAI-ARIA APG focus trap (closes `docs/roadmap.md` P1): `Tab`
+  from the last focusable element inside the dialog wraps to the first, `Shift+Tab` from the
+  first wraps to the last, and focus starting on the dialog wrapper itself is treated as being at
+  the wrap point. Nested/overlapping modals (a second `<dv-modal>` opened while another is still
+  open) are handled with a small module-level open-modal stack — only the topmost open modal
+  traps `Tab`, so a background dialog's key handling can't fight the foreground one; the trap
+  reverts to the previous modal automatically once the top one closes. Existing open/close,
+  Escape, opener-focus-return, and `data-open` sync behavior is unchanged.
 
 ### Fixed
 
