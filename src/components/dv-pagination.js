@@ -1,6 +1,10 @@
 /** @module components/dv-pagination - Accessible page navigation for server or API lists. */
 
 import { BaseComponent, html, define } from '../core/core.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-pagination.locale.js';
+
+registerLocales('dv-pagination', locales);
 
 /** Sentinel marking a truncation gap in the rendered page-number list. */
 const ELLIPSIS = Symbol('ellipsis');
@@ -16,6 +20,9 @@ export class DvPagination extends BaseComponent {
     const size = Math.max(1, this.num('size', 10));
     return { page: this.#clamp(this.num('page', 1), total, size), total, size };
   }
+
+  /** Subscribes to active-locale changes (ADR-0019). */
+  connected() { this.onCleanup(onLocaleChange(() => this.requestUpdate())); }
 
   /**
    * @param {string} name - Changed attribute.
@@ -65,9 +72,9 @@ export class DvPagination extends BaseComponent {
     const pages = Math.max(1, Math.ceil(this.state.total / this.state.size));
     const current = this.state.page;
     return html`
-      <nav aria-label="${this.str('label', 'Pagination')}">
+      <nav aria-label="${t(this, 'label', 'Pagination')}">
         <button type="button" data-page="${current - 1}" data-on:click="goToButton"
-          aria-label="Previous page" disabled="${current <= 1}">Previous</button>
+          aria-label="${t(this, 'previousPageLabel', 'Previous page')}" disabled="${current <= 1}">${t(this, 'previousLabel', 'Previous')}</button>
         <ul class="dv-pagination-list">
           ${this.#pageWindow(current, pages).map((entry) => (entry === ELLIPSIS
             ? html`<li class="dv-pagination-ellipsis" aria-hidden="true">&hellip;</li>`
@@ -75,20 +82,20 @@ export class DvPagination extends BaseComponent {
               <li>
                 <button type="button" data-page="${entry}" data-on:click="goToButton"
                   aria-current="${entry === current ? 'page' : null}"
-                  aria-label="Page ${entry}">${entry}</button>
+                  aria-label="${t(this, 'pageLabel', 'Page {page}', { page: entry })}">${entry}</button>
               </li>
             `))}
         </ul>
         <span class="dv-pagination-status">Page ${current} of ${pages}</span>
         <button type="button" data-page="${current + 1}" data-on:click="goToButton"
-          aria-label="Next page" disabled="${current >= pages}">Next</button>
+          aria-label="${t(this, 'nextPageLabel', 'Next page')}" disabled="${current >= pages}">${t(this, 'nextLabel', 'Next')}</button>
         <form class="dv-pagination-jump" data-on:submit="jumpToPage">
           <label>
-            ${this.str('jumpLabel', 'Jump to page')}
+            ${t(this, 'jumpLabel', 'Jump to page')}
             <input type="number" inputmode="numeric" step="1" min="1" max="${pages}" value="${current}"
-              data-pagination-jump-input aria-label="Jump to page, 1 to ${pages}">
+              data-pagination-jump-input aria-label="${t(this, 'jumpAriaLabel', 'Jump to page, 1 to {pages}', { pages })}">
           </label>
-          <button type="submit">Go</button>
+          <button type="submit">${t(this, 'goLabel', 'Go')}</button>
         </form>
       </nav>
     `;

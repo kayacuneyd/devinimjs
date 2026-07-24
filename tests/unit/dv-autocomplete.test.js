@@ -21,6 +21,7 @@ for (const key of [
 }
 
 await import('../../src/components/dv-autocomplete.js');
+const { setLocale } = await import('../../src/core/i18n.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -117,4 +118,36 @@ test('multiple instances get unique listbox ids', () => {
   const idA = a.querySelector('input').getAttribute('aria-controls');
   const idB = b.querySelector('input').getAttribute('aria-controls');
   assert.notEqual(idA, idB);
+});
+
+// i18n primitive reference wiring (ADR-0019).
+
+test('the active locale bundle drives the label when no data-* override is set', async () => {
+  const el = makeAutocomplete(['Keyboard']);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('label').textContent, 'Ara');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('a data-label override still wins over the active locale bundle (ADR-0005 regression)', async () => {
+  const el = makeAutocomplete(['Keyboard']);
+  el.setAttribute('data-label', 'Find');
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('label').textContent, 'Find', 'the explicit override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('the label falls back to the unchanged hardcoded default with no locale/override set', () => {
+  const el = makeAutocomplete(['Keyboard']);
+  assert.equal(el.querySelector('label').textContent, 'Search');
 });

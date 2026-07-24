@@ -8,6 +8,9 @@ for (const key of ['HTMLElement', 'Element', 'Node', 'CustomEvent', 'document', 
 }
 
 await import('../../src/components/dv-pagination.js');
+const { setLocale } = await import('../../src/core/i18n.js');
+
+const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 /** @returns {HTMLElement} Previous-page button, found by role rather than DOM position. */
 function prevButton(el) {
@@ -202,4 +205,93 @@ test('jump-to-page with non-numeric text is clamped to page 1 without throwing o
 
   assert.deepEqual(events, [1]);
   assert.equal(status(el).textContent.trim(), 'Page 1 of 20');
+});
+
+// i18n primitive reference wiring (ADR-0019).
+
+test('the active locale bundle drives the nav label, Previous/Next text and aria-labels, jump copy and the Go button when no data-* override is set', async () => {
+  const el = document.createElement('dv-pagination');
+  el.setAttribute('data-total', '25'); // 3 pages
+  el.setAttribute('data-size', '10');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('nav').getAttribute('aria-label'), 'Sayfalama');
+    // Direct `<nav>` button children only — the page-number buttons live inside the nested
+    // `<ul>` and would otherwise collide on `data-page` (e.g. the "2" page button also carries
+    // `data-page="2"`, same as the Next button when the current page is 1).
+    const [prev, next] = el.querySelectorAll('nav > button');
+    assert.equal(prev.textContent, 'Önceki');
+    assert.equal(prev.getAttribute('aria-label'), 'Önceki sayfa');
+    assert.equal(next.textContent, 'Sonraki');
+    assert.equal(next.getAttribute('aria-label'), 'Sonraki sayfa');
+    assert.equal(el.querySelector('label').textContent.trim(), 'Sayfaya git');
+    assert.equal(el.querySelector('[data-pagination-jump-input]').getAttribute('aria-label'), 'Sayfaya git, 1 ile 3 arası');
+    assert.equal(el.querySelector('button[type="submit"]').textContent, 'Git');
+    assert.equal(el.querySelector('[aria-current="page"]').getAttribute('aria-label'), '1. sayfa');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('a data-label override still wins over the active locale bundle (ADR-0005 regression)', async () => {
+  const el = document.createElement('dv-pagination');
+  el.setAttribute('data-total', '25');
+  el.setAttribute('data-size', '10');
+  el.setAttribute('data-label', 'Custom pagination');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('nav').getAttribute('aria-label'), 'Custom pagination', 'the explicit override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('setLocale() switching re-renders an already-mounted pagination via onLocaleChange', async () => {
+  const el = document.createElement('dv-pagination');
+  el.setAttribute('data-total', '25');
+  el.setAttribute('data-size', '10');
+  document.body.appendChild(el);
+  await settle();
+  assert.equal(el.querySelector('nav').getAttribute('aria-label'), 'Pagination');
+  setLocale('tr');
+  try {
+    await settle();
+    assert.equal(el.querySelector('nav').getAttribute('aria-label'), 'Sayfalama', 'the mounted instance re-renders on its own once setLocale() fires');
+  } finally {
+    setLocale(null);
+  }
+});
+
+// Page-number aria-labels are parameterized (`{page}`) — this proves each button's own number is
+// substituted independently, not the same interpolated string bleeding across buttons.
+test('parameterized page-number aria-labels substitute each button\'s own page number, without cross-contamination', async () => {
+  const el = document.createElement('dv-pagination');
+  el.setAttribute('data-total', '200'); // 20 pages
+  el.setAttribute('data-size', '10');
+  document.body.appendChild(el);
+  el.setAttribute('data-page', '10');
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    const pageButtons = [...el.querySelectorAll('.dv-pagination-list button')];
+    const labels = pageButtons.map((button) => [button.textContent.trim(), button.getAttribute('aria-label')]);
+    assert.deepEqual(labels, [
+      ['1', '1. sayfa'],
+      ['8', '8. sayfa'],
+      ['9', '9. sayfa'],
+      ['10', '10. sayfa'],
+      ['11', '11. sayfa'],
+      ['12', '12. sayfa'],
+      ['20', '20. sayfa'],
+    ]);
+  } finally {
+    setLocale(null);
+  }
 });

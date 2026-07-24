@@ -13,6 +13,7 @@ for (const key of ['HTMLElement', 'Element', 'Node', 'CustomEvent', 'document', 
 }
 
 await import('../../src/components/dv-data-table.js');
+const { setLocale } = await import('../../src/core/i18n.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -227,4 +228,99 @@ test('changing the filter while on page 2+ resets to page 1 so it never strands 
 
   assert.equal(el.querySelector('.dv-pagination-status').textContent.trim(), 'Page 1 of 1');
   assert.deepEqual([...el.querySelectorAll('tbody td')].map((td) => td.textContent), ['A4']);
+});
+
+// --- i18n primitive reference wiring (ADR-0019) -----------------------------------------------
+
+test('the active locale bundle drives the filter label and table caption when no data-* override is set', async () => {
+  const el = makeTable(['name'], [{ name: 'Ada' }]);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('.dv-data-table-filter').textContent, 'Filtrele');
+    assert.equal(el.querySelector('caption').textContent, 'Veri tablosu');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('data-filter-label and data-label overrides still win over the active locale bundle (ADR-0005 regression)', async () => {
+  const el = document.createElement('dv-data-table');
+  el.setAttribute('data-columns', JSON.stringify(['name']));
+  el.setAttribute('data-rows', JSON.stringify([{ name: 'Ada' }]));
+  el.setAttribute('data-filter-label', 'Ara');
+  el.setAttribute('data-label', 'Kayıtlar');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('.dv-data-table-filter').textContent, 'Ara', 'the explicit filter-label override must still win over the tr bundle entry');
+    assert.equal(el.querySelector('caption').textContent, 'Kayıtlar', 'the explicit label override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('setLocale() switching re-renders an already-mounted table via onLocaleChange', async () => {
+  const el = makeTable(['name'], [{ name: 'Ada' }]);
+  await settle();
+  assert.equal(el.querySelector('caption').textContent, 'Data table');
+  setLocale('tr');
+  try {
+    await settle();
+    assert.equal(el.querySelector('caption').textContent, 'Veri tablosu', 'the mounted instance re-renders on its own once setLocale() fires');
+  } finally {
+    setLocale(null);
+  }
+});
+
+// Composition test (see the task's Goal note): dv-data-table resolves its own `pagination-label`
+// copy via t(), then forwards the *resolved* string as dv-pagination's `data-label` override —
+// its own top-priority tier. This proves that forwarding chain still resolves correctly end to
+// end once both sides go through t(), under a non-English active locale.
+test('the forwarded pagination-label reaches the composed <dv-pagination> correctly under a non-English active locale', async () => {
+  const el = document.createElement('dv-data-table');
+  el.setAttribute('data-columns', JSON.stringify(['name']));
+  el.setAttribute('data-rows', JSON.stringify([{ name: 'A' }, { name: 'B' }, { name: 'C' }]));
+  el.setAttribute('data-page-size', '2');
+  document.body.appendChild(el);
+  await settle();
+
+  setLocale('tr');
+  try {
+    await settle();
+    const pagination = el.querySelector('dv-pagination');
+    assert.ok(pagination, '<dv-pagination> is composed for page controls');
+    assert.equal(
+      pagination.querySelector('nav').getAttribute('aria-label'),
+      'Sayfalama',
+      "dv-data-table's own tr paginationLabel is forwarded and wins as dv-pagination's data-label override",
+    );
+    // dv-pagination's own bundle also switched to tr independently (each component resolves its
+    // own copy) — Previous/Next text prove the composed child re-rendered under the same locale,
+    // not just that the forwarded label attribute changed.
+    assert.equal(pagination.querySelector('[data-page="0"]').textContent, 'Önceki');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('a data-pagination-label override on <dv-data-table> is forwarded and still wins on the composed <dv-pagination> (ADR-0005 regression)', async () => {
+  const el = document.createElement('dv-data-table');
+  el.setAttribute('data-columns', JSON.stringify(['name']));
+  el.setAttribute('data-rows', JSON.stringify([{ name: 'A' }, { name: 'B' }, { name: 'C' }]));
+  el.setAttribute('data-page-size', '2');
+  el.setAttribute('data-pagination-label', 'Custom pager');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    const pagination = el.querySelector('dv-pagination');
+    assert.equal(pagination.querySelector('nav').getAttribute('aria-label'), 'Custom pager');
+  } finally {
+    setLocale(null);
+  }
 });
