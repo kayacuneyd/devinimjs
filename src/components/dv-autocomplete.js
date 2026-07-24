@@ -1,5 +1,9 @@
 /** @module components/dv-autocomplete - Local-data combobox with a clear selection event. */
 import { BaseComponent, html, define } from '../core/core.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-autocomplete.locale.js';
+
+registerLocales('dv-autocomplete', locales);
 
 let instanceSeq = 0;
 
@@ -12,6 +16,9 @@ export class DvAutocomplete extends BaseComponent {
 
   /** @returns {{ items: string[], query: string, open: boolean }} Initial state. */
   initialState() { return { items: this.#items(), query: this.str('query'), open: false }; }
+
+  /** Subscribes to locale changes (ADR-0019). */
+  connected() { this.onCleanup(onLocaleChange(() => this.requestUpdate())); }
 
   /**
    * @param {string} name - Attribute.
@@ -54,7 +61,7 @@ export class DvAutocomplete extends BaseComponent {
     const listId = `dv-autocomplete-${this.#instanceId}-list`;
     const query = this.state.query.toLocaleLowerCase();
     const items = this.state.items.filter((item) => item.toLocaleLowerCase().includes(query));
-    return html`<div class="dv-autocomplete"><label>${this.str('label', 'Search')}<input role="combobox" type="search" value="${this.state.query}" aria-expanded="${String(this.state.open)}" aria-controls="${listId}" aria-autocomplete="list" data-on:input="onInput" data-on:blur="close"></label><ul id="${listId}" role="listbox" hidden="${!this.state.open}">${items.map((item) => html`<li role="option"><button type="button" data-value="${item}" data-on:click="pick">${item}</button></li>`)}</ul></div>`;
+    return html`<div class="dv-autocomplete"><label>${t(this, 'label', 'Search')}<input role="combobox" type="search" value="${this.state.query}" aria-expanded="${String(this.state.open)}" aria-controls="${listId}" aria-autocomplete="list" data-on:input="onInput" data-on:blur="close"></label><ul id="${listId}" role="listbox" hidden="${!this.state.open}">${items.map((item) => html`<li role="option"><button type="button" data-value="${item}" data-on:click="pick">${item}</button></li>`)}</ul></div>`;
   }
 
   /** @returns {string[]} Parsed local suggestions. */

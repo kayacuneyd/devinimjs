@@ -19,6 +19,7 @@ for (const key of ['HTMLElement', 'Element', 'Node', 'CustomEvent', 'KeyboardEve
 }
 
 await import('../../src/components/dv-dropdown.js');
+const { setLocale } = await import('../../src/core/i18n.js');
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -116,4 +117,36 @@ test('KNOWN GAP: clicking outside the dropdown does not close it (no outside-cli
   // Documents current behavior: this is a real UX gap consumers must handle themselves.
   assert.equal(el.querySelector('[role="menu"]').hidden, false);
   outside.remove();
+});
+
+// i18n primitive reference wiring (ADR-0019).
+
+test('the active locale bundle drives the trigger label when no data-* override is set', async () => {
+  const el = makeDropdown();
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('button:not([role="menuitem"])').textContent, 'Menü');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('a data-label override still wins over the active locale bundle (ADR-0005 regression)', async () => {
+  const el = makeDropdown();
+  el.setAttribute('data-label', 'Actions');
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('button:not([role="menuitem"])').textContent, 'Actions', 'the explicit override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('the trigger label falls back to the unchanged hardcoded default with no locale/override set', () => {
+  const el = makeDropdown();
+  assert.equal(el.querySelector('button:not([role="menuitem"])').textContent, 'Menu');
 });

@@ -19,6 +19,10 @@
  */
 
 import { BaseComponent, html, define } from '../core/core.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-tabs.locale.js';
+
+registerLocales('dv-tabs', locales);
 
 /** Per-page instance sequence — keeps generated ids unique across multiple <dv-tabs>. */
 let instanceSeq = 0;
@@ -74,9 +78,10 @@ export class DvTabs extends BaseComponent {
     if (name === 'data-active') this.activateIndex(Number(newValue) || 0);
   }
 
-  /** Sets ARIA wiring and visibility on the outlet panels after the first render. */
+  /** Sets ARIA wiring and visibility on the outlet panels after the first render, and subscribes to locale changes (ADR-0019). */
   connected() {
     this.#syncPanels();
+    this.onCleanup(onLocaleChange(() => this.requestUpdate()));
   }
 
   /**
@@ -166,7 +171,7 @@ export class DvTabs extends BaseComponent {
    */
   template() {
     return html`
-      <div role="tablist" aria-label="${this.str('label', 'Tabs')}">
+      <div role="tablist" aria-label="${t(this, 'label', 'Tabs')}">
         ${this.state.labels.map((label, i) => html`
           <button type="button" role="tab"
             id="${this.#tabId(i)}"
