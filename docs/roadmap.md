@@ -65,10 +65,14 @@ All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent
 
 ### P1 — competitive parity / DizgePHP-companion leverage
 
-- `dv-data-table` has no pagination/filtering/virtualization — for the DizgeCMS Studio /
-  admin-panel use case DizgePHP already ships, this is probably the highest-leverage component to
-  invest in next.
-- `dv-pagination` is Prev/Next only — no page-number list or jump-to-page; same admin-panel gap.
+- ~~`dv-data-table` has no pagination/filtering/virtualization.~~ Pagination and filtering closed
+  2026-07-24 via TASK-004 (`docs/swarm/`): client-side text filter + `data-page-size`-gated
+  pagination composing `<dv-pagination>`, sort now numeric-aware. Virtualization deliberately
+  still out — a real architectural change (already-loaded-rows assumption), needs its own
+  measurement-backed ADR per §2.1 YAGNI; not reopened.
+- ~~`dv-pagination` is Prev/Next only — no page-number list or jump-to-page.~~ Closed 2026-07-24
+  via TASK-005: truncated page-number list (7-slot window with `…` ellipsis) plus a jump-to-page
+  form, `data-page`/`data-total`/`data-size`/`dv:page` contract unchanged.
 - ~~No selector-based store subscriptions.~~ Stale claim, corrected 2026-07-24: `BaseComponent
   #useStore(store, paths)` (`src/core/base-component.js`) already accepts a path/predicate filter
   and only re-renders on matching changes, with test coverage
@@ -76,8 +80,9 @@ All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent
   before this shipped; no gap here, no follow-up task needed.
 - No animation/transition primitives anywhere (modal, toast, disclosure, tabs) — Alpine ships
   `x-transition` out of the box; a visible polish gap.
-- `dv-modal` has no real focus-trap cycling or nested-modal handling — an a11y/robustness gap in
-  a library that otherwise invests in a11y (axe-core in e2e).
+- ~~`dv-modal` has no real focus-trap cycling or nested-modal handling.~~ Closed 2026-07-24 via
+  TASK-006: WAI-ARIA APG Tab-cycling focus trap plus a module-level open-modal stack so only the
+  topmost dialog traps Tab when modals nest.
 - No locale-bundle/i18n system for component copy (all defaults are hardcoded English,
   override-only via `data-*` strings) — notable given the target audience (Turkish
   agencies/freelancers on shared hosting) and DevinimJS's own site already being bilingual.
