@@ -87,9 +87,17 @@ All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent
 - ~~`dv-modal` has no real focus-trap cycling or nested-modal handling.~~ Closed 2026-07-24 via
   TASK-006: WAI-ARIA APG Tab-cycling focus trap plus a module-level open-modal stack so only the
   topmost dialog traps Tab when modals nest.
-- No locale-bundle/i18n system for component copy (all defaults are hardcoded English,
-  override-only via `data-*` strings) — notable given the target audience (Turkish
-  agencies/freelancers on shared hosting) and DevinimJS's own site already being bilingual.
+- **Partially closed 2026-07-24 via TASK-008.** The primitive now exists
+  (`src/core/i18n.js`'s `t`/`registerLocales`/`setLocale`, ADR-0019, kept outside the size-gated
+  `core.js` export barrel — same exclusion pattern as ADR-0018's transition primitive) with `en`/
+  `tr` bundles, wired into three reference components (`dv-modal`, `dv-confirm`, `dv-cart`) that
+  deliberately exercise the single-string, multi-string, and parameterized-string cases. Locale
+  bundles are co-located per-component by design, specifically so wiring the remaining ~10
+  components (`dv-autocomplete`, `dv-data-table`, `dv-dropdown`, `dv-field`, `dv-pagination`,
+  `dv-product-card`, `dv-state`, `dv-tabs`, `dv-toast`, `dv-toast-stack`) can split cleanly across
+  parallel follow-up tasks with zero file overlap — see `docs/guides/i18n.md`. Not yet done: those
+  ~10 components, and a `docs/component-manifest.json` refresh (found stale across TASK-004..008
+  during TASK-008's review, pre-existing drift unrelated to i18n specifically).
 
 ### P2 — already YAGNI-tagged and correctly parked; don't reopen without a real use case
 

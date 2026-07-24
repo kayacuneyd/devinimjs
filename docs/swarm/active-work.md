@@ -9,7 +9,7 @@
 | [TASK-005](tasks/TASK-005-pagination-page-list.md) — `dv-pagination` page-number list/jump-to-page | Merged to `main` | claude (this session) | `swarm/task-005-pagination-page-list` | Closed |
 | [TASK-006](tasks/TASK-006-modal-focus-trap.md) — `dv-modal` focus-trap/nested-modal | Merged to `main` | claude (this session) | `swarm/task-006-modal-focus-trap` | Closed |
 | [TASK-007](tasks/TASK-007-transition-primitives.md) — Transition primitives (`dv-modal`/`dv-toast`/`dv-toast-stack`/`dv-disclosure`) | Merged to `main` | claude (this session) | `swarm/task-007-transition-primitives` | Closed |
-| [TASK-008](tasks/TASK-008-i18n-primitive-reference-wiring.md) — i18n/locale primitive design + reference wiring (`dv-modal`/`dv-confirm`/`dv-cart`) | Reviewed, awaiting merge approval | claude (this session) | `swarm/task-008-i18n-primitive-reference-wiring` | Human merge approval |
+| [TASK-008](tasks/TASK-008-i18n-primitive-reference-wiring.md) — i18n/locale primitive design + reference wiring (`dv-modal`/`dv-confirm`/`dv-cart`) | Merged to `main` | claude (this session) | `swarm/task-008-i18n-primitive-reference-wiring` | Closed |
 
 TASK-001..003 merged 2026-07-23 (human-approved). Post-merge: `.claude/` worktree/lint noise fixed
 (eslint ignores + `.gitignore`), and the two bugs found as a side effect were fixed directly on
@@ -54,13 +54,22 @@ co-located per-component (not one shared locale file) specifically so that wirin
 merged — that split is intentionally deferred to its own round rather than designed by committee
 alongside this one.
 
-Implemented and independently verified 2026-07-24: new `src/core/i18n.js` primitive (`t`,
-`registerLocales`, `setLocale`, `getLocale`, `onLocaleChange`; standalone, kept out of the
-size-gated `core.js` export barrel — measured against an in-budget alternative, see ADR-0019),
-wired into `dv-modal`/`dv-confirm`/`dv-cart` with `en`/`tr` bundles. Fixed two real pre-existing
-bugs as a disclosed side effect (kebab-case `dataset[key]` lookups in `dv-confirm`/`dv-cart` that
-silently never worked). 193 unit + 23 e2e tests, lint clean, size gate unchanged (3352 B/4096 B).
-See [`reviews/TASK-008-orchestrator-review.md`](reviews/TASK-008-orchestrator-review.md), which
-also flags `docs/component-manifest.json` as stale since TASK-004 (pre-existing drift, not caused
-by TASK-008, recommended as its own small follow-up). Awaiting human merge approval per swarm
-rule 6.
+Implemented, independently verified, and merged to `main` 2026-07-24 (human-approved): new
+`src/core/i18n.js` primitive (`t`, `registerLocales`, `setLocale`, `getLocale`,
+`onLocaleChange`; standalone, kept out of the size-gated `core.js` export barrel — measured
+against an in-budget alternative, see ADR-0019), wired into `dv-modal`/`dv-confirm`/`dv-cart`
+with `en`/`tr` bundles. Fixed two real pre-existing bugs as a disclosed side effect (kebab-case
+`dataset[key]` lookups in `dv-confirm`/`dv-cart` that silently never worked). Post-merge on
+`main`: 193 unit + 23 e2e tests, lint clean, size gate unchanged (3352 B/4096 B). See
+[`reviews/TASK-008-orchestrator-review.md`](reviews/TASK-008-orchestrator-review.md).
+`docs/roadmap.md` P1 updated (marked partially closed — the primitive and 3 reference components
+are done, ~10 components remain).
+
+**Recommended next round (not yet opened):** wire the remaining ~10 components
+(`dv-autocomplete`, `dv-data-table`, `dv-dropdown`, `dv-field`, `dv-pagination`,
+`dv-product-card`, `dv-state`, `dv-tabs`, `dv-toast`, `dv-toast-stack`) into the `t()`/
+`registerLocales()` contract per `docs/guides/i18n.md` — this is the first round with true
+zero-file-overlap parallelism available (each component's own file + its own `*.locale.js`,
+nothing shared to reconcile), so it can split across as many parallel tasks as desired. Also
+recommended: a small standalone task to refresh `docs/component-manifest.json` (stale since
+TASK-004, unrelated to i18n specifically).
