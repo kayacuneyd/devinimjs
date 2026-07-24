@@ -9,6 +9,7 @@
 | [TASK-005](tasks/TASK-005-pagination-page-list.md) — `dv-pagination` page-number list/jump-to-page | Merged to `main` | claude (this session) | `swarm/task-005-pagination-page-list` | Closed |
 | [TASK-006](tasks/TASK-006-modal-focus-trap.md) — `dv-modal` focus-trap/nested-modal | Merged to `main` | claude (this session) | `swarm/task-006-modal-focus-trap` | Closed |
 | [TASK-007](tasks/TASK-007-transition-primitives.md) — Transition primitives (`dv-modal`/`dv-toast`/`dv-toast-stack`/`dv-disclosure`) | Merged to `main` | claude (this session) | `swarm/task-007-transition-primitives` | Closed |
+| [TASK-008](tasks/TASK-008-i18n-primitive-reference-wiring.md) — i18n/locale primitive design + reference wiring (`dv-modal`/`dv-confirm`/`dv-cart`) | In progress | claude (this session) | `swarm/task-008-i18n-primitive-reference-wiring` | Implementation |
 
 TASK-001..003 merged 2026-07-23 (human-approved). Post-merge: `.claude/` worktree/lint noise fixed
 (eslint ignores + `.gitignore`), and the two bugs found as a side effect were fixed directly on
@@ -44,6 +45,11 @@ clean, size gate unchanged (3352 B/4096 B, byte-for-byte identical to baseline).
 [`reviews/TASK-007-orchestrator-review.md`](reviews/TASK-007-orchestrator-review.md).
 `docs/roadmap.md` P1 updated accordingly.
 
-Only remaining P1 item: i18n/locale-bundle system for component copy — touches nearly every
-component, so it needs its own dedicated round rather than pairing with anything else. Not opened
-yet — awaiting direction.
+TASK-008 opened 2026-07-24 for the last remaining P1 item: i18n/locale-bundle system for
+component copy. Scoped deliberately as design-first: the primitive itself plus exactly three
+reference components (`dv-modal`, `dv-confirm`, `dv-cart` — chosen to cover a single string, a
+multi-string case, and parameterized/interpolated strings). Locale bundles are required to be
+co-located per-component (not one shared locale file) specifically so that wiring the remaining
+~10 components can split cleanly across parallel follow-up tasks once this contract is fixed and
+merged — that split is intentionally deferred to its own round rather than designed by committee
+alongside this one.
