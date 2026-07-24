@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- i18n/locale primitive (ADR-0019, TASK-008, closes a P1 roadmap gap): a new
+  `t(el, key, fallback, params)` helper (`src/core/i18n.js`) resolves translatable copy through
+  three tiers — an explicit `data-*` override (ADR-0005, unchanged) > the active locale's
+  registered bundle entry > the hardcoded fallback — with `{placeholder}` substitution for
+  parameterized strings (e.g. a per-row `aria-label`) and `registerLocales()`/`setLocale()`/
+  `getLocale()`/`onLocaleChange()` for registering per-component `en`/`tr` bundles and switching
+  the active locale at runtime (defaults to reading `document.documentElement.lang`, matching
+  `site/en/`/`site/tr/`'s existing convention). Wired into `dv-modal` (`label`, and a
+  previously-hardcoded `close` aria-label), `dv-confirm` (`label`, `message`, `confirmLabel`,
+  `cancelLabel`, plus a newly-independent `confirmingLabel` for the pending-state group
+  aria-label), and `dv-cart` (`empty`, `label`, `removeLabel`, `totalLabel`, plus three
+  parameterized per-row aria-labels — `decreaseLabel`, `increaseLabel`, `quantityLabel`), each
+  with its own co-located `*.locale.js` bundle file (never a shared/centralized locale file, so
+  wiring one more component never touches another's files). Fixes two pre-existing, never-tested
+  `data-*` override bugs in `dv-confirm`/`dv-cart` (kebab-case keys passed to `dataset[key]`
+  lookups, which only ever resolve as camelCase per spec). Deliberately **not** re-exported from
+  `src/core/core.js` — components import it directly, so it stays entirely outside the size-gated
+  core budget (`npm run size`: unchanged at `3352 B min+gzip`, confirmed before/after; an in-budget
+  `BaseComponent` method was measured and rejected at `+187 B min+gzip` — see ADR-0019). New
+  `examples/i18n.html` demonstrates a live `en`/`tr` locale switch across all three components.
+  Wiring the remaining ~10 components is deferred to follow-up tasks — see
+  `docs/guides/i18n.md` and ADR-0019.
 - Transition/animation primitive (ADR-0018, TASK-007, closes a P1 roadmap gap): a new
   `awaitTransition(el, { timeout })` helper (`src/core/transition.js`) resolves on a real
   `transitionend`/`animationend`, or a 200ms timeout fallback for consumers with no CSS defined

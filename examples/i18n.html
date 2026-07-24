@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DevinimJS i18n/locale primitive example</title>
+    <style>
+      .dv-modal-backdrop[hidden] { display: none; }
+      #locale-switch button[aria-pressed="true"] { font-weight: bold; text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>i18n/locale primitive (ADR-0019)</h1>
+      <p>
+        Switches the active locale for three reference components (<code>dv-modal</code>,
+        <code>dv-confirm</code>, <code>dv-cart</code>) between <code>en</code> and
+        <code>tr</code>, live, without reloading the page.
+      </p>
+
+      <div id="locale-switch" role="group" aria-label="Language">
+        <button type="button" data-locale="en" aria-pressed="true">English</button>
+        <button type="button" data-locale="tr" aria-pressed="false">Türkçe</button>
+      </div>
+
+      <section>
+        <h2>dv-modal</h2>
+        <button id="open-modal" type="button">Open dialog</button>
+        <dv-modal><p>Dialog content</p></dv-modal>
+      </section>
+
+      <section>
+        <h2>dv-confirm</h2>
+        <dv-confirm data-value="account-1"></dv-confirm>
+      </section>
+
+      <section>
+        <h2>dv-cart</h2>
+        <dv-cart data-items='[{"id":"kb","name":"Keyboard","price":99},{"id":"ms","name":"Mouse","price":25}]'></dv-cart>
+      </section>
+    </main>
+    <script type="module">
+      import '../src/components/dv-modal.js';
+      import '../src/components/dv-confirm.js';
+      import '../src/components/dv-cart.js';
+      import { setLocale } from '../src/core/i18n.js';
+
+      document.querySelector('#open-modal').addEventListener('click', (event) => {
+        document.querySelector('dv-modal').open(event, event.currentTarget);
+      });
+
+      // The three reference components already subscribe to onLocaleChange() themselves and
+      // re-render on their own (ADR-0019) — this handler only needs to flip the active locale
+      // and keep <html lang> in sync for anything else on the page that reads it directly.
+      document.querySelector('#locale-switch').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-locale]');
+        if (!button) return;
+        const locale = button.dataset.locale;
+        document.documentElement.lang = locale;
+        setLocale(locale);
+        for (const btn of document.querySelectorAll('#locale-switch [data-locale]')) {
+          btn.setAttribute('aria-pressed', String(btn === button));
+        }
+      });
+    </script>
+  </body>
+</html>

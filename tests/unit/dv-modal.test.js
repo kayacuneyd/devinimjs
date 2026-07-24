@@ -9,6 +9,7 @@ for (const key of ['HTMLElement', 'Element', 'Node', 'CustomEvent', 'KeyboardEve
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 await import('../../src/components/dv-modal.js');
+const { setLocale } = await import('../../src/core/i18n.js');
 
 test('modal opens, closes with Escape and preserves its light-DOM children', async () => {
   const el = document.createElement('dv-modal');
@@ -240,4 +241,51 @@ test('nested modals: the trap applies to the topmost open modal and reverts when
 
   modalA.close();
   await settle();
+});
+
+// i18n primitive reference wiring (ADR-0019).
+
+test('the active locale bundle drives the title and the close button aria-label when no data-* override is set', async () => {
+  const el = document.createElement('dv-modal');
+  el.setAttribute('data-open', 'true');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('h2').textContent, 'Pencere');
+    assert.equal(el.querySelector('button[aria-label]').getAttribute('aria-label'), 'Kapat');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('a data-label override still wins over the active locale bundle (ADR-0005 regression)', async () => {
+  const el = document.createElement('dv-modal');
+  el.setAttribute('data-label', 'Confirm deletion');
+  el.setAttribute('data-open', 'true');
+  document.body.appendChild(el);
+  setLocale('tr');
+  try {
+    el.requestUpdate();
+    await settle();
+    assert.equal(el.querySelector('h2').textContent, 'Confirm deletion', 'the explicit override must still win over the tr bundle entry');
+  } finally {
+    setLocale(null);
+  }
+});
+
+test('setLocale() switching re-renders already-mounted modals via onLocaleChange', async () => {
+  const el = document.createElement('dv-modal');
+  el.setAttribute('data-open', 'true');
+  document.body.appendChild(el);
+  await settle();
+  assert.equal(el.querySelector('h2').textContent, 'Dialog');
+  setLocale('tr');
+  try {
+    await settle();
+    assert.equal(el.querySelector('h2').textContent, 'Pencere', 'the mounted instance re-renders on its own once setLocale() fires');
+  } finally {
+    setLocale(null);
+  }
 });

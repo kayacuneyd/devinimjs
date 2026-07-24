@@ -5,6 +5,10 @@
 
 import { BaseComponent, html, define } from '../core/core.js';
 import { awaitTransition } from '../core/transition.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-modal.locale.js';
+
+registerLocales('dv-modal', locales);
 
 let instanceSeq = 0;
 
@@ -86,6 +90,7 @@ export class DvModal extends BaseComponent {
       pushOpenStack(this);
       this.#focusDialog();
     }
+    this.onCleanup(onLocaleChange(() => this.requestUpdate()));
   }
 
   /** Removes this instance from the open-modal stack when it leaves the document. */
@@ -230,8 +235,8 @@ export class DvModal extends BaseComponent {
         <section class="dv-modal" role="dialog" aria-modal="true" aria-labelledby="${titleId}"
           tabindex="-1" data-on:keydown="onKeydown">
           <header>
-            <h2 id="${titleId}">${this.str('label', 'Dialog')}</h2>
-            <button type="button" aria-label="Close" data-on:click="close">×</button>
+            <h2 id="${titleId}">${t(this, 'label', 'Dialog')}</h2>
+            <button type="button" aria-label="${t(this, 'close', 'Close')}" data-on:click="close">×</button>
           </header>
           <div class="dv-modal-content">${this.outlet}</div>
         </section>

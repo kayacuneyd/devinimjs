@@ -1,5 +1,9 @@
 /** @module components/dv-cart - A presentational cart with page-owned data. */
 import { BaseComponent, html, define } from '../core/core.js';
+import { t, registerLocales, onLocaleChange } from '../core/i18n.js';
+import locales from './dv-cart.locale.js';
+
+registerLocales('dv-cart', locales);
 
 /** Cart view that accepts JSON items or `setItems()` from an application store. */
 export class DvCart extends BaseComponent {
@@ -8,6 +12,9 @@ export class DvCart extends BaseComponent {
 
   /** @returns {{ items: Array<{ id: string, name: string, price: number, quantity: number }> }} Initial state. */
   initialState() { return { items: this.#items() }; }
+
+  /** Subscribes to active-locale changes (ADR-0019). */
+  connected() { this.onCleanup(onLocaleChange(() => this.requestUpdate())); }
 
   /** @param {string} name - Attribute name. */
   onAttribute(name) { if (name === 'data-items') this.setItems(this.#items()); }
@@ -53,8 +60,8 @@ export class DvCart extends BaseComponent {
 
   /** @returns {import('../core/html.js').HtmlString} Cart markup. */
   template() {
-    if (!this.state.items.length) return html`<section class="dv-cart"><p>${this.str('empty', 'Your cart is empty.')}</p></section>`;
-    return html`<section class="dv-cart" aria-label="${this.str('label', 'Cart')}"><ul>${this.state.items.map((item) => html`<li><span>${item.name}</span><span>${item.price}</span><button type="button" aria-label="Decrease ${item.name}" data-id="${item.id}" data-amount="-1" data-on:click="changeQuantity">−</button><output aria-label="${item.name} quantity">${item.quantity}</output><button type="button" aria-label="Increase ${item.name}" data-id="${item.id}" data-amount="1" data-on:click="changeQuantity">+</button><button type="button" data-id="${item.id}" data-on:click="removeButton">${this.str('remove-label', 'Remove')}</button></li>`)}</ul><p><strong>${this.str('total-label', 'Total')}: ${this.total}</strong></p></section>`;
+    if (!this.state.items.length) return html`<section class="dv-cart"><p>${t(this, 'empty', 'Your cart is empty.')}</p></section>`;
+    return html`<section class="dv-cart" aria-label="${t(this, 'label', 'Cart')}"><ul>${this.state.items.map((item) => html`<li><span>${item.name}</span><span>${item.price}</span><button type="button" aria-label="${t(this, 'decreaseLabel', 'Decrease {name}', { name: item.name })}" data-id="${item.id}" data-amount="-1" data-on:click="changeQuantity">−</button><output aria-label="${t(this, 'quantityLabel', '{name} quantity', { name: item.name })}">${item.quantity}</output><button type="button" aria-label="${t(this, 'increaseLabel', 'Increase {name}', { name: item.name })}" data-id="${item.id}" data-amount="1" data-on:click="changeQuantity">+</button><button type="button" data-id="${item.id}" data-on:click="removeButton">${t(this, 'removeLabel', 'Remove')}</button></li>`)}</ul><p><strong>${t(this, 'totalLabel', 'Total')}: ${this.total}</strong></p></section>`;
   }
 
   /** @returns {Array<{ id: string, name: string, price: number, quantity: number }>} Parsed items. */
