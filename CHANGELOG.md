@@ -31,6 +31,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `examples/i18n.html` demonstrates a live `en`/`tr` locale switch across all three components.
   Wiring the remaining ~10 components is deferred to follow-up tasks — see
   `docs/guides/i18n.md` and ADR-0019.
+- i18n wiring for `dv-pagination`/`dv-data-table` (ADR-0019, TASK-009): `dv-pagination` gains a
+  `dv-pagination.locale.js` bundle covering `label`, `jumpLabel` (both already routed through
+  `str()` pre-primitive) plus, newly, `previousLabel`/`nextLabel` (the Previous/Next button text),
+  `previousPageLabel`/`nextPageLabel` (their aria-labels), the parameterized `pageLabel`
+  (`'Page {page}'`, one per page-number button, substitution verified not to cross-contaminate
+  across buttons), the parameterized `jumpAriaLabel` (`'Jump to page, 1 to {pages}'`), and
+  `goLabel` (the jump form's submit button text) — none of these were previously routed through
+  `str()` at all, having been added directly as template literals before the i18n primitive
+  existed. `dv-data-table` gains a `dv-data-table.locale.js` bundle covering `filterLabel`,
+  `label`, `paginationLabel` (the last forwarded, already resolved, as the composed
+  `<dv-pagination>`'s `data-label` override — verified end to end under a non-English active
+  locale, including that an explicit `data-pagination-label` override on `<dv-data-table>` still
+  wins through the whole forwarding chain). Fixes two more pre-existing, never-tested `data-*`
+  override bugs, same pattern as TASK-008's `dv-confirm`/`dv-cart` fixes:
+  `this.str('filter-label', ...)`/`this.str('pagination-label', ...)` passed literal kebab-case
+  strings to a `dataset[key]` lookup, which only ever resolves as camelCase per spec — fixed to
+  `filterLabel`/`paginationLabel`. `npm run size`: unchanged at `3352 B min+gzip` (both components
+  import `t`/`registerLocales`/`onLocaleChange` directly from `src/core/i18n.js`, never through
+  `core.js`'s barrel).
 - Transition/animation primitive (ADR-0018, TASK-007, closes a P1 roadmap gap): a new
   `awaitTransition(el, { timeout })` helper (`src/core/transition.js`) resolves on a real
   `transitionend`/`animationend`, or a 200ms timeout fallback for consumers with no CSS defined
