@@ -91,13 +91,11 @@ test('a live data-open attribute change opens/closes the dialog (ADR-0005 sync)'
   assert.equal(el.querySelector('.dv-modal-backdrop').hidden, true);
 });
 
-// KNOWN LIMITATION (docs/roadmap.md P1 — "dv-modal has no real focus-trap cycling or
-// nested-modal handling"). This test documents the current gap rather than silently asserting
-// around it: Tab from the last focusable element inside the dialog is expected (by the WAI-ARIA
-// APG dialog pattern) to cycle back to the first one, but nothing in dv-modal.js intercepts Tab,
-// so focus is free to leave the dialog into the rest of the page. When a real focus trap ships,
-// this test should start failing and can be rewritten to assert the cycling behavior instead.
-test('KNOWN GAP: Tab is not trapped inside the dialog — focus can leave it (docs/roadmap.md P1)', async () => {
+// WAI-ARIA APG focus trap (docs/roadmap.md P1, closed by TASK-006). Focusable order inside the
+// dialog is DOM order: the header's close (×) button always comes first (it precedes
+// `.dv-modal-content` in the template), then whatever the dialog's light-DOM content contributes.
+
+test('Tab from the last focusable element in the dialog wraps focus to the first (WAI-ARIA APG focus trap)', async () => {
   const outsideAfter = document.createElement('button');
   outsideAfter.textContent = 'Outside, after the modal in DOM order';
   document.body.appendChild(outsideAfter);
@@ -108,19 +106,105 @@ test('KNOWN GAP: Tab is not trapped inside the dialog — focus can leave it (do
   el.open();
   await settle();
 
-  const lastFieldInDialog = el.querySelector('#last-field');
-  lastFieldInDialog.focus();
-  assert.equal(document.activeElement, lastFieldInDialog);
+  const closeButton = el.querySelector('[aria-label="Close"]');
+  const lastField = el.querySelector('#last-field');
+  lastField.focus();
+  assert.equal(document.activeElement, lastField);
 
-  // No keydown handler for Tab exists in dv-modal.js (only Escape is handled), so dispatching
-  // Tab here has no framework-level effect at all — a real focus trap would call
-  // preventDefault() and move focus back to the dialog's first focusable element instead.
-  // happy-dom does not simulate the browser's native Tab-traversal default action, so this test
-  // demonstrates the *absence* of interception, not an actual escape of focus in this harness —
-  // documented explicitly rather than asserted as if it were verified end-to-end (that requires
-  // the real-browser Playwright layer, ADR-0008).
   const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
-  lastFieldInDialog.dispatchEvent(tabEvent);
-  assert.equal(tabEvent.defaultPrevented, false, 'no focus-trap code path calls preventDefault() on Tab');
+  lastField.dispatchEvent(tabEvent);
+  assert.equal(tabEvent.defaultPrevented, true, 'the trap must intercept Tab at the last focusable element');
+  assert.equal(document.activeElement, closeButton, 'focus must wrap to the first focusable element (the close button)');
+
+  el.close();
+  await settle();
   outsideAfter.remove();
+});
+
+test('Shift+Tab from the first focusable element (the close button) wraps focus to the last', async () => {
+  const el = document.createElement('dv-modal');
+  el.innerHTML = '<button id="last-field">Last field in the dialog</button>';
+  document.body.appendChild(el);
+  el.open();
+  await settle();
+
+  const closeButton = el.querySelector('[aria-label="Close"]');
+  const lastField = el.querySelector('#last-field');
+  closeButton.focus();
+  assert.equal(document.activeElement, closeButton);
+
+  const shiftTabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+  closeButton.dispatchEvent(shiftTabEvent);
+  assert.equal(shiftTabEvent.defaultPrevented, true, 'the trap must intercept Shift+Tab at the first focusable element');
+  assert.equal(document.activeElement, lastField, 'focus must wrap to the last focusable element');
+
+  el.close();
+  await settle();
+});
+
+test('Tab away from the edges of the dialog is left alone (only the wrap points are intercepted)', async () => {
+  const el = document.createElement('dv-modal');
+  el.innerHTML = '<input id="middle-field"><button id="last-field">Last field</button>';
+  document.body.appendChild(el);
+  el.open();
+  await settle();
+
+  const middleField = el.querySelector('#middle-field');
+  middleField.focus();
+  const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+  middleField.dispatchEvent(tabEvent);
+  assert.equal(tabEvent.defaultPrevented, false, 'Tab from a non-edge focusable element must not be intercepted');
+
+  el.close();
+  await settle();
+});
+
+test('nested modals: the trap applies to the topmost open modal and reverts when it closes', async () => {
+  const modalA = document.createElement('dv-modal');
+  modalA.innerHTML = '<button id="a-last">A last field</button>';
+  document.body.appendChild(modalA);
+  modalA.open();
+  await settle();
+
+  const aCloseButton = modalA.querySelector('[aria-label="Close"]');
+  const aLastField = modalA.querySelector('#a-last');
+
+  // Open a second modal while the first is still open (e.g. a confirmation dialog launched from
+  // within a form dialog) — the opener is an element inside modal A.
+  const modalB = document.createElement('dv-modal');
+  modalB.innerHTML = '<button id="b-last">B last field</button>';
+  document.body.appendChild(modalB);
+  modalB.open(new window.Event('click'), aLastField);
+  await settle();
+
+  const bCloseButton = modalB.querySelector('[aria-label="Close"]');
+  const bLastField = modalB.querySelector('#b-last');
+  assert.equal(document.activeElement, modalB.querySelector('[role="dialog"]'), 'opening modal B auto-focuses its own dialog');
+
+  // The topmost modal (B) owns the Tab trap: Tab from B's last field wraps inside B.
+  bLastField.focus();
+  const tabInB = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+  bLastField.dispatchEvent(tabInB);
+  assert.equal(tabInB.defaultPrevented, true, 'the topmost modal (B) must own the Tab trap while both are open');
+  assert.equal(document.activeElement, bCloseButton, 'Tab wraps within B, not out to A or the page');
+
+  // A's trap must not fight B's while B is open: even if focus strays back into the background
+  // dialog (A), A defers to whichever modal is topmost in the open-modal stack.
+  aLastField.focus();
+  const tabInA = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+  aLastField.dispatchEvent(tabInA);
+  assert.equal(tabInA.defaultPrevented, false, "a background modal's trap must not compete with the topmost modal's");
+
+  // Closing B returns focus to its recorded opener (inside A) and hands the trap back to A.
+  modalB.close();
+  await settle();
+  assert.equal(document.activeElement, aLastField, 'closing B returns focus to its opener inside A');
+
+  const tabInAAfterBCloses = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+  aLastField.dispatchEvent(tabInAAfterBCloses);
+  assert.equal(tabInAAfterBCloses.defaultPrevented, true, "A's trap resumes once B closes");
+  assert.equal(document.activeElement, aCloseButton, 'Tab wraps within A again after B closes');
+
+  modalA.close();
+  await settle();
 });

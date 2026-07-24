@@ -22,6 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ADR-0017. `package.json`'s `types` field and every `exports` entry now resolve to real types —
   `import { BaseComponent } from 'devinimjs'` gets editor/AI-agent autocomplete without any
   runtime dependency or compile step for consumers.
+- `dv-modal` now implements a real WAI-ARIA APG focus trap (closes `docs/roadmap.md` P1): `Tab`
+  from the last focusable element inside the dialog wraps to the first, `Shift+Tab` from the
+  first wraps to the last, and focus starting on the dialog wrapper itself is treated as being at
+  the wrap point. Nested/overlapping modals (a second `<dv-modal>` opened while another is still
+  open) are handled with a small module-level open-modal stack — only the topmost open modal
+  traps `Tab`, so a background dialog's key handling can't fight the foreground one; the trap
+  reverts to the previous modal automatically once the top one closes. Existing open/close,
+  Escape, opener-focus-return, and `data-open` sync behavior is unchanged.
 
 ### Fixed
 
