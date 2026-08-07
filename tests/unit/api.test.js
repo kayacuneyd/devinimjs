@@ -98,6 +98,7 @@ test('401 fires onUnauthorized (other statuses do not) before the error propagat
   } finally {
     restore();
   }
+});
 
 /** Minimal XHR stub: instances are recorded and driven manually by the test. */
 class FakeXHR {
@@ -174,6 +175,4 @@ test('upload rejects with HttpError on HTTP failure and honors abort signals', a
   } finally {
     globalThis.XMLHttpRequest = original;
   }
-});
-
 });

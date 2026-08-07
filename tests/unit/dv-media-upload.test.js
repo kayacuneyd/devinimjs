@@ -99,6 +99,7 @@ test('single-file mode replaces the previous entry; multiple mode appends', asyn
   await settle();
   assert.equal(multi.state.files.length, 2);
   multi.remove();
+});
 
 /** XHR stub that never completes — instances stay in flight until aborted or driven manually. */
 class PendingXHR {
@@ -250,6 +251,4 @@ test('disconnect aborts in-flight uploads (lifecycle cleanup, roadmap 1.3)', asy
   } finally {
     globalThis.XMLHttpRequest = original;
   }
-});
-
 });

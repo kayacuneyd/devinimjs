@@ -186,6 +186,7 @@ test('requestUpdate re-renders without a state change and reports <external>', a
   await settle();
   assert.equal(el.querySelector('span').textContent, '1');
   assert.deepEqual(seen, [['<external>']]);
+});
 
 test('store.set assigns a top-level key and rejects prototype pollution', () => {
   const warnings = [];
@@ -280,6 +281,4 @@ test('store.persist survives corrupt stored JSON and quota-style write failures'
     console.warn = original;
   }
   assert.equal(warnings.length, 2);
-});
-
 });

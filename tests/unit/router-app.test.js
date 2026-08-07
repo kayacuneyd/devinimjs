@@ -104,6 +104,7 @@ test('lazy targets are called once, awaited, unwrapped from .default and cached'
   await settle();
   await settle();
   assert.equal(loads, 1); // cached after first resolution
+});
 
 test('mount renders the matched tag, passes params as data-param-* and swaps elements', async () => {
   class DvPagePost extends BaseComponent {
@@ -207,6 +208,4 @@ test('bindRouterLinks routes a[dv-link] clicks and ignores modified or external 
   await settle();
   assert.equal(router.current()?.target, 'home'); // unbound
   document.body.innerHTML = '';
-});
-
 });
