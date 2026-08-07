@@ -10,9 +10,10 @@
  * keeping this import path separate keeps the primitive entirely outside the size-gated core
  * budget. See ADR-0019 for the in-budget-vs-standalone measurement that motivated this.
  *
- * This is not a full i18n framework: no ICU MessageFormat, no plural rules, no lazy-loaded
- * bundles, no date/number formatting — one resolution order, one substitution scheme
- * (ADR-0010 YAGNI, §2.1).
+ * The primitive is intentionally small: no ICU MessageFormat, no lazy-loaded bundles, no
+ * date/number formatting — one resolution order, one substitution scheme (ADR-0010 YAGNI).
+ * Application-level catalogs — fallback locales and `one|other` pluralization — live in
+ * {@link createI18n} at the bottom of this module (ADR-0024).
  */
 
 /** @type {Map<string, Record<string, Record<string, string>>>} tagName -> { locale: { key: string } } */
@@ -131,4 +132,86 @@ function interpolate(value, params) {
   return value.replace(/\{(\w+)\}/g, (match, name) => (
     Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : match
   ));
+}
+
+/**
+ * Selects a plural form from a pipe-joined message. Two forms mean `one|other`; three or more
+ * mean `zero|one|other` (extra forms rejoin the `other` bucket, so pipes inside the last form
+ * survive). Messages without a pipe are used unchanged regardless of `count`.
+ *
+ * @param {string} value - The raw catalog entry, e.g. `'{count} post|{count} posts'`.
+ * @param {number} count - The numeric count driving selection.
+ * @returns {string} The selected form.
+ */
+function pluralize(value, count) {
+  const forms = value.split('|');
+  if (forms.length >= 3) return count === 0 ? forms[0] : count === 1 ? forms[1] : forms.slice(2).join('|');
+  if (forms.length === 2) return count === 1 ? forms[0] : forms[1];
+  return value;
+}
+
+/**
+ * Creates an application-level message catalog (ADR-0024) on top of the component-locale
+ * primitive. Resolution: active-locale entry → `fallbackLocale` entry → the key itself (a
+ * missing translation degrades visibly, mirroring the primitive's typo policy). When
+ * `params.count` is a number and the resolved entry contains pipes, pluralization selects the
+ * form *before* `{placeholder}` interpolation runs.
+ *
+ * `setLocale()` forwards to the primitive's module-level setter, so every component that
+ * subscribed via `onLocaleChange()` re-renders on an app-level language switch.
+ *
+ * @param {{
+ *   locale?: string | null,
+ *   fallbackLocale?: string,
+ *   messages?: Record<string, Record<string, string>>,
+ * }} [config] - Catalog configuration.
+ * @returns {{ readonly locale: string, readonly fallbackLocale: string, setLocale: (locale: string | null) => void, t: (key: string, params?: Record<string, string | number>) => string }} The catalog.
+ *
+ * @example
+ * const i18n = createI18n({
+ *   fallbackLocale: 'en',
+ *   messages: {
+ *     tr: { save: 'Kaydet', post_count: '{count} yazı' },
+ *     en: { save: 'Save', post_count: '{count} post|{count} posts' },
+ *   },
+ * });
+ * i18n.t('post_count', { count: 5 }); // "5 yazı"
+ */
+export function createI18n({ locale = null, fallbackLocale = DEFAULT_LOCALE, messages = {} } = {}) {
+  let active = locale || null;
+  const resolve = () => active || getLocale();
+
+  return {
+    /** @type {string} The active locale (override, else `<html lang>`, else `'en'`). */
+    get locale() {
+      return resolve();
+    },
+    fallbackLocale,
+    /**
+     * Sets the app locale and notifies every `onLocaleChange()` subscriber (component
+     * re-render trigger). Pass null to defer back to `<html lang>`.
+     *
+     * @param {string | null} next - Locale code, or null to clear the override.
+     * @returns {void}
+     */
+    setLocale(next) {
+      active = next || null;
+      setLocale(active); // module-level primitive setter — notifies subscribed components
+    },
+    /**
+     * @param {string} key - Message key.
+     * @param {Record<string, string | number>} [params] - `{placeholder}` values; `count`
+     *   additionally drives `one|other` pluralization.
+     * @returns {string} The resolved message.
+     */
+    t(key, params) {
+      let value = messages[resolve()]?.[key] ?? messages[fallbackLocale]?.[key];
+      if (value === undefined || value === null) return key;
+      value = String(value);
+      if (params && typeof params.count === 'number' && value.includes('|')) {
+        value = pluralize(value, params.count);
+      }
+      return params ? interpolate(value, params) : value;
+    },
+  };
 }

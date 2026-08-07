@@ -8,4 +8,9 @@ export function addToCart(product: {
 export const cartStore: {
     state: object;
     subscribe: (fn: (path: string) => void) => () => void;
+    set: (key: string, value: any) => void;
+    update: (recipe: (state: object) => (object | undefined)) => object;
+    persist: (key: string, options?: {
+        storage?: Storage | null;
+    }) => () => void;
 };

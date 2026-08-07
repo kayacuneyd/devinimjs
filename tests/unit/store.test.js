@@ -186,4 +186,100 @@ test('requestUpdate re-renders without a state change and reports <external>', a
   await settle();
   assert.equal(el.querySelector('span').textContent, '1');
   assert.deepEqual(seen, [['<external>']]);
+
+test('store.set assigns a top-level key and rejects prototype pollution', () => {
+  const warnings = [];
+  const original = console.warn;
+  console.warn = (msg) => warnings.push(String(msg));
+  try {
+    const store = createStore({ count: 0 });
+    store.set('count', 5);
+    assert.equal(store.state.count, 5);
+    store.set('__proto__', { polluted: true });
+    assert.equal({}.polluted, undefined);
+    assert.equal(warnings.length, 1);
+  } finally {
+    console.warn = original;
+  }
+});
+
+test('store.update merges a returned partial and supports direct mutation', () => {
+  const store = createStore({ count: 1, user: null });
+  store.update((s) => ({ count: s.count + 1 }));
+  assert.equal(store.state.count, 2);
+  store.update((s) => {
+    s.user = { name: 'Ada' };
+  });
+  assert.equal(store.state.user.name, 'Ada');
+});
+
+/** Minimal Storage stand-in backed by a Map. */
+function mapStorage() {
+  const data = new Map();
+  return {
+    data,
+    getItem: (key) => (data.has(key) ? data.get(key) : null),
+    setItem: (key, value) => data.set(key, String(value)),
+  };
+}
+
+test('store.persist hydrates from storage and writes through on change', () => {
+  const storage = mapStorage();
+  storage.setItem('cart', JSON.stringify({ items: [1, 2], coupon: 'X' }));
+
+  const store = createStore({ items: [], coupon: null, note: 'keep' });
+  const dispose = store.persist('cart', { storage });
+
+  assert.deepEqual(store.state.items, [1, 2]);
+  assert.equal(store.state.coupon, 'X');
+  assert.equal(store.state.note, 'keep'); // keys absent from storage survive hydration
+
+  store.set('coupon', 'Y');
+  assert.equal(JSON.parse(storage.data.get('cart')).coupon, 'Y');
+
+  dispose();
+  store.set('coupon', 'Z');
+  assert.equal(JSON.parse(storage.data.get('cart')).coupon, 'Y'); // no write after dispose
+});
+
+test('store.persist without storage warns once and returns a no-op dispose', () => {
+  const warnings = [];
+  const original = console.warn;
+  console.warn = (msg) => warnings.push(String(msg));
+  try {
+    const store = createStore({});
+    const dispose = store.persist('nothing', { storage: null });
+    dispose();
+  } finally {
+    console.warn = original;
+  }
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /no Web Storage/);
+});
+
+test('store.persist survives corrupt stored JSON and quota-style write failures', () => {
+  const storage = mapStorage();
+  storage.setItem('broken', '{not json');
+  const throwing = {
+    getItem: () => null,
+    setItem: () => {
+      throw new Error('QuotaExceeded');
+    },
+  };
+  const warnings = [];
+  const original = console.warn;
+  console.warn = (msg) => warnings.push(String(msg));
+  try {
+    const store = createStore({ a: 1 });
+    store.persist('broken', { storage });
+    assert.equal(store.state.a, 1); // hydration failure keeps initial state
+    store.persist('quota', { storage: throwing });
+    store.set('a', 2); // write failure warns, does not throw
+    assert.equal(store.state.a, 2);
+  } finally {
+    console.warn = original;
+  }
+  assert.equal(warnings.length, 2);
+});
+
 });

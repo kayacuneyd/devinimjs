@@ -25,5 +25,10 @@ widget. See `adr/0020-starter-kits.md` for the design decision.
 - `admin-dashboard` — CRUD project list based on CKCSS's `data-management.html` pattern:
   `<dv-data-table>` (search/sort/pagination), `<dv-modal>` + `<dv-field>` (create), `<dv-confirm>`
   (delete), `<dv-toast-stack>` (feedback). See `admin-dashboard/README.md`.
+- `ci4-cms` — fullstack starter: CodeIgniter 4 + SQLite CMS backend (session auth, REST API,
+  dynamic content types, media library, plugin hooks) with a DevinimJS hash-router admin SPA
+  and a server-rendered public theme. Implements the roadmap's backend chapters (Bölüm 2.1–2.10,
+  ADR-001…006). It is a **PHP overlay kit**, not wired into `create-project.mjs`: you copy its
+  `app/` over a stock `codeigniter4/appstarter` install. See `ci4-cms/README.md`.
 
 Auth and marketing-landing kits are deferred follow-ups (ADR-0020) — not yet built.

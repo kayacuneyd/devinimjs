@@ -69,3 +69,40 @@ export function onLocaleChange(listener: () => void): () => void;
  * t(this, 'decreaseLabel', 'Decrease {name}', { name: item.name }); // parameterized
  */
 export function t(el: HTMLElement, key: string, fallback: string, params?: Record<string, string | number>): string;
+/**
+ * Creates an application-level message catalog (ADR-0024) on top of the component-locale
+ * primitive. Resolution: active-locale entry → `fallbackLocale` entry → the key itself (a
+ * missing translation degrades visibly, mirroring the primitive's typo policy). When
+ * `params.count` is a number and the resolved entry contains pipes, pluralization selects the
+ * form *before* `{placeholder}` interpolation runs.
+ *
+ * `setLocale()` forwards to the primitive's module-level setter, so every component that
+ * subscribed via `onLocaleChange()` re-renders on an app-level language switch.
+ *
+ * @param {{
+ *   locale?: string | null,
+ *   fallbackLocale?: string,
+ *   messages?: Record<string, Record<string, string>>,
+ * }} [config] - Catalog configuration.
+ * @returns {{ readonly locale: string, readonly fallbackLocale: string, setLocale: (locale: string | null) => void, t: (key: string, params?: Record<string, string | number>) => string }} The catalog.
+ *
+ * @example
+ * const i18n = createI18n({
+ *   fallbackLocale: 'en',
+ *   messages: {
+ *     tr: { save: 'Kaydet', post_count: '{count} yazı' },
+ *     en: { save: 'Save', post_count: '{count} post|{count} posts' },
+ *   },
+ * });
+ * i18n.t('post_count', { count: 5 }); // "5 yazı"
+ */
+export function createI18n({ locale, fallbackLocale, messages }?: {
+    locale?: string | null;
+    fallbackLocale?: string;
+    messages?: Record<string, Record<string, string>>;
+}): {
+    readonly locale: string;
+    readonly fallbackLocale: string;
+    setLocale: (locale: string | null) => void;
+    t: (key: string, params?: Record<string, string | number>) => string;
+};

@@ -10,14 +10,22 @@ const browserGlobals = {
   HTMLElement: 'readonly',
   Element: 'readonly',
   Node: 'readonly',
+  Event: 'readonly',
   CustomEvent: 'readonly',
   KeyboardEvent: 'readonly',
   URL: 'readonly',
+  URLSearchParams: 'readonly',
   Headers: 'readonly',
   Response: 'readonly',
   fetch: 'readonly',
   setTimeout: 'readonly',
   clearTimeout: 'readonly',
+  AbortController: 'readonly',
+  DOMException: 'readonly',
+  FormData: 'readonly',
+  File: 'readonly',
+  FileReader: 'readonly',
+  XMLHttpRequest: 'readonly',
 };
 
 export default [
@@ -64,6 +72,21 @@ export default [
     },
     rules: {
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    files: ['kits/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...browserGlobals,
+        window: 'readonly',
+        location: 'readonly',
+        history: 'readonly',
+        navigator: 'readonly',
+        localStorage: 'readonly',
+      },
     },
   },
   {

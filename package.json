@@ -1,6 +1,6 @@
 {
   "name": "devinimjs",
-  "version": "0.6.0-beta.0",
+  "version": "0.7.0-beta.0",
   "description": "AI-first, build-free UI runtime: Svelte-like component authoring for PHP and shared hosting. The JS companion of CKCSS.",
   "type": "module",
   "keywords": [

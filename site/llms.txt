@@ -11,7 +11,7 @@ DevinimJS is a build-free, Proxy-reactive Vanilla JavaScript component runtime f
 - Template interpolation is escaped by default; unsafe() is an explicit sanitized-HTML boundary.
 - The runtime has zero production dependencies.
 - The experimental AI-first authoring entry is `devinimjs/authoring`; `.dv.js` files are standard browser ESM. Its contract is `props`, `state`, optional `sync`, `actions` and `view`.
-- Pin releases in production. Current project release: v0.6.0-beta.0.
+- Pin releases in production. Current project release: v0.7.0-beta.0.
 
 ## Start here
 

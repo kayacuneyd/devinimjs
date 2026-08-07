@@ -32,7 +32,7 @@ Pin a tagged release from jsDelivr (never use an unpinned URL in production):
 
 ```html
 <script type="module">
-  import { BaseComponent, html, define } from 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.1.0/dist/core.min.js';
+  import { BaseComponent, html, define } from 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.7.0-beta.0/dist/core.min.js';
 </script>
 ```
 
@@ -60,7 +60,7 @@ For a real, working *page* instead of one component, use `--kit=admin-dashboard`
 list (search/sort/paginate, create-via-modal, delete-via-confirm, toast feedback) composing CKCSS's
 `data-management.html` pattern with real DevinimJS components (see [`kits/README.md`](kits/README.md)).
 
-AI-first component authoring (experimental v0.6):
+AI-first component authoring (experimental v0.7):
 
 ```js
 import { component, html } from '../core/authoring.js';

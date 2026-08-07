@@ -4,6 +4,33 @@
  * registration is greppable — a hard requirement for predictable component authoring.
  */
 
+/** @type {Map<string, CustomElementConstructor>} Tag → constructor registry (ADR-0006). */
+const definedElements = new Map();
+
+/**
+ * Reverse lookup used by the router's `mount()` (ADR-0023): finds the tag a define()d
+ * constructor was registered under.
+ *
+ * @param {CustomElementConstructor} ctor - A constructor previously passed to define().
+ * @returns {string | null} The registered tag, or null.
+ */
+export function getRegisteredTag(ctor) {
+  for (const [tag, candidate] of definedElements) {
+    if (candidate === ctor) return tag;
+  }
+  return null;
+}
+
+/**
+ * Snapshot of every tag registered through define(). Introspection hook for dev tooling
+ * (core/debug.js); not re-exported from the size-gated `core/core.js` barrel.
+ *
+ * @returns {string[]} Registered tag names.
+ */
+export function getDefinedTags() {
+  return [...definedElements.keys()];
+}
+
 /**
  * Registers a custom element with safety guards.
  *
@@ -24,8 +51,10 @@ export function define(tagName, ctor) {
   const existing = customElements.get(tagName);
   if (existing) {
     console.warn(`[devinim] "${tagName}" is already defined; skipping re-registration.`);
+    definedElements.set(tagName, existing);
     return existing;
   }
   customElements.define(tagName, ctor);
+  definedElements.set(tagName, ctor);
   return ctor;
 }

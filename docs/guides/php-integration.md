@@ -4,6 +4,10 @@ The contract in one sentence: **your backend prints the custom element with `dat
 attributes; DevinimJS does the rest.** Works with native PHP, CodeIgniter, Laravel (Blade),
 WordPress, SQLite-backed apps — anything that outputs HTML.
 
+> **Full CMS starting point:** `kits/ci4-cms/` (ADR-0027) is a complete CodeIgniter 4 + SQLite
+> CMS built on this contract — session auth, dynamic content types, media library, plugin
+> hooks, themes and a hash-router admin SPA. Its README walks the install.
+
 ## 1. Install (choose one)
 
 **Self-hosted (recommended for shared hosting):** upload `src/` (or the release `dist/`) to
@@ -17,7 +21,7 @@ e.g. `/assets/devinim/`, then:
 
 ```html
 <script type="module">
-  import 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.1.0/dist/modules/dv-counter.js';
+  import 'https://cdn.jsdelivr.net/gh/kayacuneyd/devinimjs@v0.7.0-beta.0/dist/modules/dv-counter.js';
 </script>
 ```
 

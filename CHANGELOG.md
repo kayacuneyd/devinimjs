@@ -7,6 +7,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0-beta.0] - 2026-08-07
+
+### Added
+
+- **Roadmap runtime round** (`devinimjs-yol-haritasi.md`, TASK-021…TASK-028). Everything below
+  is measured against the constitution §9 core budget: `npm run size` 3793 B → **4065 B /
+  4096 B** min+gzip (only the store helpers and the debug introspection registries touch the
+  gated core; every application-level feature ships outside it, per the ADR-0019 precedent).
+- **Store helpers** (ADR-0011 amendment, TASK-021): `createStore()` now returns
+  `set(key, value)` (prototype-pollution guarded), `update(recipe)` (mutate or return a
+  partial) and `persist(key, { storage? })` (localStorage hydration + write-through with a
+  dispose function; failures warn, never throw). `tests/unit/store.test.js`.
+- **JSON API client `createApi`** (ADR-0021, TASK-022; new `src/core/api.js`, exported via
+  `core/app.js`): `baseUrl` joining, query params, automatic `X-CSRF-TOKEN` header (from
+  `<meta name="csrf-token">`) on unsafe methods, `X-Requested-With` marker, `same-origin`
+  credentials, `onError`/`onUnauthorized` hooks and XHR-based `upload()` with real progress
+  and `AbortSignal` support. Failures reject as `HttpError` with the parsed JSON body. Covered
+  by `tests/unit/api.test.js` (stubbed fetch/XHR, no network).
+- **Rule-based validation** (ADR-0022, TASK-023; new `src/core/validate.js`, exported via
+  `core/app.js`): `validate(values, rules, messages?)` with the roadmap's exact rule set
+  (`required|email|url|number|min|max|minLength|maxLength|pattern|match`), first-error-per-
+  field, optional-field skipping and `'<field>.<rule>'` message overrides. `createForm` gains
+  `.validate(rules)` writing the same `{ field: message }` error shape CI4 returns.
+  `tests/unit/validate.test.js`.
+- **Router guards, lazy targets, wildcard, `mount()`, `dv-link`** (ADR-0023, amends ADR-0012,
+  TASK-024; `src/core/router.js`): trailing `*` patterns (`params.wildcard`), global
+  `beforeEach` + per-route `beforeEnter` guards (sync or async; `false` blocks, a string
+  redirects), plain-function lazy loaders resolved once and cached (`.default` unwrapped),
+  `mount(host)` rendering matched element tags into a container with route params as
+  `data-param-*` attributes (in-place param updates for same-tag navigations), and
+  `bindRouterLinks(router)` for `<a dv-link>` declarative navigation. Plain routes keep
+  ADR-0012's synchronous dispatch. `tests/unit/router-app.test.js`.
+- **Application i18n catalog `createI18n`** (ADR-0024, amends ADR-0019, TASK-025;
+  `src/core/i18n.js`, exported via `core/app.js`): fallback-locale resolution, `{placeholder}`
+  interpolation, `one|other` / `zero|one|other` pipe pluralization driven by `params.count`,
+  and `setLocale()` forwarding into the primitive so subscribed components re-render on a
+  language switch. `tests/unit/i18n-app.test.js`.
+- **Authoring-API prop descriptors** (ADR-0025, TASK-026; `src/core/component.js`):
+  `props: { start: { type: Number, default: 0, required: true } }` alongside the legacy bare
+  defaults. Malformed descriptors throw precise `TypeError`s at define time; at runtime a
+  missing required attribute or an unconvertible value logs a `console.error` naming tag,
+  prop, attribute and expected type while the default keeps the page alive.
+  `tests/unit/component-props.test.js`.
+- **Dev-only debug hook** (ADR-0026, TASK-028; new `src/core/debug.js`, deliberately absent
+  from the core barrel): `installDebug()` exposes `window.__DEVINIM_DEBUG__` with
+  `tags()` / `components()` (live instances + JSON state snapshots) / `stores()`.
+  `tests/unit/debug.test.js`. Hot reload is explicitly deferred (requires a dev server —
+  incompatible with the build-free boundary).
+- **`<dv-media-upload>`** (roadmap §1.9/§2.6, TASK-027; `src/components/dv-media-upload.js` +
+  `.locale.js`): drag & drop zone with click/keyboard browse, client-side `accept`/`max-size`
+  validation, image thumbnail previews, per-file XHR progress, abort, single/multiple modes,
+  `data-auto` control, keyed list rows (ADR-0014) and disconnect-time abort of in-flight
+  uploads. Emits `dv:added` / `dv:uploaded` / `dv:error` / `dv:remove`; the `upload(entry)`
+  transport is a documented override seam. `tests/unit/dv-media-upload.test.js` (11 tests),
+  `docs/components/dv-media-upload.md`, manifest entry.
+- **CI4 + SQLite CMS starter kit** (ADR-0027, TASK-029; `kits/ci4-cms/`): the complete
+  roadmap Bölüm 2 as a drop-in overlay for `codeigniter4/appstarter` — SQLite schema
+  migrations + seeders (users, content_types, fields, contents, media), session auth
+  controller + API auth filter, `Api/BaseApiController` (AJAX + session + CSRF-header
+  guards), resource controllers (posts/pages/media/users/content-types) with publish /
+  duplicate / search, GD-thumbnailing media controller, dynamic field-type library,
+  Hook + PluginLoader with an example Blog plugin, WAL pragmas + `db:backup` CLI command,
+  default theme (layout/partials/post/page/archive templates), login view and a
+  hash-router admin shell SPA consuming the runtime APIs above. All PHP is `php -l`-gated;
+  see `kits/ci4-cms/README.md`.
+
+### Changed
+
+- `eslint.config.mjs`: `browserGlobals` extended with the globals the new runtime modules
+  legitimately touch (`AbortController`, `FormData`, `File`, `FileReader`, `XMLHttpRequest`,
+  `DOMException`, `URLSearchParams`, `Event`); new `kits/**/*.js` block (browser + `window` /
+  `location` / `history` / `navigator` / `localStorage`) so kit example code is linted too.
+- `docs/guides/application-runtime.md`: documented `createApi`, `validate` +
+  `createForm.validate`, router guards/`mount`/`dv-link`, `store.persist`, `createI18n` and
+  the debug hook.
+
 ## [0.6.0-beta.0] - 2026-07-24
 
 ### Changed

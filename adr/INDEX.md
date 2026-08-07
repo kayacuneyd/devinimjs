@@ -25,6 +25,13 @@ sequential number, register here.
 | [0018](0018-transition-primitives.md) | Transition primitives (`awaitTransition`) | Accepted | 2026-07-24 |
 | [0019](0019-i18n-locale-primitive.md) | i18n/locale primitive (`t`, `registerLocales`, `setLocale`) | Accepted | 2026-07-24 |
 | [0020](0020-starter-kits.md) | Starter kits (CKCSS pattern + DevinimJS component compositions) | Accepted | 2026-07-24 |
+| [0021](0021-api-client.md) | JSON API client (`createApi`) | Accepted | 2026-08-07 |
+| [0022](0022-form-validation.md) | Rule-based form validation (`validate` + `createForm.validate`) | Accepted | 2026-08-07 |
+| [0023](0023-router-guards-lazy-mount.md) | Router guards, lazy targets, wildcard, `mount()`, `dv-link` | Accepted (amends 0012) | 2026-08-07 |
+| [0024](0024-app-i18n-catalog.md) | Application-level i18n catalog (`createI18n`) | Accepted (amends 0019) | 2026-08-07 |
+| [0025](0025-authoring-prop-descriptors.md) | Authoring-API prop descriptors (`{ type, default, required }`) | Accepted | 2026-08-07 |
+| [0026](0026-dev-debug-hook.md) | Dev-only debug hook (`__DEVINIM_DEBUG__`) | Accepted | 2026-08-07 |
+| [0027](0027-ci4-cms-starter-kit.md) | CI4 + SQLite CMS starter kit (`kits/ci4-cms/`) | Accepted | 2026-08-07 |
 
 ## Dependency graph
 
@@ -48,4 +55,11 @@ sequential number, register here.
   dv-toast-stack, dv-disclosure)
 0005 attribute↔state ── 0019 i18n/locale primitive (dv-modal, dv-confirm, dv-cart)
 0016 starter-kit CLI ── 0020 starter kits (--kit=admin-dashboard)
+0011 shared store ── amended 2026-08-07 (set/update/persist helpers, useStore path filters)
+0012 hash router ── 0023 guards/lazy/wildcard/mount/dv-link (amendment)
+0019 i18n primitive ── 0024 app-level catalog createI18n (amendment)
+0021 api client ── 0022 validation (shared HttpError.body.errors shape) ── 0027 CI4 CMS kit
+0025 authoring prop descriptors (component() factory hardening)
+0026 dev debug hook (reads 0006 registry + store registries)
+0020 starter kits ── 0027 CI4 CMS kit (first server-backed kit)
 ```

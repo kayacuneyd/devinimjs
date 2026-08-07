@@ -15,3 +15,4 @@ export { DvDataTable } from "./components/dv-data-table.js";
 export { DvCart } from "./components/dv-cart.js";
 export { DvToastStack } from "./components/dv-toast-stack.js";
 export { DvState } from "./components/dv-state.js";
+export { DvMediaUpload } from "./components/dv-media-upload.js";

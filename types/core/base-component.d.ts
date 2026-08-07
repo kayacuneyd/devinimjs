@@ -1,4 +1,11 @@
 /**
+ * Snapshot of every connected component instance, for dev tooling (core/debug.js). Not
+ * re-exported from `core/core.js`; tree-shaken out of the size-gated bundle.
+ *
+ * @returns {BaseComponent[]} Live instances.
+ */
+export function getLiveComponents(): BaseComponent[];
+/**
  * Base class for all DevinimJS components. Light DOM only — never call attachShadow.
  */
 export class BaseComponent extends HTMLElement {

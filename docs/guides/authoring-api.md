@@ -45,6 +45,27 @@ component('acme-counter', {
 });
 ```
 
+## Declared props (ADR-0025)
+
+Bare defaults infer their type (`props: { start: 0 }`). When a prop needs a contract, use a
+descriptor instead:
+
+```js
+props: {
+  start: { type: Number, default: 0, required: true },
+  label: { type: String, default: '' },
+  items: { type: Array }, // implicit defaults: 0 / false / '' / [] / {}
+},
+```
+
+- `type` is one of `String | Number | Boolean | Array | Object`; the attribute is coerced
+  accordingly (`data-start="5"` → `5`).
+- A malformed descriptor (unknown `type`, mismatched `default`, non-boolean `required`)
+  throws a precise `TypeError` at `component()` call time.
+- At runtime, a missing `required` attribute or an unconvertible value logs a
+  `console.error` naming the tag, prop and attribute — the default applies and the page keeps
+  working.
+
 ## AI authoring rules
 
 1. Start from the generator template.

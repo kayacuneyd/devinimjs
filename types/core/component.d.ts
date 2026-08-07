@@ -3,7 +3,7 @@
  *
  * @param {string} tagName - A hyphenated custom-element tag.
  * @param {{
- *   props?: Record<string, string | number | boolean | Array<unknown> | object>,
+ *   props?: Record<string, string | number | boolean | Array<unknown> | object | { type?: StringConstructor | NumberConstructor | BooleanConstructor | ArrayConstructor | ObjectConstructor, default?: *, required?: boolean }>,
  *   state?: object | (() => object),
  *   sync?: Record<string, (value: unknown, previous: unknown) => void>,
  *   actions?: Record<string, (event?: Event, element?: Element) => void>,
@@ -17,7 +17,11 @@
  * @returns {CustomElementConstructor} The registered custom-element constructor.
  */
 export function component(tagName: string, config: {
-    props?: Record<string, string | number | boolean | Array<unknown> | object>;
+    props?: Record<string, string | number | boolean | Array<unknown> | object | {
+        type?: StringConstructor | NumberConstructor | BooleanConstructor | ArrayConstructor | ObjectConstructor;
+        default?: any;
+        required?: boolean;
+    }>;
     state?: object | (() => object);
     sync?: Record<string, (value: unknown, previous: unknown) => void>;
     actions?: Record<string, (event?: Event, element?: Element) => void>;

@@ -50,3 +50,20 @@ extends across components.
 per module — documented that server-rendering/multi-app isolation is out of scope (no SSR).
 **Known limitation:** re-attaching an element after a DOM move does not re-subscribe (the
 existing "no re-initialization on move" rule); documented in `docs/architecture.md`.
+
+## Amendment (2026-08-07, TASK-021)
+
+Three compact helpers joined the store object for the CMS roadmap (§1.4), measured at
++272 B min+gzip against the 4 KB core budget (4065/4096 B after the change):
+
+- **`set(key, value)`** — top-level key assignment with a prototype-pollution guard (§8).
+  Dot-path setting was deliberately dropped (YAGNI: the roadmap only uses top-level keys).
+- **`update(recipe)`** — the recipe may mutate `state` directly or return a partial object
+  whose top-level entries are assigned (`store.update((s) => ({ count: s.count + 1 }))`).
+- **`persist(key, { storage? })`** — hydrates the store from Web Storage on call (saved
+  entries merge over initial state via `update`, so pollution keys are filtered), then writes
+  through on every change; storage/serialization failures warn instead of throwing. Returns a
+  dispose function.
+
+Additionally `useStore(store, paths)` (path-filtered subscriptions, including parent-path
+replacements) landed with the base-component cleanup work of the same roadmap round.

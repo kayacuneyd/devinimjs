@@ -1,8 +1,18 @@
 /**
- * @module core/registry
- * Guarded custom-element registration (ADR-0006). The tag string is always explicit so every
- * registration is greppable — a hard requirement for predictable component authoring.
+ * Reverse lookup used by the router's `mount()` (ADR-0023): finds the tag a define()d
+ * constructor was registered under.
+ *
+ * @param {CustomElementConstructor} ctor - A constructor previously passed to define().
+ * @returns {string | null} The registered tag, or null.
  */
+export function getRegisteredTag(ctor: CustomElementConstructor): string | null;
+/**
+ * Snapshot of every tag registered through define(). Introspection hook for dev tooling
+ * (core/debug.js); not re-exported from the size-gated `core/core.js` barrel.
+ *
+ * @returns {string[]} Registered tag names.
+ */
+export function getDefinedTags(): string[];
 /**
  * Registers a custom element with safety guards.
  *

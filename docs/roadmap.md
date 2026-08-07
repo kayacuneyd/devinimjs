@@ -15,7 +15,7 @@ fast-to-learn, fast-to-build JS runtime — for human developers and AI coding a
 
 | | Bundle (gzip) | Model | Component system | Light-DOM / CSS fit | AI-authoring contract |
 |---|---|---|---|---|---|
-| **DevinimJS** | **3.35 KB** (budget 4 KB, CI-gated, `scripts/size-check.mjs`) | Proxy state + class/factory components + keyed morph render | Yes — `BaseComponent` + `component()` factory | Light DOM only, by design | `component()` 5-field contract + `site/llms.txt`/`llms-full.txt` + `create:component`/`validate:component` CLI |
+| **DevinimJS** | **4.07 KB** (budget 4 KB, CI-gated, `scripts/size-check.mjs`) | Proxy state + class/factory components + keyed morph render | Yes — `BaseComponent` + `component()` factory | Light DOM only, by design | `component()` 5-field contract + `site/llms.txt`/`llms-full.txt` + `create:component`/`validate:component` CLI |
 | Alpine.js | 7.1 KB | Attribute directives (`x-data`, `x-show`) | No component class | Light DOM | None dedicated; wins on sheer training-data familiarity |
 | htmx | ~16 KB | Hypermedia, server round-trip per interaction | No | Light DOM | None dedicated |
 | Datastar | 14.4 KB | Alpine+htmx hybrid over SSE | No | Light DOM | None dedicated; young ecosystem |
@@ -26,7 +26,7 @@ fast-to-learn, fast-to-build JS runtime — for human developers and AI coding a
 ### Where DevinimJS already wins
 
 1. **Smallest footprint with the most capability.** Real component classes, reactive state and
-   keyed-list morphing, all under 3.35 KB — every competitor above is bigger while offering less
+   keyed-list morphing, all under 4.1 KB — every competitor above is bigger while offering less
    structure (Alpine/htmx/Datastar) or fighting the CSS story (Lit's Shadow DOM).
 2. **Only one with a *designed* AI-authoring contract**, not incidental AI-friendliness:
    `component()`'s 5 named fields, `site/llms.txt`, and a scaffold+validate CLI
@@ -121,6 +121,30 @@ All three closed 2026-07-23 via `docs/swarm/` TASK-001/002/003 (Controlled Agent
   `marketing-landing` kit (same mechanism, different source CKCSS pattern) — open once the
   admin-dashboard pilot has been used for real and the mechanism is validated, not before.
   `--format=php` kit support has no driving use case yet either.
+
+### Closed 2026-08-07 — the CMS roadmap round (`devinimjs-yol-haritasi.md`, TASK-021…029)
+
+The fullstack-CMS roadmap round closed the runtime's application-scale gaps and shipped the
+first server-backed kit. Details per item in `CHANGELOG.md` (Unreleased) and ADR-0021…0027:
+
+- ~~No standard fetch/API layer (CSRF, session, 401 handling).~~ `createApi` (ADR-0021).
+- ~~No form validation vocabulary.~~ `validate` + `createForm.validate` (ADR-0022), rule set
+  mirrored on CI4's.
+- ~~Router: no guards/lazy/nested/declarative links.~~ ADR-0023 (amends ADR-0012): trailing
+  wildcard, `beforeEach`/`beforeEnter`, cached lazy loaders, `mount()` with `data-param-*`
+  params, `bindRouterLinks` for `<a dv-link>`.
+- ~~No app-level i18n (fallbacks/pluralization).~~ `createI18n` (ADR-0024, amends ADR-0019).
+- ~~Store: no persistence/mutation ergonomics.~~ `set`/`update`/`persist` (ADR-0011 amendment);
+  core grew 3793 → 4065 B min+gzip, still inside the 4 KB constitution §9 budget.
+- ~~Authoring API: no declared/validated props.~~ `{ type, default, required }` descriptors
+  (ADR-0025) with define-time throws and runtime `console.error` diagnostics.
+- ~~No DevTools surface.~~ `__DEVINIM_DEBUG__` via opt-in `installDebug()` (ADR-0026); hot
+  reload deliberately deferred (needs a dev server — build-free boundary).
+- ~~No file-upload component.~~ `<dv-media-upload>`: drag&drop, client-side accept/size rules,
+  previews, XHR progress, abort; pairs with the kit's CI4 media endpoint.
+- ~~No server-backed CMS kit.~~ `kits/ci4-cms/` (ADR-0027): CI4 + SQLite CMS overlay —
+  migrations/seeders, session auth, API resource controllers, field-type library, media
+  thumbnails, Hook/PluginLoader, WAL + `db:backup`, default theme, admin SPA shell.
 
 ### P2 — already YAGNI-tagged and correctly parked; don't reopen without a real use case
 

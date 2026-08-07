@@ -13,7 +13,7 @@ import { buildSync } from 'esbuild';
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
-const COMPONENTS = ['dv-counter', 'dv-tabs', 'dv-disclosure', 'dv-modal', 'dv-toast', 'dv-pagination', 'dv-dropdown', 'dv-search', 'dv-product-card', 'dv-field', 'dv-confirm', 'dv-autocomplete', 'dv-data-table', 'dv-cart', 'dv-toast-stack', 'dv-state'];
+const COMPONENTS = ['dv-counter', 'dv-tabs', 'dv-disclosure', 'dv-modal', 'dv-toast', 'dv-pagination', 'dv-dropdown', 'dv-search', 'dv-product-card', 'dv-field', 'dv-confirm', 'dv-autocomplete', 'dv-data-table', 'dv-cart', 'dv-toast-stack', 'dv-state', 'dv-media-upload'];
 const shared = { bundle: true, format: 'esm', logLevel: 'silent' };
 
 mkdirSync('dist/modules', { recursive: true });

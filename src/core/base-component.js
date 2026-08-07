@@ -14,8 +14,68 @@ import { morph } from './morph.js';
 /** Matches legacy and concise event directives, e.g. data-on:click / on:click. */
 const EVENT_ATTR_PATTERN = /(?:data-on|on):([\w:.-]+)=/g;
 
+/**
+ * Event modifiers allowed after the event type, e.g. `data-on:submit:prevent`.
+ * A trailing segment that is not one of these stays part of the event type, so namespaced
+ * custom events such as `data-on:dv:save` keep working unchanged.
+ */
+const EVENT_MODIFIERS = new Set(['prevent', 'stop', 'passive']);
+
+/**
+ * Splits the part after the `data-on:`/`on:` prefix into event type and modifiers.
+ * Only trailing known modifiers are peeled off: `click:prevent` → type `click`,
+ * `dv:save` → type `dv:save`, `dv:save:stop` → type `dv:save` with `stop`.
+ *
+ * @param {string} spec - Directive suffix, e.g. `'click:prevent'`.
+ * @returns {{ type: string, modifiers: string[] }} Parsed type and modifier list.
+ */
+function splitEventSpec(spec) {
+  const parts = spec.split(':');
+  const modifiers = [];
+  while (parts.length > 1 && EVENT_MODIFIERS.has(parts[parts.length - 1])) {
+    modifiers.unshift(parts.pop());
+  }
+  return { type: parts.join(':'), modifiers };
+}
+
 /** Outlet tag is a transparent framework wrapper — exempt from the ownership boundary. */
 const OUTLET_TAG = 'DV-OUTLET';
+
+/** @type {Set<string>} Tag names whose `static styles` were already injected into <head>. */
+const injectedStyleTags = new Set();
+
+/**
+ * Injects a component class's `static styles` into `<head>` once per tag name (Light DOM
+ * styling hook). The stylesheet is global by design — Light DOM components share the
+ * document's CSS — and stays for the page lifetime; dedupe is by tag name.
+ *
+ * @param {BaseComponent} instance - Component instance whose constructor may carry `styles`.
+ * @returns {void}
+ */
+function injectComponentStyles(instance) {
+  const css = instance.constructor.styles;
+  if (typeof css !== 'string' || !css.trim()) return;
+  const tag = instance.nodeName.toLowerCase();
+  if (injectedStyleTags.has(tag)) return;
+  injectedStyleTags.add(tag);
+  const style = document.createElement('style');
+  style.setAttribute('data-dv-style', tag);
+  style.textContent = css;
+  document.head.appendChild(style);
+}
+
+/** @type {Set<BaseComponent>} Live (connected) instances — dev-only debug introspection. */
+const liveInstances = new Set();
+
+/**
+ * Snapshot of every connected component instance, for dev tooling (core/debug.js). Not
+ * re-exported from `core/core.js`; tree-shaken out of the size-gated bundle.
+ *
+ * @returns {BaseComponent[]} Live instances.
+ */
+export function getLiveComponents() {
+  return [...liveInstances];
+}
 
 /**
  * Base class for all DevinimJS components. Light DOM only — never call attachShadow.
@@ -31,8 +91,8 @@ export class BaseComponent extends HTMLElement {
   #updateQueued = false;
   /** @type {Set<string>} Root state keys changed since the last render. */
   #changedKeys = new Set();
-  /** @type {Set<string>} Event types already delegated on this element. */
-  #delegatedTypes = new Set();
+  /** @type {Map<string, { passive: boolean, listener: EventListener }>} Delegated event types. */
+  #delegatedTypes = new Map();
   /** @type {Map<object, { unsubscribe: (() => void) | null, filter: ((path: string) => boolean) | null }>} */
   #storeSubscriptions = new Map();
   /** @type {Set<() => void>} Cleanup work owned by the current DOM connection. */
@@ -133,6 +193,7 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   connectedCallback() {
+    liveInstances.add(this);
     if (this.#initialized) {
       this.#resubscribeStores();
       this.reconnected();
@@ -140,6 +201,7 @@ export class BaseComponent extends HTMLElement {
     }
     this.#initialized = true;
 
+    injectComponentStyles(this);
     this.#childrenFragment = captureChildren(this);
     this.prepare(this.#childrenFragment);
     this.#state = createReactive(this.initialState() ?? {}, (path) => this.#notify(path));
@@ -153,6 +215,7 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   disconnectedCallback() {
+    liveInstances.delete(this);
     this.#unsubscribeStores();
     this.#runCleanup();
     this.disconnected();
@@ -239,35 +302,58 @@ export class BaseComponent extends HTMLElement {
     // the DOM instead (ADR-0004 #3): one scan, at placement time.
     for (const node of outlet.querySelectorAll('*')) {
       for (const attr of node.attributes) {
-        if (attr.name.startsWith('data-on:')) this.#addDelegation(attr.name.slice(8));
-        if (attr.name.startsWith('on:')) this.#addDelegation(attr.name.slice(3));
+        if (attr.name.startsWith('data-on:')) this.#addSpecDelegation(attr.name.slice(8));
+        else if (attr.name.startsWith('on:')) this.#addSpecDelegation(attr.name.slice(3));
       }
     }
   }
 
   /**
    * Scans rendered output for `data-on:type` or `on:type` directives and delegates their event types
-   * (ADR-0004 #2/#3).
+   * (ADR-0004 #2/#3). Modifier suffixes (`:prevent`, `:stop`, `:passive`) are parsed here so the
+   * listener registers for the bare event type.
    *
    * @param {string} htmlString - The rendered template string.
    * @returns {void}
    */
   #refreshDelegation(htmlString) {
     for (const match of htmlString.matchAll(EVENT_ATTR_PATTERN)) {
-      this.#addDelegation(match[1]);
+      this.#addSpecDelegation(match[1]);
     }
   }
 
   /**
-   * Attaches one delegated listener for an event type on this element (idempotent).
-   *
-   * @param {string} type - Event type, e.g. `'click'` or `'dv:save'`.
+   * @param {string} spec - Directive suffix, e.g. `'click'` or `'submit:prevent'`.
    * @returns {void}
    */
-  #addDelegation(type) {
-    if (this.#delegatedTypes.has(type)) return;
-    this.#delegatedTypes.add(type);
-    this.addEventListener(type, (event) => this.#dispatch(event, type));
+  #addSpecDelegation(spec) {
+    const { type, modifiers } = splitEventSpec(spec);
+    if (type) this.#addDelegation(type, modifiers);
+  }
+
+  /**
+   * Attaches one delegated listener for an event type on this element (idempotent). A `:passive`
+   * directive attaches a passive listener; if a later non-passive directive for the same type
+   * appears, the listener is downgraded so `preventDefault()` keeps working.
+   *
+   * @param {string} type - Event type, e.g. `'click'` or `'dv:save'`.
+   * @param {string[]} [modifiers] - Parsed directive modifiers.
+   * @returns {void}
+   */
+  #addDelegation(type, modifiers = []) {
+    const passive = modifiers.includes('passive');
+    const existing = this.#delegatedTypes.get(type);
+    if (existing) {
+      if (existing.passive && !passive) {
+        this.removeEventListener(type, existing.listener);
+        existing.passive = false;
+        this.addEventListener(type, existing.listener);
+      }
+      return;
+    }
+    const listener = (event) => this.#dispatch(event, type);
+    this.#delegatedTypes.set(type, { passive, listener });
+    this.addEventListener(type, listener, passive ? { passive: true } : undefined);
   }
 
   /**
@@ -278,18 +364,20 @@ export class BaseComponent extends HTMLElement {
    * @returns {void}
    */
   #dispatch(event, type) {
-    const legacyAttr = `data-on:${type}`;
-    const conciseAttr = `on:${type}`;
     // Walk up from the target to the directive element, bounded by this host. A manual walk
     // (instead of a dynamic attribute selector) sidesteps selector-escaping differences
     // between engines — `data-on:click` contains a colon.
     let el = event.target instanceof Element ? event.target : event.target?.parentElement;
-    while (el && el !== this && !el.hasAttribute(legacyAttr) && !el.hasAttribute(conciseAttr)) {
+    let directive = null;
+    while (el && el !== this && !(directive = this.#findDirective(el, type))) {
       el = el.parentElement;
     }
-    if (!el || el === this || !this.#owns(el)) return;
+    if (!el || el === this || !directive || !this.#owns(el)) return;
 
-    const method = el.getAttribute(conciseAttr) ?? el.getAttribute(legacyAttr);
+    if (directive.modifiers.includes('prevent')) event.preventDefault();
+    if (directive.modifiers.includes('stop')) event.stopPropagation();
+
+    const method = el.getAttribute(directive.name);
     if (!method) return;
     if (typeof this[method] !== 'function') {
       console.warn(
@@ -302,6 +390,31 @@ export class BaseComponent extends HTMLElement {
     } catch (error) {
       this.onError(error, 'action');
     }
+  }
+
+  /**
+   * Finds the event directive on `el` for `type`, preferring the exact attribute names and then
+   * modifier-suffixed variants (`data-on:click:prevent`). Returns the attribute to read plus its
+   * parsed modifiers.
+   *
+   * @param {Element} el - Candidate directive element.
+   * @param {string} type - Bare event type being dispatched.
+   * @returns {{ name: string, modifiers: string[] } | null} Directive info, or null.
+   */
+  #findDirective(el, type) {
+    const legacyAttr = `data-on:${type}`;
+    const conciseAttr = `on:${type}`;
+    if (el.hasAttribute(legacyAttr)) return { name: legacyAttr, modifiers: [] };
+    if (el.hasAttribute(conciseAttr)) return { name: conciseAttr, modifiers: [] };
+    for (const attr of el.attributes) {
+      const prefix = attr.name.startsWith('data-on:') ? 8 : attr.name.startsWith('on:') ? 3 : 0;
+      if (!prefix) continue;
+      const parsed = splitEventSpec(attr.name.slice(prefix));
+      if (parsed.type === type && parsed.modifiers.length > 0) {
+        return { name: attr.name, modifiers: parsed.modifiers };
+      }
+    }
+    return null;
   }
 
   /**

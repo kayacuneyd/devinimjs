@@ -216,7 +216,29 @@ function syncFormControl(oldEl, newEl) {
 
 // src/core/base-component.js
 var EVENT_ATTR_PATTERN = /(?:data-on|on):([\w:.-]+)=/g;
+var EVENT_MODIFIERS = /* @__PURE__ */ new Set(["prevent", "stop", "passive"]);
+function splitEventSpec(spec) {
+  const parts = spec.split(":");
+  const modifiers = [];
+  while (parts.length > 1 && EVENT_MODIFIERS.has(parts[parts.length - 1])) {
+    modifiers.unshift(parts.pop());
+  }
+  return { type: parts.join(":"), modifiers };
+}
 var OUTLET_TAG2 = "DV-OUTLET";
+var injectedStyleTags = /* @__PURE__ */ new Set();
+function injectComponentStyles(instance) {
+  const css = instance.constructor.styles;
+  if (typeof css !== "string" || !css.trim()) return;
+  const tag = instance.nodeName.toLowerCase();
+  if (injectedStyleTags.has(tag)) return;
+  injectedStyleTags.add(tag);
+  const style = document.createElement("style");
+  style.setAttribute("data-dv-style", tag);
+  style.textContent = css;
+  document.head.appendChild(style);
+}
+var liveInstances = /* @__PURE__ */ new Set();
 var BaseComponent = class extends HTMLElement {
   /** @type {boolean} True after the first connect initialized the component. */
   #initialized = false;
@@ -228,8 +250,8 @@ var BaseComponent = class extends HTMLElement {
   #updateQueued = false;
   /** @type {Set<string>} Root state keys changed since the last render. */
   #changedKeys = /* @__PURE__ */ new Set();
-  /** @type {Set<string>} Event types already delegated on this element. */
-  #delegatedTypes = /* @__PURE__ */ new Set();
+  /** @type {Map<string, { passive: boolean, listener: EventListener }>} Delegated event types. */
+  #delegatedTypes = /* @__PURE__ */ new Map();
   /** @type {Map<object, { unsubscribe: (() => void) | null, filter: ((path: string) => boolean) | null }>} */
   #storeSubscriptions = /* @__PURE__ */ new Map();
   /** @type {Set<() => void>} Cleanup work owned by the current DOM connection. */
@@ -327,12 +349,14 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   connectedCallback() {
+    liveInstances.add(this);
     if (this.#initialized) {
       this.#resubscribeStores();
       this.reconnected();
       return;
     }
     this.#initialized = true;
+    injectComponentStyles(this);
     this.#childrenFragment = captureChildren(this);
     this.prepare(this.#childrenFragment);
     this.#state = createReactive(this.initialState() ?? {}, (path) => this.#notify(path));
@@ -345,6 +369,7 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   disconnectedCallback() {
+    liveInstances.delete(this);
     this.#unsubscribeStores();
     this.#runCleanup();
     this.disconnected();
@@ -425,33 +450,55 @@ var BaseComponent = class extends HTMLElement {
     this.#childrenFragment = null;
     for (const node of outlet.querySelectorAll("*")) {
       for (const attr of node.attributes) {
-        if (attr.name.startsWith("data-on:")) this.#addDelegation(attr.name.slice(8));
-        if (attr.name.startsWith("on:")) this.#addDelegation(attr.name.slice(3));
+        if (attr.name.startsWith("data-on:")) this.#addSpecDelegation(attr.name.slice(8));
+        else if (attr.name.startsWith("on:")) this.#addSpecDelegation(attr.name.slice(3));
       }
     }
   }
   /**
    * Scans rendered output for `data-on:type` or `on:type` directives and delegates their event types
-   * (ADR-0004 #2/#3).
+   * (ADR-0004 #2/#3). Modifier suffixes (`:prevent`, `:stop`, `:passive`) are parsed here so the
+   * listener registers for the bare event type.
    *
    * @param {string} htmlString - The rendered template string.
    * @returns {void}
    */
   #refreshDelegation(htmlString) {
     for (const match of htmlString.matchAll(EVENT_ATTR_PATTERN)) {
-      this.#addDelegation(match[1]);
+      this.#addSpecDelegation(match[1]);
     }
   }
   /**
-   * Attaches one delegated listener for an event type on this element (idempotent).
-   *
-   * @param {string} type - Event type, e.g. `'click'` or `'dv:save'`.
+   * @param {string} spec - Directive suffix, e.g. `'click'` or `'submit:prevent'`.
    * @returns {void}
    */
-  #addDelegation(type) {
-    if (this.#delegatedTypes.has(type)) return;
-    this.#delegatedTypes.add(type);
-    this.addEventListener(type, (event) => this.#dispatch(event, type));
+  #addSpecDelegation(spec) {
+    const { type, modifiers } = splitEventSpec(spec);
+    if (type) this.#addDelegation(type, modifiers);
+  }
+  /**
+   * Attaches one delegated listener for an event type on this element (idempotent). A `:passive`
+   * directive attaches a passive listener; if a later non-passive directive for the same type
+   * appears, the listener is downgraded so `preventDefault()` keeps working.
+   *
+   * @param {string} type - Event type, e.g. `'click'` or `'dv:save'`.
+   * @param {string[]} [modifiers] - Parsed directive modifiers.
+   * @returns {void}
+   */
+  #addDelegation(type, modifiers = []) {
+    const passive = modifiers.includes("passive");
+    const existing = this.#delegatedTypes.get(type);
+    if (existing) {
+      if (existing.passive && !passive) {
+        this.removeEventListener(type, existing.listener);
+        existing.passive = false;
+        this.addEventListener(type, existing.listener);
+      }
+      return;
+    }
+    const listener = (event) => this.#dispatch(event, type);
+    this.#delegatedTypes.set(type, { passive, listener });
+    this.addEventListener(type, listener, passive ? { passive: true } : void 0);
   }
   /**
    * Resolves a delegated event to the component method named by the directive.
@@ -461,14 +508,15 @@ var BaseComponent = class extends HTMLElement {
    * @returns {void}
    */
   #dispatch(event, type) {
-    const legacyAttr = `data-on:${type}`;
-    const conciseAttr = `on:${type}`;
     let el = event.target instanceof Element ? event.target : event.target?.parentElement;
-    while (el && el !== this && !el.hasAttribute(legacyAttr) && !el.hasAttribute(conciseAttr)) {
+    let directive = null;
+    while (el && el !== this && !(directive = this.#findDirective(el, type))) {
       el = el.parentElement;
     }
-    if (!el || el === this || !this.#owns(el)) return;
-    const method = el.getAttribute(conciseAttr) ?? el.getAttribute(legacyAttr);
+    if (!el || el === this || !directive || !this.#owns(el)) return;
+    if (directive.modifiers.includes("prevent")) event.preventDefault();
+    if (directive.modifiers.includes("stop")) event.stopPropagation();
+    const method = el.getAttribute(directive.name);
     if (!method) return;
     if (typeof this[method] !== "function") {
       console.warn(
@@ -481,6 +529,30 @@ var BaseComponent = class extends HTMLElement {
     } catch (error) {
       this.onError(error, "action");
     }
+  }
+  /**
+   * Finds the event directive on `el` for `type`, preferring the exact attribute names and then
+   * modifier-suffixed variants (`data-on:click:prevent`). Returns the attribute to read plus its
+   * parsed modifiers.
+   *
+   * @param {Element} el - Candidate directive element.
+   * @param {string} type - Bare event type being dispatched.
+   * @returns {{ name: string, modifiers: string[] } | null} Directive info, or null.
+   */
+  #findDirective(el, type) {
+    const legacyAttr = `data-on:${type}`;
+    const conciseAttr = `on:${type}`;
+    if (el.hasAttribute(legacyAttr)) return { name: legacyAttr, modifiers: [] };
+    if (el.hasAttribute(conciseAttr)) return { name: conciseAttr, modifiers: [] };
+    for (const attr of el.attributes) {
+      const prefix = attr.name.startsWith("data-on:") ? 8 : attr.name.startsWith("on:") ? 3 : 0;
+      if (!prefix) continue;
+      const parsed = splitEventSpec(attr.name.slice(prefix));
+      if (parsed.type === type && parsed.modifiers.length > 0) {
+        return { name: attr.name, modifiers: parsed.modifiers };
+      }
+    }
+    return null;
   }
   /**
    * Ownership rule (ADR-0004 #5): the directive element belongs to this component when, walking
@@ -681,12 +753,14 @@ function createPathFilter(paths) {
 }
 
 // src/core/store.js
+var UNSAFE_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
+var storeRegistry = /* @__PURE__ */ new Set();
 function createStore(initialState = {}) {
   const listeners = /* @__PURE__ */ new Set();
   const state = createReactive(initialState, (path) => {
     for (const fn of [...listeners]) fn(path);
   });
-  return {
+  const store = {
     state,
     /**
      * Registers a change listener.
@@ -697,11 +771,80 @@ function createStore(initialState = {}) {
     subscribe(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);
+    },
+    /**
+     * Sets one top-level key; prototype-polluting keys are rejected with a warning (§8).
+     *
+     * @param {string} key - Top-level state key, e.g. `'count'`.
+     * @param {*} value - Value to assign.
+     * @returns {void}
+     */
+    set(key, value) {
+      if (UNSAFE_KEYS.has(key)) {
+        console.warn(`[devinim] store.set: invalid key "${key}".`);
+        return;
+      }
+      state[key] = value;
+    },
+    /**
+     * Applies a recipe to the state. The recipe may mutate `state` directly; when it returns a
+     * plain object, its top-level entries are assigned onto the state — supporting the
+     * `store.update((s) => ({ count: s.count + 1 }))` style.
+     *
+     * @param {(state: object) => (object | undefined)} recipe - Mutator or partial producer.
+     * @returns {object} The reactive state (for chaining).
+     */
+    update(recipe) {
+      const partial = recipe(state);
+      if (partial && typeof partial === "object") {
+        for (const [key, value] of Object.entries(partial)) {
+          if (!UNSAFE_KEYS.has(key)) state[key] = value;
+        }
+      }
+      return state;
+    },
+    /**
+     * Syncs the whole store to Web Storage under `key`: hydrates once on call (saved entries
+     * override the initial state), then writes on every subsequent change. Serialization
+     * failures warn instead of throwing so a full quota never breaks the app.
+     *
+     * @param {string} key - Storage key, e.g. `'my-shop-cart'`.
+     * @param {{ storage?: Storage | null }} [options] - Storage driver (default: localStorage).
+     * @returns {() => void} Dispose function: stops the write-through subscription.
+     */
+    persist(key, { storage } = {}) {
+      if (storage === void 0) {
+        try {
+          storage = globalThis.localStorage ?? null;
+        } catch {
+          storage = null;
+        }
+      }
+      if (!storage) {
+        console.warn(`[devinim] store.persist("${key}"): no Web Storage available.`);
+        return () => {
+        };
+      }
+      try {
+        store.update(() => JSON.parse(storage.getItem(key) ?? "null"));
+      } catch (error) {
+        console.warn(`[devinim] store.persist("${key}"): hydration failed.`, error);
+      }
+      return store.subscribe(() => {
+        try {
+          storage.setItem(key, JSON.stringify(state));
+        } catch (error) {
+          console.warn(`[devinim] store.persist("${key}"): write failed.`, error);
+        }
+      });
     }
   };
+  storeRegistry.add(store);
+  return store;
 }
 
 // src/core/registry.js
+var definedElements = /* @__PURE__ */ new Map();
 function define(tagName, ctor) {
   if (typeof tagName !== "string" || !tagName.includes("-")) {
     throw new Error(
@@ -711,9 +854,11 @@ function define(tagName, ctor) {
   const existing = customElements.get(tagName);
   if (existing) {
     console.warn(`[devinim] "${tagName}" is already defined; skipping re-registration.`);
+    definedElements.set(tagName, existing);
     return existing;
   }
   customElements.define(tagName, ctor);
+  definedElements.set(tagName, ctor);
   return ctor;
 }
 

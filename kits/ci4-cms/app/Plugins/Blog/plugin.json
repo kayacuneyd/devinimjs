@@ -1,0 +1,10 @@
+{
+    "name": "Blog",
+    "slug": "blog",
+    "version": "1.0.0",
+    "description": "Example plugin: a /api/blog/stats endpoint plus content.before_save listeners. Ships ACTIVE as a living reference — set active to false to disable.",
+    "active": true,
+    "events": {
+        "content.before_save": "App\\Plugins\\Blog\\Controllers\\BlogController::beforeContentSave"
+    }
+}
